@@ -39,6 +39,6 @@ class RegisterController extends Controller
         $user = new User();
         $user->fill($formData);
         $user->save();
-        return  $user;
+        return  redirect()->route('orders.index');
     }
 }
