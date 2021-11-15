@@ -2,11 +2,11 @@
     <table class="table align-items-center">
         <thead style="background-color: #f6821f; color: white" class="thead-light">
         <tr>
-            <th>Họ và tên</th>
-            <th>Email</th>
-            <th>Level</th>
-            <th>Trạng thái</th>
-            <th class="text-center" colspan="2">Hành động</th>
+            <td>Họ và tên</td>
+            <td>Email</td>
+            <td>Level</td>
+            <td>Trạng thái</td>
+            <td class="text-center" colspan="2">Hành động</td>
         </tr>
         </thead>
         <tbody>

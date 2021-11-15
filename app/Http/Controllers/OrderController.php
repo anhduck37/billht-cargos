@@ -85,7 +85,11 @@ class OrderController extends AppBaseController
             $orders->where('delivery_status', $formFilter['delivery_status']);
         }
         if(auth()->user()->level != User::LEVEL_ADMIN) {
-            $orders->where('orders.user_id', auth()->user()->id);
+            if(auth()->user()->level == User::LEVEL_POSTMAN){
+                $orders->where('orders.person_charge', auth()->user()->id);
+            }else {
+                $orders->where('orders.user_id', auth()->user()->id);
+            }
         }
         $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->paginate($pageSize);
         $partners = Partner::get();
@@ -184,28 +188,32 @@ class OrderController extends AppBaseController
         return view('orders.edit', ['citys' => $citys, 'partners' => $partners,'order' => $order, 'update' => true, 'users' => $users]);
     }
 
-    public function update(CreateOrderRequest $request, $id) {
+    public function update(UpdateOrderRequest $request, $id) {
         $senderForm = $request->sender;
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
-        DB::beginTransaction();
-        try {
+//        DB::beginTransaction();
+//        try {
             $order = $this->orderRepository->find($id);
             if($order) {
-                $sender = Sender::where('id', $order->sender_id)->update($senderForm);
-                $receiver = Receiver::where('id', $order->receiver_id)->update($receiverForm);
-                if(array_key_exists('order_date', $orderForm) && !empty($orderForm['order_date'])){
-                    $orderForm['order_date'] = app(OrderService::class)->explodeDate($orderForm['order_date']);
-                    if(empty($orderForm['order_date'])) {
-                        unset($orderForm['order_date']);
+                if(auth()->user()->level !== User::LEVEL_POSTMAN) {
+                    $sender = Sender::where('id', $order->sender_id)->update($senderForm);
+                    $receiver = Receiver::where('id', $order->receiver_id)->update($receiverForm);
+                    if(array_key_exists('order_date', $orderForm) && !empty($orderForm['order_date'])){
+                        $orderForm['order_date'] = app(OrderService::class)->explodeDate($orderForm['order_date']);
+                        if(empty($orderForm['order_date'])) {
+                            unset($orderForm['order_date']);
+                        }
                     }
                 }
                 Order::where('id', $id)->update($orderForm);
                 if($order &&  $orderForm['delivery_status'] != $order->delivery_status){
                     $order->delivery_status = $orderForm['delivery_status'];
                     $order->city_id = $orderForm['location_id'];
-                    $order->person_charge = $orderForm['person_charge'];
+                    if(array_key_exists('person_charge', $orderForm)){
+                        $order->person_charge = $orderForm['person_charge'];
+                    }
                     $order->signator = $orderForm['signator'];
                     app(OrderTrackingService::class)->create($order, $request->all());
                 }
@@ -230,10 +238,10 @@ class OrderController extends AppBaseController
             }
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
-        }catch (Exception $e) {
-            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
-            DB::rollback();
-        }
+//        }catch (Exception $e) {
+//            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
+//            DB::rollback();
+//        }
         return redirect()->route('orders.index');
     }
 
@@ -332,5 +340,16 @@ class OrderController extends AppBaseController
 
     public function showFormImport() {
         return view('orders.import');
+    }
+
+    public function renderTemplate(Request $request) {
+        $orders = $request->order;
+        if(!empty($orders)) {
+            $orders = Order::whereIn('id', $orders)->get();
+        }else {
+            $orders = [];
+        }
+        $level = auth()->user()->level;
+        return view('template.print', ['orders' => $orders, 'level' => $level])->render();
     }
 }

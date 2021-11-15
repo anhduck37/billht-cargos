@@ -1,11 +1,11 @@
 <div class="table-responsive mt-4">
     <table class="table align-items-center">
-        <thead class="thead-light">
+        <thead style="background-color: #f6821f; color: white" class="thead-light">
         <tr>
-            <th>STT</th>
-            <th>Tên đối tác</th>
-            <th>Prefix code</th>
-            <th class="text-center" colspan="2">Hành động</th>
+            <td>STT</td>
+            <td>Tên đối tác</td>
+            <td>Prefix code</td>
+            <td class="text-center" colspan="2">Hành động</td>
         </tr>
         </thead>
         <tbody>

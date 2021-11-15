@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\User;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Order;
 
@@ -25,8 +26,17 @@ class UpdateOrderRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = Order::$rules;
-        
+        $rules = [
+            'sender.sender_name' => 'required',
+            'sender.sender_phone' => 'required',
+//            'sender.address' => 'required',
+            'receiver.receiver_name' => 'required',
+            'receiver.receiver_phone' => 'required',
+            'receiver.address' => 'required'
+        ];
+        if(auth()->user()->level == User::LEVEL_POSTMAN) {
+            return [];
+        }
         return $rules;
     }
 }

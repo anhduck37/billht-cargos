@@ -15,7 +15,7 @@
     <table class="table align-items-center">
         <thead style="background-color: #f6821f; color: white" class="thead-light">
         <tr>
-            <td></td>
+            <td class="text-center"><input id="checkedAll" type="checkbox" /></td>
             <td>Ngày gửi</td>
             <td>Mã vận đơn</td>
             <td>Người gửi</td>
@@ -84,7 +84,7 @@
 {{--                            <i class="fas fa-ellipsis-v"></i>--}}
 {{--                        </a>--}}
 {{--                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">--}}
-                    <a href="{{ route('orders.edit', [$order->id]) }}"><i style="color: #0ca362;" class="fa fa-print"></i></a>
+                    <a class="printIcon" data-id="{{$order->id}}" ><i style="color: #0ca362;" class="fa fa-print"></i></a>
 
                             <a href="{{ route('orders.edit', [$order->id]) }}"><i style="color: blue;" class="far fa-edit"></i></a>
                     @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
@@ -104,6 +104,11 @@
 @section('javascript')
     <script type="text/javascript">
         $(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
             $('.delete').on('click',function () {
                 let orderId = $(this).attr('data-id');
                 let isDelete = confirm('Bạn có chắc muốn xóa vận đơn này?');
@@ -121,30 +126,48 @@
                     let index = dataPrint.findIndex(item => item == orderId)
                     dataPrint.splice(index, 1);
                 }
-                console.log(dataPrint)
             })
-
+            $('#checkedAll').on('change', function (e) {
+                if($(this).is(':checked')) {
+                    let data = {!! json_encode($orders) !!}
+                    let orders = data.data;
+                    dataPrint = orders.map(order => {
+                        return order.id
+                    })
+                    $('.printOrder').attr('checked', true)
+                } else {
+                    dataPrint = [];
+                    $('.printOrder').attr('checked', false)
+                }
+            })
             $('#print').on('click', function () {
-                console.log('hay')
-                console.log(dataPrint)
                 $.ajax({
                     type: "POST",
-                    url: '/api/template/render',
+                    url: '/template/render',
                     data: {'order': dataPrint},
                     success: function (res) {
-                        console.log(res);
                         print(res)
                     },
                 });
             });
 
+            $('.printIcon').on('click', function (e) {
+                let orderId = $(this).attr('data-id');
+                $.ajax({
+                    type: "POST",
+                    url: '/template/render',
+                    data: {'order': [orderId]},
+                    success: function (res) {
+                        print(res)
+                    },
+                });
+            })
+
         });
         function print(html) {
             var a = window.open();
             a.document.write(html);
-            // a.load();
             a.document.close();
-            // a.print();
         }
     </script>
 @endsection

@@ -20,5 +20,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::middleware([])->group(function () {
     Route::get('/district/{city_id}', 'DistrictController@getDistricts');
     Route::get('/ward/{district_id}', 'WardController@getWards');
-    Route::post('/template/render', 'OrderController@renderTemplate');
 });

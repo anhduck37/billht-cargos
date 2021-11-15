@@ -17,7 +17,8 @@ Route::get('/', function () {
 });
 Route::get('/test', function () {
     $order = \App\Models\Order::get();
-    return view('template.print', ['orders' => $order])->render();
+    $level = 1;
+    return view('template.print', ['orders' => $order, 'level' => $level])->render();
 });
 Auth::routes();
 Route::post('/register', 'Auth\RegisterController@create');
@@ -35,5 +36,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');
     Route::get('users/{id}', 'UserController@show')->name('users.show');
     Route::resource('partners', 'PartnerController');
+    Route::post('/template/render', 'OrderController@renderTemplate');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');

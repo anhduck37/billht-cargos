@@ -34,14 +34,14 @@
                         <table class="table align-items-center">
                             <thead style="background-color: #f6821f; color: white" class="thead-light">
                             <tr>
-                                <th>Mã vận đơn</th>
-                                <th>Trạng thái vận đơn</th>
-                                <th>Người gửi</th>
-                                <th>Người nhận</th>
-                                <th>Tỉnh / Thành phố</th>
-                                <th>Người kí gửi</th>
-                                <th>Thời gian cập nhật</th>
-                                <th>Ghi chú</th>
+                                <td>Mã vận đơn</td>
+                                <td>Trạng thái vận đơn</td>
+                                <td>Người gửi</td>
+                                <td>Người nhận</td>
+                                <td>Tỉnh / Thành phố</td>
+                                <td>Người kí gửi</td>
+                                <td>Thời gian cập nhật</td>
+                                <td>Ghi chú</td>
                             </tr>
                             </thead>
                             <tbody>

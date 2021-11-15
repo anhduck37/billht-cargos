@@ -15,6 +15,7 @@ class OrderController extends Controller
         }else {
             $orders = [];
         }
-        return view('template.print', ['orders' => $orders])->render();
+        $level = auth()->user()->level;
+        return view('template.print', ['orders' => $orders, 'level' => $level])->render();
     }
 }

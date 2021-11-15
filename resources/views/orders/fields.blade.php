@@ -6,7 +6,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Tên cá nhân/ Công ty</label>
-                        <input type="text" name="sender[sender_name]" value="{{old('sender.sender_name') ? old('sender.sender_name') : (isset($order->sender) ? $order->sender->sender_name : '') }}" class="form-control" />
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="sender[sender_name]" value="{{old('sender.sender_name') ? old('sender.sender_name') : (isset($order->sender) ? $order->sender->sender_name : '') }}" class="form-control" />
                         @if ($errors->has('sender.sender_name'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
                                 <strong>{{ $errors->first('sender.sender_name') }}</strong>
@@ -15,7 +15,7 @@
                     </div>
                     <div class="form-group col-md-6">
                         <label>Số điện thoại</label>
-                        <input type="number" name="sender[sender_phone]" value="{{old('sender.sender_phone') ? old('sender.sender_phone') : (isset($order->sender) ? $order->sender->sender_phone : '') }}" class="form-control" />
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="number" name="sender[sender_phone]" value="{{old('sender.sender_phone') ? old('sender.sender_phone') : (isset($order->sender) ? $order->sender->sender_phone : '') }}" class="form-control" />
                         @if ($errors->has('sender.sender_phone'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
                                 <strong>{{ $errors->first('sender.sender_phone') }}</strong>
@@ -28,7 +28,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-4">
                         <label>Tỉnh / Thành phố</label>
-                        <select name="sender[city_id]" id="sender_city" class="form-control">
+                        <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[city_id]" id="sender_city" class="form-control">
                             <option value="2"></option>
                             @foreach($citys as $city)
                                 <option value="{{$city->id}}" @if(isset($order->sender) && $order->sender->city_id == $city->id) selected @endif >{{$city->city_name}}</option>
@@ -37,13 +37,13 @@
                     </div>
                     <div class="form-group col-md-4">
                             <label>Huyện / Quận</label>
-                            <select name="sender[district_id]" id="sender_district" class="form-control">
+                            <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[district_id]" id="sender_district" class="form-control">
                                 <option value="1"></option>
                             </select>
                     </div>
                     <div class="form-group col-md-4">
                         <label>Xã / Phường</label>
-                        <select name="sender[ward_id]" id="sender_ward" class="form-control">
+                        <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[ward_id]" id="sender_ward" class="form-control">
                             <option value=""></option>
                         </select>
                     </div>
@@ -53,11 +53,11 @@
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Địa chỉ</label>
-                        <input type="text" name="sender[address]" value="{{old('sender.sender_email') ? old('sender.sender_email') : (isset($order->sender) ? $order->sender->address : '') }}" class="form-control" />
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="sender[address]" value="{{old('sender.sender_email') ? old('sender.sender_email') : (isset($order->sender) ? $order->sender->address : '') }}" class="form-control" />
                     </div>
                     <div class="form-group col-md-6">
                         <label>Email</label>
-                        <input type="text" name="sender[sender_email]" value="{{old('sender.sender_email') ? old('sender.sender_email') : (isset($order->sender) ? $order->sender->sender_email : '') }}"  class="form-control" />
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="sender[sender_email]" value="{{old('sender.sender_email') ? old('sender.sender_email') : (isset($order->sender) ? $order->sender->sender_email : '') }}"  class="form-control" />
                     </div>
                 </div>
 {{--                <div class="form-group">--}}
@@ -74,7 +74,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-6">
                         <label>Tên cá nhân/ Công ty</label>
-                        <input type="text" name="receiver[receiver_name]" value="{{old('receiver.receiver_name') ? old('receiver.receiver_name') : (isset($order->receiver) ? $order->receiver->receiver_name : '')}}" class="form-control" />
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="receiver[receiver_name]" value="{{old('receiver.receiver_name') ? old('receiver.receiver_name') : (isset($order->receiver) ? $order->receiver->receiver_name : '')}}" class="form-control" />
                         @if ($errors->has('receiver.receiver_name'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
                                 <strong>{{ $errors->first('receiver.receiver_name') }}</strong>
@@ -83,7 +83,7 @@
                     </div>
                     <div class="form-group col-md-6">
                         <label>Số điện thoại</label>
-                        <input type="number" name="receiver[receiver_phone]" value="{{old('receiver.receiver_phone') ? old('receiver.receiver_phone') : (isset($order->receiver) ? $order->receiver->receiver_phone : '')}}" class="form-control" />
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="number" name="receiver[receiver_phone]" value="{{old('receiver.receiver_phone') ? old('receiver.receiver_phone') : (isset($order->receiver) ? $order->receiver->receiver_phone : '')}}" class="form-control" />
                         @if ($errors->has('receiver.receiver_phone'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
                                 <strong>{{ $errors->first('receiver.receiver_phone') }}</strong>
@@ -95,7 +95,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-4">
                         <label>Tỉnh / Thành phố </label>
-                        <select name="receiver[city_id]" id="receiver_city" class="form-control">
+                        <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="receiver[city_id]" id="receiver_city" class="form-control">
                             <option value=""></option>
                             @foreach($citys as $city)
                                 <option value="{{$city->id}}" @if(isset($order->receiver) && $order->receiver->city_id == $city->id) selected @endif>{{$city->city_name}}</option>
@@ -104,13 +104,13 @@
                     </div>
                     <div class="form-group col-md-4">
                         <label>Huyện / Quận</label>
-                        <select name="receiver[district_id]" id="receiver_district" class="form-control">
+                        <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="receiver[district_id]" id="receiver_district" class="form-control">
                             <option value=""></option>
                         </select>
                     </div>
                     <div class="form-group col-md-4">
                         <label>Xã / Phường</label>
-                        <select name="receiver[ward_id]" id="receiver_ward" class="form-control">
+                        <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="receiver[ward_id]" id="receiver_ward" class="form-control">
                             <option value=""></option>
                         </select>
                     </div>
@@ -119,7 +119,7 @@
                 <div class="form-row">
                     <div class="form-group col-md-4">
                         <label>Địa chỉ</label>
-                        <input type="text" name="receiver[address]" value="{{old('receiver.address') ? old('receiver.address') : (isset($order->receiver) ? $order->receiver->address : '')}}" class="form-control" />
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="receiver[address]" value="{{old('receiver.address') ? old('receiver.address') : (isset($order->receiver) ? $order->receiver->address : '')}}" class="form-control" />
                         @if ($errors->has('receiver.address'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
                                 <strong>{{ $errors->first('receiver.address') }}</strong>
@@ -128,11 +128,11 @@
                     </div>
                     <div class="form-group col-md-4">
                         <label>Email</label>
-                        <input type="text" name="receiver[receiver_email]" value="{{old('receiver.receiver_email') ? old('receiver.receiver_email') : (isset($order->receiver) ? $order->receiver->receiver_email : '')}}" class="form-control" />
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="receiver[receiver_email]" value="{{old('receiver.receiver_email') ? old('receiver.receiver_email') : (isset($order->receiver) ? $order->receiver->receiver_email : '')}}" class="form-control" />
                     </div>
                     <div class="form-group col-md-4">
                         <label>Phòng ban</label>
-                        <input type="text" class="form-control" value="{{old('order.department') ? old('order.department') : $order->department }}" name="order[department]">
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.department') ? old('order.department') : $order->department }}" name="order[department]">
                     </div>
                 </div>
 {{--                <div class="form-group">--}}
@@ -151,12 +151,12 @@
                 @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                 <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Mã vận đơn bên thứ 3</label>
-                    <input type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
+                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
                 </div>
                 @endif
                 <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Đối tác vận chuyển</label>
-                    <select name="order[partner]" class="form-control">
+                    <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[partner]" class="form-control">
                         <option value=""></option>
                         @foreach($partners as $partner)
                             <option value="{{$partner->id}}" @if($order->partner == $partner->id) selected @endif>{{$partner->name}}</option>
@@ -165,11 +165,11 @@
                 </div>
                 <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
                     <label> Ngày gửi </label>
-                    <input type="text" class="form-control" name="order[order_date]" value="{{old('order.order_date') ? old('order.order_date') : (isset($order->order_date) ? $order->converDate($order->order_date) : '') }}" id="order_date">
+                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[order_date]" value="{{old('order.order_date') ? old('order.order_date') : (isset($order->order_date) ? $order->converDate($order->order_date) : '') }}" id="order_date">
                 </div>
                     <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
                         <label for="validationDefault01"> Phương thức thanh toán </label>
-                        <select name="order[payment_method]" class="form-control">
+                        <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[payment_method]" class="form-control">
                             <option value="{{\App\Models\Order::PAYMENT_METHOD_LAST}}" @if(!isset($order->payment_method)) selected @endif></option>
                             @foreach(\App\Models\Order::PAYMENT_METHOD_MAP as $key => $payment_method)
                                 <option value="{{$key}}" @if($order->payment_method == $key) selected @endif >{{$payment_method}}</option>
@@ -184,9 +184,9 @@
         </div>
         <div class="form-group">
             <div class="form-row">
-                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
+                <div class="col-md-3 mb-3">
                     <label> Người phụ trách </label>
-                    <select name="order[person_charge]" id="receiver_city" class="form-control">
+                    <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[person_charge]" id="receiver_city" class="form-control">
                         <option value=""></option>
                         @foreach($users as $user)
                             <option value="{{$user->id}}" @if(isset($order->person_charge) && $order->person_charge == $user->id) selected @endif>{{$user->name}}</option>
@@ -202,7 +202,7 @@
 {{--                        @endforeach--}}
 {{--                    </select>--}}
 {{--                </div>--}}
-                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
+                <div class="col-md-3 mb-3">
                     <label for="validationDefault01">Tình trạng vận chuyển</label>
                     <select name="order[delivery_status]" class="form-control">
                         <option value="{{\App\Models\Order::DELIVERY_STATUS_PROCESSING}}" @if(!isset($order->delivery_status)) selected @endif></option>
@@ -211,7 +211,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
+                <div class="col-md-3 mb-3">
                     <label>Tỉnh / Thành phố </label>
                     <select name="order[location_id]" class="form-control">
                         <option value=""></option>
@@ -220,7 +220,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
+                <div class="col-md-3 mb-3">
                     <label>Người ký nhận</label>
                     <input type="text" class="form-control" value="{{old('order.signator') ? old('order.signator') : $order->signator }}" name="order[signator]">
                 </div>
@@ -230,19 +230,19 @@
             <div class="form-row">
                 <div class="col-md-3 mb-3">
                     <label for="validationDefault01">Trọng lượng</label>
-                    <input type="text" class="form-control" name="order[weight]" placeholder="Trọng lượng" value="{{old('order.weight') ? old('order.weight') :$order->weight}}">
+                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[weight]" placeholder="Trọng lượng" value="{{old('order.weight') ? old('order.weight') :$order->weight}}">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label for="validationDefault02">Chiều cao</label>
-                    <input type="text" class="form-control" value="{{old('order.height') ? old('order.height') : $order->height}}" name="order[height]" placeholder="Chiều cao">
+                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.height') ? old('order.height') : $order->height}}" name="order[height]" placeholder="Chiều cao">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label for="validationDefault01">Chiều dài</label>
-                    <input type="text" class="form-control" name="order[width]" value="{{old('order.width') ? old('order.width') :$order->width}}" placeholder="Chiều dài">
+                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[width]" value="{{old('order.width') ? old('order.width') :$order->width}}" placeholder="Chiều dài">
                 </div>
                 <div class="col-md-3 mb-3">
                     <label for="validationDefault01">Giá trị vận đơn</label>
-                    <input type="number" class="form-control" name="order[total]" value="{{old('order.total') ? old('order.total') : ( isset($order->total) ? $order->total : 0)}}" placeholder="Giá tị vận đơn">
+                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="number" class="form-control" name="order[total]" value="{{old('order.total') ? old('order.total') : ( isset($order->total) ? $order->total : 0)}}" placeholder="Giá tị vận đơn">
                 </div>
             </div>
         </div>
@@ -253,7 +253,7 @@
                     <h4>{{$service['name']}}</h4>
                     @foreach($service['value'] as $key => $item)
                     <div class="form-check">
-                        <input name="order_service[{{$type}}][]" value="{{$key}}" @if(in_array($key, $order->serviceArray($order->id))) checked @endif type="checkbox" class="form-check-input">
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order_service[{{$type}}][]" value="{{$key}}" @if(in_array($key, $order->serviceArray($order->id))) checked @endif type="checkbox" class="form-check-input">
                         <label class="form-check-label">{{$item}}</label>
                     </div>
                     @endforeach
@@ -263,7 +263,7 @@
         </div>
         <div class="form-group">
             <label>Ghi chú</label>
-            <textarea name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
+            <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
     </div>
 </div>
