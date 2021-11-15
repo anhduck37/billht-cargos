@@ -12,13 +12,7 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h2 class="mb-0">Quản lý đơn hàng</h2>
-                            </div>
-                            <div class="col text-right">
-                                <a class="btn btn-primary float-right"
-                                   href="{{ route('orders.create') }}">
-                                    Tạo đơn hàng
-                                </a>
+                                <h2 class="mb-0">Tìm kiếm</h2>
                             </div>
                         </div>
                     </div>
@@ -54,11 +48,11 @@
                                 <input type="text" class="form-control" value="{{request('order_date', '')}}" name="order_date" id="order_date" placeholder="Ngày gửi">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label>Trạng thái đơn hàng</label>
+                                <label>Trạng thái vận đơn</label>
                                 <select name="order_status" class="form-control">
                                     <option value=""></option>
-                                    @foreach(\App\Models\Order::MAP_ORDER_STATUS as $key => $status)
-                                        <option value="{{$key}}" @if(request('order_status') == $key) selected @endif>{{$status}}</option>
+                                    @foreach(\App\Models\Order::DELIVERY_MAP as $key => $status)
+                                        <option value="{{$key}}" @if(request('delivery_status') == $key) selected @endif>{{$status}}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -74,14 +68,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="card-footer">
+                    <div class="card-footer text-right">
                         {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary']) !!}
                         <a href="{{route('orders.showFormImport')}}" class="btn btn-primary">Import</a>
                         <button id="print" type="button" class="btn btn-primary">In đơn</button>
+                                        <a class="btn btn-primary float-right"
+                                           href="{{ route('orders.create') }}">
+                                            Tạo vận đơn
+                                        </a>
                     </div>
 
                     {!! Form::close() !!}
-
                     @include('orders.table')
 
                 </div>

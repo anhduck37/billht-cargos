@@ -1,6 +1,6 @@
 <div class="table-responsive mt-4">
     <table class="table align-items-center">
-        <thead class="thead-light">
+        <thead style="background-color: #f6821f; color: white" class="thead-light">
         <tr>
             <th>Họ và tên</th>
             <th>Email</th>

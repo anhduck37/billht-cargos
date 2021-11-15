@@ -11,7 +11,7 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h2 class="mb-0">Tracking order</h2>
+                                <h2 class="mb-0">Tra cứu đơn hàng</h2>
                             </div>
                         </div>
                     </div>
@@ -32,13 +32,16 @@
 
                     <div class="table-responsive mt-4">
                         <table class="table align-items-center">
-                            <thead class="thead-light">
+                            <thead style="background-color: #f6821f; color: white" class="thead-light">
                             <tr>
-                                <th>Mã đơn hàng</th>
-                                <th>Trạng thái đơn hàng</th>
+                                <th>Mã vận đơn</th>
+                                <th>Trạng thái vận đơn</th>
                                 <th>Người gửi</th>
                                 <th>Người nhận</th>
+                                <th>Tỉnh / Thành phố</th>
+                                <th>Người kí gửi</th>
                                 <th>Thời gian cập nhật</th>
+                                <th>Ghi chú</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -51,12 +54,15 @@
                                             </div>
                                         </div>
                                     </th>
-                                    <td>{{$item->getOrderStatusName($item->order_status)}}</td>
+                                    <td>{{$item->getDeliveryStatusName($item->delivery_status)}}</td>
                                     <td>{{isset($item->order) && isset($item->order->sender) ? $item->order->sender->sender_name : ''}}</td>
                                     <td>{{isset($item->order) && isset($item->order->receiver) ? $item->order->receiver->receiver_name : ''}}</td>
+                                    <td>{{isset($item->location) ? $item->location->city_name : ''}}</td>
+                                    <td>{{$item->signator}}</td>
                                     <td>
                                         {{$item->updated_at}}
                                     </td>
+                                    <td>{{isset($item->order) ? $item->order->note : ''}}</td>
                                 </tr>
                             @endforeach
                             </tbody>

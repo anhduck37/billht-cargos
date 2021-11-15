@@ -4,7 +4,7 @@
              <div class="input-group-prepend">
                  <span class="input-group-text"><i class="ni ni-hat-3"></i></span>
              </div>
-             <input class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" placeholder="{{ __('Name') }}" type="text" name="name" value="{{ old('name') ? old('name'): $user->name }}" autofocus>
+             <input class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" placeholder="{{ __('Tên cá nhân/ Công ty') }}" type="text" name="name" value="{{ old('name') ? old('name'): $user->name }}" autofocus>
          </div>
          @if ($errors->has('name'))
              <span class="invalid-feedback" style="display: block;" role="alert">
@@ -54,7 +54,7 @@
              <div class="input-group-prepend">
                  <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
              </div>
-             <input class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" placeholder="{{ __('Password') }}" type="password" name="password">
+             <input class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" placeholder="{{ __('Mật khẩu') }}" type="password" name="password">
          </div>
          @if ($errors->has('password'))
              <span class="invalid-feedback" style="display: block;" role="alert">

@@ -81,10 +81,12 @@ class OrderController extends AppBaseController
                         ->where('orders.order_date', '<=', $endDate);
             }
         }
-        if(array_key_exists('order_status', $formFilter) && $formFilter['order_status']) {
-            $orders->where('order_status', $formFilter['order_status']);
+        if(array_key_exists('delivery_status', $formFilter) && $formFilter['delivery_status']) {
+            $orders->where('delivery_status', $formFilter['delivery_status']);
         }
-
+        if(auth()->user()->level != User::LEVEL_ADMIN) {
+            $orders->where('orders.user_id', auth()->user()->id);
+        }
         $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->paginate($pageSize);
         $partners = Partner::get();
         return view('orders.index', ['orders' => $orders, 'partners' => $partners]);
@@ -94,7 +96,7 @@ class OrderController extends AppBaseController
     {
         $order = $this->orderRepository->with(['orderItem'])->find($id);
         if (empty($order)) {
-            Flash::error('Đơn hàng không tồn tại.');
+            Flash::error('Vận đơn không tồn tại.');
 
             return redirect(route('orders.index'));
         }
@@ -106,7 +108,8 @@ class OrderController extends AppBaseController
     {
         $citys = City::get();
         $partners = Partner::get();
-        return view('orders.create', ['citys' => $citys, 'partners' => $partners, 'order' => new Order()]);
+        $users = User::where('level', User::LEVEL_POSTMAN)->get();
+        return view('orders.create', ['citys' => $citys, 'partners' => $partners, 'order' => new Order(), 'users' => $users]);
     }
 
     public function store(CreateOrderRequest $request)
@@ -114,9 +117,10 @@ class OrderController extends AppBaseController
         $senderForm = $request->sender;
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
+        $orderForm['order_status'] = 0;
         $order_service = isset($request->order_service) ? $request->order_service : [];
-        DB::beginTransaction();
-        try {
+//        DB::beginTransaction();
+//        try {
             $sender = Sender::create($senderForm);
             $receiver = Receiver::create($receiverForm);
             $orderForm['sender_id'] = $sender->id;
@@ -126,6 +130,8 @@ class OrderController extends AppBaseController
                 if(empty($orderForm['order_date'])) {
                     unset($orderForm['order_date']);
                 }
+            }else {
+                $orderForm['order_date'] = date('Y-m-d');
             }
             $orderForm['user_id'] = auth()->user()->id;
             $prefix_code = '';
@@ -157,23 +163,25 @@ class OrderController extends AppBaseController
                 }
             }
             DB::commit();
-            Flash::success('Tạo đơn hàng thành công.');
-        }catch (Exception $e) {
-            Flash::error('Tạo đơn hàng thất bại.');
-            DB::rollback();
-        }
+            Flash::success('Tạo vận đơn thành công.');
+//        }catch (Exception $e) {
+//            Flash::error('Tạo vận đơn thất bại.');
+//            DB::rollback();
+//        }
         return redirect()->route('orders.index');
+
     }
 
     public function edit($id) {
         $order = $this->orderRepository->find($id);
         $citys = City::get();
         $partners = Partner::get();
+        $users = User::where('level', User::LEVEL_POSTMAN)->get();
         if(empty($order)) {
-            Flash::error('Đơn hàng không tồn tại.');
+            Flash::error('Vận đơn không tồn tại.');
             return redirect(route('orders.index'));
         }
-        return view('orders.edit', ['citys' => $citys, 'partners' => $partners,'order' => $order, 'update' => true]);
+        return view('orders.edit', ['citys' => $citys, 'partners' => $partners,'order' => $order, 'update' => true, 'users' => $users]);
     }
 
     public function update(CreateOrderRequest $request, $id) {
@@ -181,8 +189,8 @@ class OrderController extends AppBaseController
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
-        DB::beginTransaction();
-        try {
+//        DB::beginTransaction();
+//        try {
             $order = $this->orderRepository->find($id);
             if($order) {
                 $sender = Sender::where('id', $order->sender_id)->update($senderForm);
@@ -194,8 +202,11 @@ class OrderController extends AppBaseController
                     }
                 }
                 Order::where('id', $id)->update($orderForm);
-                if($order &&  $orderForm['order_status'] != $order->order_status){
-                    $order->order_status = $orderForm['order_status'];
+                if($order &&  $orderForm['delivery_status'] != $order->delivery_status){
+                    $order->delivery_status = $orderForm['delivery_status'];
+                    $order->city_id = $orderForm['location_id'];
+                    $order->person_charge = $orderForm['person_charge'];
+                    $order->signator = $orderForm['signator'];
                     app(OrderTrackingService::class)->create($order, $request->all());
                 }
                 $serviceData = [];
@@ -218,11 +229,11 @@ class OrderController extends AppBaseController
                 }
             }
             DB::commit();
-            Flash::success('Cập nhật đơn hàng thành công.');
-        }catch (Exception $e) {
-            Flash::error('Xảy ra lỗi khi cập nhật đơn hàng');
-            DB::rollback();
-        }
+            Flash::success('Cập nhật vận đơn thành công.');
+//        }catch (Exception $e) {
+//            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
+//            DB::rollback();
+//        }
         return redirect()->route('orders.index');
     }
 
@@ -271,6 +282,8 @@ class OrderController extends AppBaseController
                                 $convertDate = $times[2].'-'.$times[1].'-'.$times[0];
                                 $orderData['order_date'] = $convertDate;
                             }
+                        } else {
+                            $order['order_date'] = date('Y-m-d');
                         }
                         $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
                         $order = Order::create($orderData);

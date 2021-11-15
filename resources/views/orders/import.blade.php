@@ -12,7 +12,7 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h1 class="text-center">Nhập đơn hàng loạt</h1>
+                                <h1 class="text-center">Nhập vận đơn loạt</h1>
                             </div>
                         </div>
                     </div>

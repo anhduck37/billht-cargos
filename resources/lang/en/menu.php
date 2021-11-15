@@ -6,7 +6,7 @@ return [
     'post'              => 'Bài viết',
     'postCreate'        => 'Tạo bài viết',
     'postManage'        => 'Quản lý bài viết',
-    'order'             => 'Đơn hàng',
+    'order'             => 'Vận đơn',
     'signout'           => 'Đăng xuất',
     'payment'           => 'Thanh Toán',
     'paymentManage'     => 'Quản lý Thanh Toán',

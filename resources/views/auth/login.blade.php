@@ -12,7 +12,7 @@
                             <small>
                                     Create new account OR Sign in with these credentials:
                                     <br>
-                                    Username <strong>admin@argon.com</strong> Password: <strong>secret</strong>
+                                    <!-- Username <strong>admin@argon.com</strong> Password: <strong>secret</strong> -->
                             </small>
                         </div>
                         <form role="form" method="POST" action="{{ route('login') }}">

@@ -12,7 +12,7 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h1 class="text-center">Cập nhât đơn hàng</h1>
+                                <h1 class="text-center">Cập nhât vận đơn</h1>
                             </div>
                         </div>
                     </div>
@@ -22,7 +22,7 @@
                         @include('orders.fields')
 
                         <div class="card-footer text-center">
-                            {!! Form::submit( 'Cập nhật đơn hàng' , ['class' => 'btn btn-primary']) !!}
+                            {!! Form::submit( 'Cập nhật vận đơn' , ['class' => 'btn btn-primary']) !!}
                             <a class='btn btn-light' href="{{route('orders.index')}}">Thoát</a>
                         </div>
 

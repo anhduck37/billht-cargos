@@ -15,17 +15,18 @@ class User extends Authenticatable
     const STATUS_ENABLE     = 1;
 
     const STATUS_MAP = [
-        self::STATUS_ENABLE     => 'Enable',
-        self::STATUS_DISABLE     => 'Disable',
+        self::STATUS_ENABLE     => 'Kích hoạt',
+        self::STATUS_DISABLE     => 'Tắt',
     ];
 
     const LEVEL_USER    = 1;
-
+    const LEVEL_POSTMAN = 3;
     const LEVEL_ADMIN   = 2;
 
     const LEVEL_MAP = [
-        self::LEVEL_USER    => 'User',
-        self::LEVEL_ADMIN   => 'Admin',
+        self::LEVEL_USER    => 'Khách hàng',
+        self::LEVEL_ADMIN   => 'Quản lý',
+        self::LEVEL_POSTMAN => 'Bưu tá'
     ];
 
     /**

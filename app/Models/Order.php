@@ -45,7 +45,9 @@ class Order extends Model
         'width',
         'note',
         'department',
-        'invoice_code'
+        'invoice_code',
+        'person_charge',
+        'signator'
     ];
 
 	const ORDER_OK = 1;
@@ -69,10 +71,10 @@ class Order extends Model
 	const DELIVERY_STATUS_SUCCESSFULL = 4;
 
     const DELIVERY_MAP = [
-		self::DELIVERY_STATUS_OK => 'Đang vận chuyển',
-		self::DELIVERY_STATUS_RETURN => 'Đơn hoàn trả',
-		self::DELIVERY_STATUS_PROCESSING => 'Đơn hủy',
-		self::DELIVERY_STATUS_SUCCESSFULL => 'Đơn thành công',
+		self::DELIVERY_STATUS_OK => 'Giao thành công',
+		self::DELIVERY_STATUS_RETURN => 'Đi khỏi bưu cục',
+		self::DELIVERY_STATUS_PROCESSING => 'Đã đến bưu cục ',
+//		self::DELIVERY_STATUS_SUCCESSFULL => 'Đơn thành công',
     ];
 
     const PAYMENT_METHOD_COD = 1;

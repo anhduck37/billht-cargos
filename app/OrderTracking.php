@@ -12,14 +12,22 @@ class OrderTracking extends Model
         'order_code',
         'user_id',
         'order_status',
-        'request'
+        'request',
+        'delivery_status',
+        'city_id',
+        'person_charge',
+        'signator'
     ];
 
     public function order() {
         return $this->hasOne(Order::class, 'id', 'order_id');
     }
-    public function getOrderStatusName($key)
+    public function getDeliveryStatusName($key)
     {
-        return (array_key_exists($key, Order::MAP_ORDER_STATUS)) ? Order::MAP_ORDER_STATUS[$this->order_status] : '';
+        return (array_key_exists($key, Order::DELIVERY_MAP)) ? Order::DELIVERY_MAP[$key] : '';
+    }
+
+    public function location() {
+        return $this->hasOne(City::class, 'id', 'city_id');
     }
 }

@@ -15,7 +15,11 @@ class OrderTrackingService
             'order_code' => $order->order_code,
             'order_status' => $order->order_status,
             'user_id' => auth()->user()->id,
-            'request' => json_encode($request)
+            'request' => json_encode($request),
+            'delivery_status' => $order->delivery_status,
+            'city_id' => $order->city_id,
+            'person_charge' => $order->person_charge,
+            'signator' => $order->signator
         ];
         OrderTracking::create($data);
     }
