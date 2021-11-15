@@ -119,8 +119,8 @@ class OrderController extends AppBaseController
         $orderForm = $request->order;
         $orderForm['order_status'] = 0;
         $order_service = isset($request->order_service) ? $request->order_service : [];
-//        DB::beginTransaction();
-//        try {
+        DB::beginTransaction();
+        try {
             $sender = Sender::create($senderForm);
             $receiver = Receiver::create($receiverForm);
             $orderForm['sender_id'] = $sender->id;
@@ -164,10 +164,10 @@ class OrderController extends AppBaseController
             }
             DB::commit();
             Flash::success('Tạo vận đơn thành công.');
-//        }catch (Exception $e) {
-//            Flash::error('Tạo vận đơn thất bại.');
-//            DB::rollback();
-//        }
+        }catch (Exception $e) {
+            Flash::error('Tạo vận đơn thất bại.');
+            DB::rollback();
+        }
         return redirect()->route('orders.index');
 
     }
@@ -189,8 +189,8 @@ class OrderController extends AppBaseController
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
-//        DB::beginTransaction();
-//        try {
+        DB::beginTransaction();
+        try {
             $order = $this->orderRepository->find($id);
             if($order) {
                 $sender = Sender::where('id', $order->sender_id)->update($senderForm);
@@ -230,10 +230,10 @@ class OrderController extends AppBaseController
             }
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
-//        }catch (Exception $e) {
-//            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
-//            DB::rollback();
-//        }
+        }catch (Exception $e) {
+            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
+            DB::rollback();
+        }
         return redirect()->route('orders.index');
     }
 
