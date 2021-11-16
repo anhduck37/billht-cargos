@@ -309,7 +309,7 @@ class OrderController extends AppBaseController
 
                             if($sheet->getCell( 'K' . $row )->getValue()) {
                                 $service_extra_string = $sheet->getCell( 'K' . $row )->getValue();
-                                $service_extra_array = isset($service_extra_string) ? explode(',', $row[10]): [];
+                                $service_extra_array = isset($service_extra_string) ? explode(',', $service_extra_string): [];
                                 foreach ($service_extra_array as $service_name) {
                                     $item = app(OrderService::class)->getKeyService(trim($service_name));
                                     if($item && array_key_exists('type', $item) && array_key_exists('service_key', $item)){
