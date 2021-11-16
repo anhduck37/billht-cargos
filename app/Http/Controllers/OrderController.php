@@ -193,8 +193,8 @@ class OrderController extends AppBaseController
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
-//        DB::beginTransaction();
-//        try {
+        DB::beginTransaction();
+        try {
             $order = $this->orderRepository->find($id);
             if($order) {
                 if(auth()->user()->level !== User::LEVEL_POSTMAN) {
@@ -238,10 +238,10 @@ class OrderController extends AppBaseController
             }
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
-//        }catch (Exception $e) {
-//            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
-//            DB::rollback();
-//        }
+        }catch (Exception $e) {
+            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
+            DB::rollback();
+        }
         return redirect()->route('orders.index');
     }
 
@@ -258,8 +258,8 @@ class OrderController extends AppBaseController
                 $column_range = range( 'F', $column_limit );
                 $startcount = 2;
                 foreach ( $row_range as $row ) {
-                    DB::beginTransaction();
-                    try {
+//                    DB::beginTransaction();
+//                    try {
                         $senderData = [
                             'sender_name' => $sheet->getCell( 'B' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '',
                             'sender_phone' => $sheet->getCell( 'E' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '' ,
@@ -321,11 +321,11 @@ class OrderController extends AppBaseController
                                 }
                             }
                         }
-                        
-                        DB::commit();
-                    }catch (Exception $e) {
-                        DB::rollback();
-                    }
+
+//                        DB::commit();
+//                    }catch (Exception $e) {
+//                        DB::rollback();
+//                    }
                     $startcount++;
                 }
 
