@@ -261,64 +261,67 @@ class OrderController extends AppBaseController
                     DB::beginTransaction();
                     try {
                         $senderData = [
-                            'sender_name' => $sheet->getCell( 'B' . $row )->getValue(),
-                            'sender_phone' => $sheet->getCell( 'E' . $row )->getValue(),
+                            'sender_name' => $sheet->getCell( 'B' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '',
+                            'sender_phone' => $sheet->getCell( 'E' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '' ,
                         ];
+                        // dd($senderData);
                         $receiverData = [
-                            'receiver_name' => $sheet->getCell( 'D' . $row )->getValue(),
-                            'address' => $sheet->getCell( 'F' . $row )->getValue(),
-                            'receiver_phone' => $sheet->getCell( 'G' . $row )->getValue(),
-                            'receiver_email' => $sheet->getCell( 'H' . $row )->getValue(),
+                            'receiver_name' => $sheet->getCell( 'D' . $row )->getValue() ? $sheet->getCell( 'D' . $row )->getValue() : '',
+                            'address' => $sheet->getCell( 'F' . $row )->getValue() ? $sheet->getCell( 'F' . $row )->getValue() : '',
+                            'receiver_phone' => $sheet->getCell( 'G' . $row )->getValue() ? $sheet->getCell( 'G' . $row )->getValue() : '',
+                            'receiver_email' => $sheet->getCell( 'H' . $row )->getValue() ? $sheet->getCell( 'H' . $row )->getValue() : '',
                         ];
-
-                        $sender = Sender::create($senderData);
-                        $receiver = Receiver::create($receiverData);
-                        $orderData = [
-                            'sender_id' => isset($sender) ? $sender->id : 0,
-                            'receiver_id' => isset($receiver) ? $receiver->id: 0,
-                            'order_date' => $sheet->getCell( 'A' . $row )->getValue(),
-                            'department' => $sheet->getCell( 'C' . $row )->getValue(),
-                            'weight' => $sheet->getCell( 'I' . $row )->getValue(),
-                            'note' => $sheet->getCell( 'M' . $row )->getValue(),
-                            'invoice_code' => $sheet->getCell( 'N' . $row )->getValue(),
-                            'user_id' => auth()->user()->id,
-                            'order_status' => Order::ORDER_BLANK,
-                        ];
-                        if($orderData['order_date']){
-                            $times = explode('-',$orderData['order_date']);
-                            if(count($times) >= 3){
-                                $convertDate = $times[2].'-'.$times[1].'-'.$times[0];
-                                $orderData['order_date'] = $convertDate;
+                        if($receiverData['receiver_name'] != '' && $receiverData['receiver_phone'] != '' && $receiverData['address'] != ''){
+                            $sender = Sender::create($senderData);
+                            $receiver = Receiver::create($receiverData);
+                            $orderData = [
+                                'sender_id' => isset($sender) ? $sender->id : 0,
+                                'receiver_id' => isset($receiver) ? $receiver->id: 0,
+                                'order_date' => $sheet->getCell( 'A' . $row )->getValue(),
+                                'department' => $sheet->getCell( 'C' . $row )->getValue(),
+                                'weight' => $sheet->getCell( 'I' . $row )->getValue(),
+                                'note' => $sheet->getCell( 'M' . $row )->getValue(),
+                                'invoice_code' => $sheet->getCell( 'N' . $row )->getValue(),
+                                'user_id' => auth()->user()->id,
+                                'order_status' => Order::ORDER_BLANK,
+                            ];
+                            if($orderData['order_date']){
+                                $times = explode('-',$orderData['order_date']);
+                                if(count($times) >= 3){
+                                    $convertDate = $times[2].'-'.$times[1].'-'.$times[0];
+                                    $orderData['order_date'] = $convertDate;
+                                }
+                            } else {
+                                $order['order_date'] = date('Y-m-d');
                             }
-                        } else {
-                            $order['order_date'] = date('Y-m-d');
-                        }
-                        $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
-                        $order = Order::create($orderData);
-                        if($order ){
-                            app(OrderTrackingService::class)->create($order, $request->all());
-                        }
-                        $dataService = [];
-                        if($sheet->getCell( 'K' . $row )->getValue()){
-                            $infoService = app(OrderService::class)->getKeyService($sheet->getCell( 'K' . $row )->getValue());
-                            if($infoService && array_key_exists('type', $infoService) && array_key_exists('service_key', $infoService)) {
-                                $dataService[$infoService['type']][] = $infoService['service_key'];
+                            $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
+                            $order = Order::create($orderData);
+                            if($order ){
+                                app(OrderTrackingService::class)->create($order, $request->all());
                             }
-                        }
-
-                        if($sheet->getCell( 'K' . $row )->getValue()) {
-                            $service_extra_string = $sheet->getCell( 'K' . $row )->getValue();
-                            $service_extra_array = isset($service_extra_string) ? explode(',', $row[10]): [];
-                            foreach ($service_extra_array as $service_name) {
-                                $item = app(OrderService::class)->getKeyService(trim($service_name));
-                                if($item && array_key_exists('type', $item) && array_key_exists('service_key', $item)){
-                                    $dataService[$item['type']][] = $item['service_key'];
+                            $dataService = [];
+                            if($sheet->getCell( 'K' . $row )->getValue()){
+                                $infoService = app(OrderService::class)->getKeyService($sheet->getCell( 'K' . $row )->getValue());
+                                if($infoService && array_key_exists('type', $infoService) && array_key_exists('service_key', $infoService)) {
+                                    $dataService[$infoService['type']][] = $infoService['service_key'];
                                 }
                             }
-                            if($order){
-                                app(OrderService::class)->insertService($dataService, $order->id);
+
+                            if($sheet->getCell( 'K' . $row )->getValue()) {
+                                $service_extra_string = $sheet->getCell( 'K' . $row )->getValue();
+                                $service_extra_array = isset($service_extra_string) ? explode(',', $row[10]): [];
+                                foreach ($service_extra_array as $service_name) {
+                                    $item = app(OrderService::class)->getKeyService(trim($service_name));
+                                    if($item && array_key_exists('type', $item) && array_key_exists('service_key', $item)){
+                                        $dataService[$item['type']][] = $item['service_key'];
+                                    }
+                                }
+                                if($order){
+                                    app(OrderService::class)->insertService($dataService, $order->id);
+                                }
                             }
                         }
+                        
                         DB::commit();
                     }catch (Exception $e) {
                         DB::rollback();
