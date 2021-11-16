@@ -258,8 +258,8 @@ class OrderController extends AppBaseController
                 $column_range = range( 'F', $column_limit );
                 $startcount = 2;
                 foreach ( $row_range as $row ) {
-//                    DB::beginTransaction();
-//                    try {
+                    DB::beginTransaction();
+                    try {
                         $senderData = [
                             'sender_name' => $sheet->getCell( 'B' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '',
                             'sender_phone' => $sheet->getCell( 'E' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '' ,
@@ -322,10 +322,10 @@ class OrderController extends AppBaseController
                             }
                         }
 
-//                        DB::commit();
-//                    }catch (Exception $e) {
-//                        DB::rollback();
-//                    }
+                        DB::commit();
+                    }catch (Exception $e) {
+                        DB::rollback();
+                    }
                     $startcount++;
                 }
 
