@@ -38,10 +38,10 @@
                                 <td>Trạng thái vận đơn</td>
                                 <td>Người gửi</td>
                                 <td>Người nhận</td>
-                                <td>Tỉnh / Thành phố</td>
-                                <td>Người kí gửi</td>
+                                <td>Địa chỉ</td>
+                                <td>Người ký nhận</td>
                                 <td>Thời gian cập nhật</td>
-                                <td>Ghi chú</td>
+                                <td>Nội dung</td>
                             </tr>
                             </thead>
                             <tbody>

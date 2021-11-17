@@ -16,21 +16,29 @@
         <thead style="background-color: #f6821f; color: white" class="thead-light">
         <tr>
             <td class="text-center"><input id="checkedAll" type="checkbox" /></td>
+            <td>STT</td>
+            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+            <td>Mã khác</td>
+            @endif
             <td>Ngày gửi</td>
             <td>Mã vận đơn</td>
             <td>Người gửi</td>
             <td>Người nhận</td>
+            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+            <td>Người phụ trách</td>
+            @endif
 {{--            <th>Phòng ban</th>--}}
             <!-- <th>Trạng thái vận đơn</th> -->
-            <td>Trạng thái vận chuyển</td>
-            <td>Phương thức thanh toán</td>
+            <td>Trạng thái</td>
+            <td>Ký nhận</td>
+{{--            <td>Phương thức thanh toán</td>--}}
 {{--            <th>Ngày vận chuyển</th>--}}
-            <td>Đối tác vận chuyển</td>
+{{--            <td>Đối tác vận chuyển</td>--}}
             <!-- <th>Trọng lượng</th>
             <th>Chiều cao</th>
             <th>Chiều dài</th> -->
             @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
-            <td>Tài khoản tạo đơn</td>
+            <td>Người tạo</td>
             @endif
             <td class="text-center" colspan="2">Hành động</td>
         </tr>
@@ -39,6 +47,10 @@
         @foreach($orders as $key => $order)
             <tr>
                 <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->serviceArray($order->id))}}" value="{{$order->id}}" type="checkbox" /></th>
+                <th>{{$key + 1}}</th>
+                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                <th>{{$order->invoice_code}}</th>
+                @endif
                 <td>{{$order->converDate($order->order_date)}}</td>
                 <th scope="row">
                     <div class="media align-items-center">
@@ -61,17 +73,21 @@
                     <div><label>Tên người gửi: <b>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</b></label></div>
                     <div><label>Số điện thoại: <b>{{isset($order->receiver) ? $order->receiver->receiver_phone : ''}}</b></label></div>
 {{--                    <div><label>Email: <b>{{isset($order->receiver) ? $order->receiver->receiver_email : ''}}</b></label></div>--}}
-                    <div><label>Tỉnh / Thành phố: <b>{{isset($order->receiver) && isset($order->receiver->city) ? $order->receiver->city->city_name : ''}}</b></label></div>
+                    <div><label>Địa chỉ: <b>{{isset($order->receiver) ? ( (isset($order->receiver->address) ? $order->receiver->address .', ' : '').(isset($order->receiver->ward) ? $order->receiver->ward->ward_name. ', ' : '').(isset($order->receiver->district)  ? $order->receiver->district->district_name . ', ' : '').(isset($order->receiver->city) ? $order->receiver->city->city_name : '')) : ''}}</b></label></div>
                     <!-- <div><label>Huyện / Quận: <b>{{isset($order->receiver)&& isset($order->receiver->district)  ? $order->receiver->district->district_name : ''}}</b></label></div>
                     <div><label>Xã / Phường: <b>{{isset($order->receiver) && isset($order->receiver->ward) ? $order->receiver->ward->ward_name : ''}}</b></label></div>
                     <div><label>Địa chỉ: <b>{{isset($order->receiver) ? $order->receiver->address : ''}}</b></label></div> -->
                 </td>
+                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                <td>{{isset($order->getPersonCharge) ? $order->getPersonCharge->name : ''}}</td>
+                @endif
 {{--                <td>{{$order->department}}</td>--}}
                 <!-- <td>{{$order->order_status_name}}</td> -->
                 <td>{{$order->order_delivery_name}}</td>
-                <td>{{$order->payment_method_name}}</td>
+                <td>{{$order->signator}}</td>
+{{--                <td>{{$order->payment_method_name}}</td>--}}
 {{--                <td>{{$order->delivery_date}}</td>--}}
-                <td>{{isset($order->getPartner) ? $order->getPartner->name : ''}}</td>
+{{--                <td>{{isset($order->getPartner) ? $order->getPartner->name : ''}}</td>--}}
                 <!-- <td>{{$order->weight}}</td>
                 <td>{{$order->height}}</td>
                 <td>{{$order->width}}</td> -->
@@ -84,11 +100,11 @@
 {{--                            <i class="fas fa-ellipsis-v"></i>--}}
 {{--                        </a>--}}
 {{--                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">--}}
-                    <a class="printIcon" data-id="{{$order->id}}" ><i style="color: #0ca362;" class="fa fa-print"></i></a>
+                    <a class="printIcon" data-id="{{$order->id}}" ><i style="color: #0ca362;" class="fa fa-print fa-2x"></i></a>
 
-                            <a href="{{ route('orders.edit', [$order->id]) }}"><i style="color: blue;" class="far fa-edit"></i></a>
+                            <a href="{{ route('orders.edit', [$order->id]) }}"><i style="color: blue;" class="far fa-edit fa-2x"></i></a>
                     @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
-                            <a class="delete" data-id="{{$order->id}}"><i style="color: red;" class="far fa-trash-alt"></i>
+                            <a class="delete" data-id="{{$order->id}}"><i style="color: red;" class="far fa-trash-alt fa-2x"></i>
                             </a>
                             {!! Form::open(['route' => ['orders.destroy', $order->id], 'method' => 'delete', 'class' => ['removeOrder'.$order->id],'style' => 'display: none']) !!}
                             {!! Form::close() !!}

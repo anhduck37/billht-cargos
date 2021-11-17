@@ -20,15 +20,16 @@
 
                     <div class="card-body">
                         <div class="form-row">
-                            <div class="col-md-4 mb-3">
-                                <label>Email</label>
-                                <input type="text" value="{{request('email', '')}}" class="form-control" name="email" placeholder="Email">
+                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
+                                <label>Tên cá nhân / Công ty</label>
+                                <input type="text" value="{{request('name', '')}}" class="form-control" name="name" placeholder="Tên cá nhân / Công ty">
                             </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Số điện thoại</label>
                                 <input type="number" value="{{request('phone', '')}}" class="form-control" name="phone" placeholder="Số điện thoại">
                             </div>
-                            <div class="col-md-4 mb-3">
+                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Đơn vị vận chuyển</label>
                                 <select name="partner" class="form-control">
                                     <option value=""></option>
@@ -37,17 +38,19 @@
                                     @endforeach
                                 </select>
                             </div>
+                            @endif
                         </div>
                         <div class="form-row">
-                            <div class="col-md-4 mb-3">
+                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Mã vận đơn</label>
                                 <input type="text" class="form-control" value="{{request('order_code', '')}}" name="order_code" placeholder="Mã vận đơn">
                             </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Ngày gửi</label>
                                 <input type="text" class="form-control" value="{{request('order_date', '')}}" name="order_date" id="order_date" placeholder="Ngày gửi">
                             </div>
-                            <div class="col-md-4 mb-3">
+                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Trạng thái vận đơn</label>
                                 <select name="order_status" class="form-control">
                                     <option value=""></option>
@@ -56,26 +59,27 @@
                                     @endforeach
                                 </select>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="form-row">
-                                    <div class="col-md-1 mb-3">
-
-                                    </div>
-                                <div class="col-md-1 mb-3">
-
-                                </div>
-                            </div>
+                            @endif
                         </div>
                     </div>
                     <div class="card-footer text-right">
-                        {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary']) !!}
-                        <a href="{{route('orders.showFormImport')}}" class="btn btn-primary">Import</a>
-                        <button id="print" type="button" class="btn btn-primary">In đơn</button>
-                                        <a class="btn btn-primary float-right"
-                                           href="{{ route('orders.create') }}">
-                                            Tạo vận đơn
-                                        </a>
+                        <div class="row">
+                            <div class="col mb-1" >
+                                {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'width: 100%']) !!}
+                            </div>
+                            <div class="col mb-1">
+                                <a style="width: 100%" href="{{route('orders.showFormImport')}}" class="btn btn-primary">Import</a>
+                            </div>
+                            <div class="col mb-1">
+                                <button style="width: 100%" id="print" type="button" class="btn btn-primary">In đơn</button>
+                            </div>
+                            <div class="col mb-1">
+                                <a style="width: 100%" class="btn btn-primary float-right"
+                                   href="{{ route('orders.create') }}">
+                                    Tạo vận đơn
+                                </a>
+                            </div>
+                        </div>
                     </div>
 
                     {!! Form::close() !!}

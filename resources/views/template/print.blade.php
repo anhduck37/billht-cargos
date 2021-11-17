@@ -33,10 +33,10 @@
             border-right: 1px solid;
         }
         label {
-            margin-bottom: -0.5rem;
+            margin-bottom: 0.19rem;
         }
         body {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: black;
         }
         .card-title {
@@ -54,17 +54,17 @@
 
 <div class="main-content">
     @foreach($orders as $order)
-    <div class="card" style="margin-bottom: 20px">
+    <div class="card mt-5" style="margin-bottom: 20px;border-right: 1px solid;border-left: 1px solid;">
         <div class="card-body">
             <div class="row custom-row">
                 <div class="col" >
                     <div class="card-body">
-                        <img width="150" src="{{asset('image/order_manager.png')}}">
+                        <img width="450" src="{{asset('image/logo_print.jpg')}}">
                     </div>
                 </div>
                 <div class="col" style="margin-left: 10px">
                     <div class="card-body">
-                        <h2 class="card-title">Hotline: <b>1900 633 656</b></h2>
+                        <h2 class="card-title mt-2">Hotline: <b>1900 633 656</b></h2>
                         <p class="card-text">Website: www.ht-cargos.com</p>
                         <p class="card-text">Email: info@ht-cargos.com</p>
                     </div>
@@ -72,7 +72,7 @@
                 <div class="col">
                     <div class="card-body text-center">
                         <p><i class="fa fa-barcode fa-5x" aria-hidden="true" ></i><i class="fa fa-barcode fa-5x" aria-hidden="true" ></i></p>
-                        <label>{{$order->order_code}}</label>
+                        <label><b>{{$order->order_code}}</b></label>
                     </div>
                 </div>
             </div>
@@ -145,10 +145,10 @@
                         <div class="row">
                             <div class="col">
                                 <h4 class="card-title">Khai báo nội dung và số lượng gửi:</h4>
-                                <p>{{$order->department}}</p>
+                                <p>{{$order->note}}</p>
                             </div>
                         </div>
-                        <p style="margin-top: 20px">Giá trị hàng hóa:................</p>
+                        <p style="margin-top: 20px">Giá trị hàng hóa: {{$order->total}}</p>
                     </div>
                 </div>
             </div>
@@ -191,7 +191,7 @@
                     <div class="card-body">
 
                         <div class="row">
-                            <div class="col-md-8">
+                            <div class="col-md-7">
                                 <div class="row">
                                     <div class="col">
                                         <h4 class="card-title">Thông tin hàng hóa</h4>
@@ -199,7 +199,7 @@
                                             <div class="col-md-4">Số kiện</div>
                                             <div class="col-md-8">Trọng lượng thức tế</div>
                                         </div>
-                                        <p style="margin-left: 30px">Kích thước (dài x rộng x cao) cm</p>
+                                        <p style="margin-left: 30px">Kích thước ({{($order->width ? $order->width : 0) . ' x '. ($order->height ? $order->height : 0) . ' cm'. ' ' . ($order->weight ? $order->weight : 0) . ' g'}})</p>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -216,15 +216,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-5">
                                 <h4 class="card-title">Trọng lượng thanh toán</h4>
                                 <p>Trọng lượng tính cước</p>
-                                <p>...................................</p>
-                                <p>Cước phí:.......................</p>
-                                <p>Phí khác:.......................</p>
-                                <p>VAT:............................</p>
-                                <p>Bảo hiểm:.....................</p>
-                                <p>Tổng cộng:.....................</p>
+                                <p>...........................................</p>
+                                <p>Cước phí:.........................</p>
+                                <p>Phí khác:..........................</p>
+                                <p>VAT:...................................</p>
+                                <p>Bảo hiểm:........................</p>
+                                <p>Tổng cộng:......................</p>
                             </div>
                         </div>
                     </div>
@@ -233,12 +233,12 @@
         </div>
     </div>
         @if($level == \App\User::LEVEL_ADMIN)
-            <div class="card" style="margin-bottom: 20px">
+            <div class="card" style="margin-bottom: 20px;border-right: 1px solid;border-left: 1px solid;">
                 <div class="card-body">
                     <div class="row custom-row">
                         <div class="col" >
                             <div class="card-body">
-                                <img width="150" src="{{asset('image/order_manager.png')}}">
+                                <img width="450" src="{{asset('image/order_manager.png')}}">
                             </div>
                         </div>
                         <div class="col" style="margin-left: 10px">
@@ -251,7 +251,7 @@
                         <div class="col">
                             <div class="card-body text-center">
                                 <p><i class="fa fa-barcode fa-5x" aria-hidden="true" ></i><i class="fa fa-barcode fa-5x" aria-hidden="true" ></i></p>
-                                <label>{{$order->order_code}}</label>
+                                <label><b>{{$order->order_code}}</b></label>
                             </div>
                         </div>
                     </div>
@@ -324,10 +324,10 @@
                                 <div class="row">
                                     <div class="col">
                                         <h4 class="card-title">Khai báo nội dung và số lượng gửi:</h4>
-                                        <p>{{$order->department}}</p>
+                                        <p>{{$order->note}}</p>
                                     </div>
                                 </div>
-                                <p style="margin-top: 20px">Giá trị hàng hóa:................</p>
+                                <p style="margin-top: 20px">Giá trị hàng hóa: {{$order->total}}</p>
                             </div>
                         </div>
                     </div>
@@ -370,7 +370,7 @@
                             <div class="card-body">
 
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-7">
                                         <div class="row">
                                             <div class="col">
                                                 <h4 class="card-title">Thông tin hàng hóa</h4>
@@ -378,7 +378,7 @@
                                                     <div class="col-md-4">Số kiện</div>
                                                     <div class="col-md-8">Trọng lượng thức tế</div>
                                                 </div>
-                                                <p style="margin-left: 30px">Kích thước (dài x rộng x cao) cm</p>
+                                                <p style="margin-left: 30px">Kích thước ({{($order->width ? $order->width : 0) . ' x '. ($order->height ? $order->height : 0) . ' cm'. ' ' . ($order->weight ? $order->weight : 0) . ' g'}})</p>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -395,15 +395,15 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-5">
                                         <h4 class="card-title">Trọng lượng thanh toán</h4>
                                         <p>Trọng lượng tính cước</p>
-                                        <p>...................................</p>
-                                        <p>Cước phí:.......................</p>
-                                        <p>Phí khác:.......................</p>
-                                        <p>VAT:............................</p>
-                                        <p>Bảo hiểm:.....................</p>
-                                        <p>Tổng cộng:.....................</p>
+                                        <p>...........................................</p>
+                                        <p>Cước phí:.........................</p>
+                                        <p>Phí khác:..........................</p>
+                                        <p>VAT:...................................</p>
+                                        <p>Bảo hiểm:........................</p>
+                                        <p>Tổng cộng:......................</p>
                                     </div>
                                 </div>
                             </div>

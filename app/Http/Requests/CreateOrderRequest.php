@@ -28,12 +28,21 @@ class CreateOrderRequest extends FormRequest
 //        dd($this->request->all());
         $rules = [
             'sender.sender_name' => 'required',
-            'sender.sender_phone' => 'required',
+//            'sender.sender_phone' => 'required',
 //            'sender.address' => 'required',
             'receiver.receiver_name' => 'required',
-            'receiver.receiver_phone' => 'required',
+//            'receiver.receiver_phone' => 'required',
             'receiver.address' => 'required'
         ];
         return $rules;
+    }
+
+    public function messages()
+    {
+        return [
+            'sender.sender_name.required' => 'Tên cá nhân / Công ty người gửi không được bỏ trống.',
+            'receiver.receiver_name.required' => 'Tên cá nhân / Công ty người nhận không được bỏ trống.',
+            'receiver.address.required' => 'Địa chỉ người nhận không được bỏ trống.'
+        ];
     }
 }

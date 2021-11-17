@@ -38,7 +38,7 @@ class OrderController extends AppBaseController
 
     private $orderRepository;
 
-    private $limit = 50;
+    private $limit = 20;
 
     public function __construct(OrderRepository $orderRepo)
     {
@@ -58,9 +58,9 @@ class OrderController extends AppBaseController
         $pageSize = config('order_manager.page_size');
         $orders = Order::join('senders', 'senders.id', '=', 'orders.sender_id')
                         ->join('receivers', 'receivers.id', '=', 'orders.receiver_id');
-        if(array_key_exists('email', $formFilter) && $formFilter['email']){
-            $orders->where('senders.sender_email', $formFilter['email'])
-                    ->orWhere('receivers.receiver_email', $formFilter['email']);
+        if(array_key_exists('name', $formFilter) && $formFilter['name']){
+            $orders->where('senders.sender_name', 'LIKE','%' . $formFilter['name'] . '%')
+                    ->orWhere('receivers.receiver_name', 'LIKE','%' . $formFilter['name'] . '%');
         }
         if (array_key_exists('phone', $formFilter) && $formFilter['phone']) {
             $orders->where('senders.sender_phone', $formFilter['phone'])
@@ -188,6 +188,17 @@ class OrderController extends AppBaseController
         return view('orders.edit', ['citys' => $citys, 'partners' => $partners,'order' => $order, 'update' => true, 'users' => $users]);
     }
 
+    public function destroy($id) {
+        $order = Order::where('id', $id)->first();
+        if($order) {
+            Order::where('id', $id)->delete();
+            Flash::success('Xóa vận đơn thành công');
+            return back();
+        }
+        Flash::error('Vận đơn không tồn tại');
+        return back();
+    }
+
     public function update(UpdateOrderRequest $request, $id) {
         $senderForm = $request->sender;
         $receiverForm = $request->receiver;
@@ -286,7 +297,9 @@ class OrderController extends AppBaseController
                                 'order_status' => Order::ORDER_BLANK,
                             ];
                             if($orderData['order_date']){
-                                $times = explode('-',$orderData['order_date']);
+                                $date = intval($orderData['order_date']);
+                                $orderData['order_date'] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($date)->format('d/m/Y');
+                                $times = explode('/',$orderData['order_date']);
                                 if(count($times) >= 3){
                                     $convertDate = $times[2].'-'.$times[1].'-'.$times[0];
                                     $orderData['order_date'] = $convertDate;

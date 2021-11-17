@@ -68,13 +68,16 @@ class Order extends Model
 
 	const DELIVERY_STATUS_PROCESSING = 3;
 
-	const DELIVERY_STATUS_SUCCESSFULL = 4;
+	const DELIVERY_STATUS_PERSON_CHARGE = 4;
+
+    const DELIVERY_STATUS_RECEIVED = 5;
 
     const DELIVERY_MAP = [
+        self::DELIVERY_STATUS_PROCESSING => 'Chấp nhận gửi',
 		self::DELIVERY_STATUS_OK => 'Giao thành công',
 		self::DELIVERY_STATUS_RETURN => 'Đi khỏi bưu cục',
-		self::DELIVERY_STATUS_PROCESSING => 'Đã đến bưu cục ',
-//		self::DELIVERY_STATUS_SUCCESSFULL => 'Đơn thành công',
+		self::DELIVERY_STATUS_PERSON_CHARGE => 'Đã giao bưu tá đi phát',
+        self::DELIVERY_STATUS_RECEIVED => 'Đã đến bưu cục'
     ];
 
     const PAYMENT_METHOD_COD = 1;
@@ -84,8 +87,8 @@ class Order extends Model
     const PAYMENT_METHOD_MAP = [
       self::PAYMENT_METHOD_COD => 'COD',
         self::PAYMENT_METHOD_LAST => 'Thanh toán cuối tháng',
-      self::PAYMENT_METHOD_INTERNET_BANKING => 'Internet Banking',
-      self::PAYMENT_METHOD_OTHER => 'Khác',
+      self::PAYMENT_METHOD_INTERNET_BANKING => 'Người nhận trả cước',
+      self::PAYMENT_METHOD_OTHER => 'Đã thanh toán',
 
     ];
     /**
@@ -132,6 +135,10 @@ class Order extends Model
     public function user()
     {
         return $this->hasOne(User::class, 'id','user_id');
+    }
+
+    public function getPersonCharge() {
+        return $this->hasOne(User::class, 'id', 'person_charge');
     }
 
     public function converDate($date) {

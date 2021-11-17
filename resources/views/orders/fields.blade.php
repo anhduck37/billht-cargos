@@ -150,10 +150,10 @@
             <div class="form-row">
                 @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                 <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
-                    <label>Mã vận đơn bên thứ 3</label>
+                    <label>Mã khác</label>
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
                 </div>
-                @endif
+
                 <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Đối tác vận chuyển</label>
                     <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[partner]" class="form-control">
@@ -163,11 +163,12 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
+                @endif
+                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
                     <label> Ngày gửi </label>
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[order_date]" value="{{old('order.order_date') ? old('order.order_date') : (isset($order->order_date) ? $order->converDate($order->order_date) : '') }}" id="order_date">
                 </div>
-                    <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
+                    <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
                         <label for="validationDefault01"> Phương thức thanh toán </label>
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[payment_method]" class="form-control">
                             <option value="{{\App\Models\Order::PAYMENT_METHOD_LAST}}" @if(!isset($order->payment_method)) selected @endif></option>
@@ -184,6 +185,7 @@
         </div>
         <div class="form-group">
             <div class="form-row">
+                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                 <div class="col-md-3 mb-3">
                     <label> Người phụ trách </label>
                     <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[person_charge]" id="receiver_city" class="form-control">
@@ -193,6 +195,7 @@
                         @endforeach
                     </select>
                 </div>
+                @endif
 {{--                <div class="col-md-4 mb-3">--}}
 {{--                    <label for="validationDefault02">Tình trạng vận đơn</label>--}}
 {{--                    <select name="order[order_status]" class="form-control">--}}
@@ -202,6 +205,7 @@
 {{--                        @endforeach--}}
 {{--                    </select>--}}
 {{--                </div>--}}
+                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                 <div class="col-md-3 mb-3">
                     <label for="validationDefault01">Tình trạng vận chuyển</label>
                     <select name="order[delivery_status]" class="form-control">
@@ -211,7 +215,8 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-3">
+                @endif
+                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
                     <label>Tỉnh / Thành phố </label>
                     <select name="order[location_id]" class="form-control">
                         <option value=""></option>
@@ -220,7 +225,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
                     <label>Người ký nhận</label>
                     <input type="text" class="form-control" value="{{old('order.signator') ? old('order.signator') : $order->signator }}" name="order[signator]">
                 </div>
@@ -241,7 +246,7 @@
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[width]" value="{{old('order.width') ? old('order.width') :$order->width}}" placeholder="Chiều dài">
                 </div>
                 <div class="col-md-3 mb-3">
-                    <label for="validationDefault01">Giá trị vận đơn</label>
+                    <label for="validationDefault01">Giá trị hàng hóa</label>
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="number" class="form-control" name="order[total]" value="{{old('order.total') ? old('order.total') : ( isset($order->total) ? $order->total : 0)}}" placeholder="Giá tị vận đơn">
                 </div>
             </div>
@@ -262,7 +267,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label>Ghi chú</label>
+            <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
     </div>

@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('/users', 301);
 });
-Route::get('/test', function () {
-    $order = \App\Models\Order::get();
-    $level = 1;
-    return view('template.print', ['orders' => $order, 'level' => $level])->render();
-});
+//Route::get('/test', function () {
+//    $order = \App\Models\Order::get();
+//    $level = 1;
+//    return view('template.print', ['orders' => $order, 'level' => $level])->render();
+//});
 Auth::routes();
 Route::post('/register', 'Auth\RegisterController@create');
 Route::middleware(['checkLevel'])->group(function() {
