@@ -73,7 +73,7 @@
                     <div><label>Tên người gửi: <b>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</b></label></div>
                     <div><label>Số điện thoại: <b>{{isset($order->receiver) ? $order->receiver->receiver_phone : ''}}</b></label></div>
 {{--                    <div><label>Email: <b>{{isset($order->receiver) ? $order->receiver->receiver_email : ''}}</b></label></div>--}}
-                    <div><label>Địa chỉ: <b>{{isset($order->receiver) ? ( (isset($order->receiver->address) ? $order->receiver->address .', ' : '').(isset($order->receiver->ward) ? $order->receiver->ward->ward_name. ', ' : '').(isset($order->receiver->district)  ? $order->receiver->district->district_name . ', ' : '').(isset($order->receiver->city) ? $order->receiver->city->city_name : '')) : ''}}</b></label></div>
+                    <div><label>Địa chỉ: <b>{{isset($order->receiver) ? ( (isset($order->receiver->address) ? $order->receiver->address .', ' . '<br>' : '').(isset($order->receiver->ward) ? $order->receiver->ward->ward_name. ','. '<br>' : '').(isset($order->receiver->district)  ? $order->receiver->district->district_name . ', '.'<br>' : '').(isset($order->receiver->city) ? $order->receiver->city->city_name : '')) : ''}}</br></label></div>
                     <!-- <div><label>Huyện / Quận: <b>{{isset($order->receiver)&& isset($order->receiver->district)  ? $order->receiver->district->district_name : ''}}</b></label></div>
                     <div><label>Xã / Phường: <b>{{isset($order->receiver) && isset($order->receiver->ward) ? $order->receiver->ward->ward_name : ''}}</b></label></div>
                     <div><label>Địa chỉ: <b>{{isset($order->receiver) ? $order->receiver->address : ''}}</b></label></div> -->
