@@ -194,27 +194,31 @@
             })
 
             $('#deleteMany').on('click', function () {
-                $.ajax({
-                    type: "POST",
-                    url: '/order/delete-many',
-                    data: {'order_ids': dataPrint},
-                    success: function (res) {
-                        window.location.href = res;
-                    },
-                });
-                console.log('deleteMany',dataPrint)
+                let isDelete = confirm('Bạn có chắc muốn xóa vận đơn này?');
+                if(isDelete) {
+                    $.ajax({
+                        type: "POST",
+                        url: '/order/delete-many',
+                        data: {'order_ids': dataPrint},
+                        success: function (res) {
+                            window.location.href = res;
+                        },
+                    });
+                }
             })
             $('#updateMany').on('click', function () {
-                let deliveryStatus = $('select[name="delivery_status"]').val();
-
-                $.ajax({
-                    type: "POST",
-                    url: '/order/update-many',
-                    data: {'order_ids': dataPrint, 'delivery_status': deliveryStatus},
-                    success: function (res) {
-                        window.location.href = res;
-                    }
-                });
+                let isUpdate = confirm('Bạn có chắc muốn cập nhật vận đơn này?');
+                if(isUpdate) {
+                    let deliveryStatus = $('select[name="delivery_status"]').val();
+                    $.ajax({
+                        type: "POST",
+                        url: '/order/update-many',
+                        data: {'order_ids': dataPrint, 'delivery_status': deliveryStatus},
+                        success: function (res) {
+                            window.location.href = res;
+                        }
+                    });
+                }
 
             })
 
