@@ -55,7 +55,7 @@
             </div>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="#navbar-order" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
+                    <a class="nav-link active" href="#navbar-order" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
                         <i class="fas fa-clipboard-list" style="color: #f4645f;"></i>
                         <span class="nav-link-text">Vận đơn</span>
                     </a>
@@ -79,7 +79,7 @@
             @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#navbar-partner" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
+                        <a class="nav-link " href="#navbar-partner" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
                             <i class="fas fa-shipping-fast" style="color: #f4645f;"></i>
                             <span class="nav-link-text">Đơn vị vận chuyển</span>
                         </a>
@@ -102,7 +102,7 @@
             </ul>
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#navbar-examples" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
+                    <a class="nav-link " href="#navbar-examples" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
                         <i class="fas fa-users" style="color: #f4645f;"></i>
                         <span class="nav-link-text">Tài khoản</span>
                     </a>
@@ -132,6 +132,15 @@
                     </a>
                 </li>
             </ul>
+
+            <ul class="navbar-nav mb-md-3">
+                <li class="nav-item">
+                        <a class="nav-link " href="https://ht-cargos.com/lien-he/" target='_blank'  aria-controls="navbar-examples">
+                        <i class="fas fa-address-book" style="color: #f4645f;"></i> Liên hệ
+                    </a>
+                </li>
+            </ul>
+
             <!-- Divider -->
             <hr class="my-3">
             <!-- Heading -->
