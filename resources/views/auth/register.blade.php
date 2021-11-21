@@ -10,7 +10,7 @@
                 <div class="card bg-secondary shadow border-0">
                     <div class="card-body px-lg-5 py-lg-5">
                         <div class="text-center text-muted mb-4">
-                            <small>{{ __('Sign up with credentials') }}</small>
+                            <small>{{ __('Đăng ký tài khoản quản lý vận đơn HTEXPRESS') }}</small>
                         </div>
                         <form role="form" method="POST" action="{{ route('register') }}">
                             @csrf
@@ -20,7 +20,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="ni ni-hat-3"></i></span>
                                     </div>
-                                    <input class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" placeholder="{{ __('Name') }}" type="text" name="name" value="{{ old('name') }}" required autofocus>
+                                    <input class="form-control{{ $errors->has('name') ? ' is-invalid' : '' }}" placeholder="{{ __('Tên của bạn') }}" type="text" name="name" value="{{ old('name') }}" required autofocus>
                                 </div>
                                 @if ($errors->has('name'))
                                     <span class="invalid-feedback" style="display: block;" role="alert">
@@ -46,7 +46,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
                                     </div>
-                                    <input class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" placeholder="{{ __('Password') }}" type="password" name="password" required>
+                                    <input class="form-control{{ $errors->has('password') ? ' is-invalid' : '' }}" placeholder="{{ __('Mật khẩu') }}" type="password" name="password" required>
                                 </div>
                                 @if ($errors->has('password'))
                                     <span class="invalid-feedback" style="display: block;" role="alert">
@@ -59,7 +59,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
                                     </div>
-                                    <input class="form-control" placeholder="{{ __('Confirm Password') }}" type="password" name="password_confirm" required>
+                                    <input class="form-control" placeholder="{{ __('Nhập lại mật khẩu') }}" type="password" name="password_confirm" required>
                                 </div>
                                 @if ($errors->has('password_confirm'))
                                     <span class="invalid-feedback" style="display: block;" role="alert">
@@ -72,13 +72,13 @@
                                     <div class="custom-control custom-control-alternative custom-checkbox">
                                         <input class="custom-control-input" id="customCheckRegister" type="checkbox">
                                         <label class="custom-control-label" for="customCheckRegister">
-                                            <span class="text-muted">{{ __('I agree with the') }} <a href="#!">{{ __('Privacy Policy') }}</a></span>
+                                            <span class="text-muted">{{ __('Sau khi đăng ký vui lòng liên hệ') }} <a target='_blank' href="https://ht-cargos.com/lien-he">{{ __('HTEXPRESS') }}</a> để được kích hoạt tài khoản</span>
                                         </label>
                                     </div>
                                 </div>
                             </div>
                             <div class="text-center">
-                                <button type="submit" class="btn btn-primary mt-4">{{ __('Create account') }}</button>
+                                <button type="submit" class="btn btn-primary mt-4">{{ __('Tạo tài khoản') }}</button>
                             </div>
                         </form>
                     </div>

@@ -20,7 +20,7 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="form-group col-md-3">
-                                {!! Form::label( 'Tracking code' ) !!}
+                                {!! Form::label( 'Vui lòng nhập mã vận đơn. Ví dụ: HE000001' ) !!}
                                 {!! Form::text('order_code', request('order_code', ''), ['class' => 'form-control']) !!}
                             </div>
                             <div class="form-group col-md-3">

@@ -10,7 +10,7 @@
                     <div class="card-body px-lg-5 py-lg-5">
                         <div class="text-center text-muted mb-4">
                             <small>
-                                    Create new account OR Sign in with these credentials:
+                                    Vui lòng nhập thông tin đăng nhập:
                                     <br>
                                     <!-- Username <strong>admin@argon.com</strong> Password: <strong>secret</strong> -->
                             </small>
@@ -60,7 +60,7 @@
                     </div> -->
                     <div class="col-12 text-right">
                         <a href="{{ route('register') }}" class="text-light">
-                            <small>{{ __('Create new account') }}</small>
+                            <small>{{ __('Đăng ký tài khoản') }}</small>
                         </a>
                     </div>
                 </div>

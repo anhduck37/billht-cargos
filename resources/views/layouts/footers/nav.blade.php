@@ -28,7 +28,7 @@
 <div class="container p-4">
 
   <div class="text-center p-3">
-    © 2021 
+    Copyright © HT Express 2020. All rights reserved. 
     <!-- Copyright: -->
     <!-- <a class="text-white" href="https://mdbootstrap.com/">MDBootstrap.com</a> -->
   </div>
