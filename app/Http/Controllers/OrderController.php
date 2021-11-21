@@ -294,10 +294,19 @@ class OrderController extends AppBaseController
                                 'department' => $sheet->getCell( 'C' . $row )->getValue(),
                                 'weight' => $sheet->getCell( 'I' . $row )->getValue(),
                                 'note' => $sheet->getCell( 'M' . $row )->getValue(),
-                                'invoice_code' => $sheet->getCell( 'N' . $row )->getValue(),
                                 'user_id' => auth()->user()->id,
                                 'order_status' => Order::ORDER_BLANK,
                             ];
+                            if(auth()->user()->level == User::LEVEL_ADMIN){
+                                if($sheet->getCell( 'O' . $row )->getValue()) {
+                                    $person_charge = User::where('name', 'LIKE', '%'.$sheet->getCell( 'O' . $row )->getValue().'%')->first();
+                                    $orderData['person_charge'] = isset($person_charge) ? $person_charge->id: 0;
+                                }
+                                if($sheet->getCell( 'N' . $row )->getValue()) {
+                                    $orderData['invoice_code'] = $sheet->getCell( 'N' . $row )->getValue();
+                                }
+
+                            }
                             if($orderData['order_date']){
                                 $date = intval($orderData['order_date']);
                                 $orderData['order_date'] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($date)->format('d/m/Y');
@@ -397,7 +406,6 @@ class OrderController extends AppBaseController
 
     public function sendEmail() {
         $mail = Mail::to('quangquac997@gmail.com')->send(new SendMail('hay', 'test', 'quangbg997@gmail.com', 'quangbg997@gmail.com'));
-        dd($mail);
     }
 
 }

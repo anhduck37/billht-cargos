@@ -41,4 +41,3 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/update-many', 'OrderController@updateMany');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');
-Route::get('email', 'OrderController@sendEmail');

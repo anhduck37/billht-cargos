@@ -12,6 +12,7 @@
 {{--            </div>--}}
         </div>
     </div>
+{{--    <div class="table-wrapper-scroll-y my-custom-scrollbar">--}}
     <table class="table align-items-center">
         <thead style="background-color: #f6821f; color: white" class="thead-light">
         <tr>
@@ -19,11 +20,11 @@
                 <input id="checkedAll" type="checkbox" />
             </td>
             <td>STT</td>
-            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
-            <td>Mã khác</td>
-            @endif
             <td>Ngày gửi</td>
             <td>Mã vận đơn</td>
+            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                <td>Mã khác</td>
+            @endif
             <td>Người gửi</td>
             <td>Người nhận</td>
             @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
@@ -50,9 +51,6 @@
             <tr>
                 <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->serviceArray($order->id))}}" value="{{$order->id}}" type="checkbox" /></th>
                 <th>{{$key + 1}}</th>
-                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
-                <th>{{$order->invoice_code}}</th>
-                @endif
                 <td>{{$order->converDate($order->order_date)}}</td>
                 <th scope="row">
                     <div class="media align-items-center">
@@ -61,24 +59,26 @@
                         </div>
                     </div>
                 </th>
-
+                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                    <th>{{$order->invoice_code}}</th>
+                @endif
                 <td>
                     <div><label>Tên người gửi: <b>{{isset($order->sender) ? $order->sender->sender_name : ''}}</b> </label></div>
                     <div><label>Số điện thoại: <b>{{isset($order->sender) ? $order->sender->sender_phone : ''}}</b></label></div>
 {{--                    <div><label>Email: <b>{{isset($order->sender) ? $order->sender->sender_email : ''}}</b></label></div>--}}
-                    <div><label>Tỉnh / Thành phố: <b>{{isset($order->sender) && isset($order->sender->city) ? $order->sender->city->city_name : ''}}</b></label></div>
+                    <div><label>Tỉnh / Thành phố: </label> <br> <b>{{isset($order->sender) && isset($order->sender->city) ? $order->sender->city->city_name : ''}}</b></div>
                     <!-- <div><label>Huyện / Quận: <b>{{isset($order->sender)&& isset($order->sender->district)  ? $order->sender->district->district_name : ''}}</b></label></div>
                     <div><label>Xã / Phường: <b>{{isset($order->sender) && isset($order->sender->ward) ? $order->sender->ward->ward_name : ''}}</b></label></div>
                     <div><label>Địa chỉ: <b>{{isset($order->sender) ? $order->sender->address : ''}}</b></label></div> -->
                 </td>
                 <td>
-                    <div><label>Tên người gửi: <b>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</b></label></div>
+                    <div><label>Tên người nhận: <b>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</b></label></div>
                     <div><label>Số điện thoại: <b>{{isset($order->receiver) ? $order->receiver->receiver_phone : ''}}</b></label></div>
 {{--                    <div><label>Email: <b>{{isset($order->receiver) ? $order->receiver->receiver_email : ''}}</b></label></div>--}}
                     <div>
                         <label>
                             @if(isset($order->receiver))
-                            Địa chỉ: <b>{{ (isset($order->receiver->address) ? $order->receiver->address. ',' : '')}}</b>
+                            Địa chỉ: @if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif
                             @if(isset($order->receiver->ward))
                             <b>{{ $order->receiver->ward->ward_name.',' }}</b><br>
                             @endif
@@ -129,6 +129,7 @@
         @endforeach
         </tbody>
     </table>
+{{--        </div>--}}
 </div>
 @section('javascript')
     <script type="text/javascript">

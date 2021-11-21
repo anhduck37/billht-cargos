@@ -58,19 +58,19 @@
     <div class="card mt-1" style="margin-bottom: 20px;border-right: 1px solid;border-left: 1px solid;">
         <div class="card-body">
             <div class="row custom-row">
-                <div class="col" >
+                <div class="col-5 mt-4" >
                     <div class="card-body">
-                        <img width="450" src="{{asset('image/logo_print.jpg')}}">
+                        <img width="350" src="{{asset('image/logo_print.png')}}">
                     </div>
                 </div>
-                <div class="col" style="margin-left: 10px">
+                <div class="col-3 mt-4">
                     <div class="card-body">
                         <h2 class="card-title mt-2">Hotline: <b>1900 633 656</b></h2>
                         <p class="card-text">Website: www.ht-cargos.com</p>
                         <p class="card-text">Email: info@ht-cargos.com</p>
                     </div>
                 </div>
-                <div class="col">
+                <div class="col-4">
                     <div class="card-body text-center">
                         <p><svg id="{{$order->order_code}}"></svg></p>
                     </div>
@@ -236,19 +236,19 @@
             <div class="card" style="margin-bottom: 20px;border-right: 1px solid;border-left: 1px solid;">
                 <div class="card-body">
                     <div class="row custom-row">
-                        <div class="col" >
+                        <div class="col-5 mt-4" >
                             <div class="card-body">
-                                <img width="450" src="{{asset('image/logo_print.jpg')}}">
+                                <img width="350" src="{{asset('image/logo_print.png')}}">
                             </div>
                         </div>
-                        <div class="col" style="margin-left: 10px">
+                        <div class="col-3 mt-4">
                             <div class="card-body">
                                 <h2 class="card-title">Hotline: <b>1900 633 656</b></h2>
                                 <p class="card-text">Website: www.ht-cargos.com</p>
                                 <p class="card-text">Email: info@ht-cargos.com</p>
                             </div>
                         </div>
-                        <div class="col">
+                        <div class="col-4">
                             <div class="card-body text-center">
                                 <p><svg id="{{$order->order_code . \App\User::LEVEL_ADMIN}}"></svg></p>
                             </div>
