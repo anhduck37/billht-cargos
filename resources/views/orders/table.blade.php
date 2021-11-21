@@ -15,7 +15,9 @@
     <table class="table align-items-center">
         <thead style="background-color: #f6821f; color: white" class="thead-light">
         <tr>
-            <td class="text-center"><input id="checkedAll" type="checkbox" /></td>
+            <td class="text-center">
+                <input id="checkedAll" type="checkbox" />
+            </td>
             <td>STT</td>
             @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
             <td>Mã khác</td>
@@ -188,6 +190,31 @@
                         print(res)
                     },
                 });
+            })
+
+            $('#deleteMany').on('click', function () {
+                $.ajax({
+                    type: "POST",
+                    url: '/order/delete-many',
+                    data: {'order_ids': dataPrint},
+                    success: function (res) {
+                        window.location.href = res;
+                    },
+                });
+                console.log('deleteMany',dataPrint)
+            })
+            $('#updateMany').on('click', function () {
+                let deliveryStatus = $('select[name="delivery_status"]').val();
+
+                $.ajax({
+                    type: "POST",
+                    url: '/order/update-many',
+                    data: {'order_ids': dataPrint, 'delivery_status': deliveryStatus},
+                    success: function (res) {
+                        window.location.href = res;
+                    }
+                });
+
             })
 
         });

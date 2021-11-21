@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\City;
 use App\Http\Requests\CreateOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
+use App\Mail\SendMail;
 use App\OrderTracking;
 use App\Partner;
 use App\Receiver;
@@ -21,6 +22,7 @@ use App\User;
 use Flash;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use Response;
 use Illuminate\Support\Facades\Http;
@@ -368,4 +370,34 @@ class OrderController extends AppBaseController
         $level = auth()->user()->level;
         return view('template.print', ['orders' => $orders, 'level' => $level])->render();
     }
+
+    function deleteMany(Request $request) {
+        $orderIds = $request->order_ids;
+        if(empty($orderIds)){
+            Flash::error('Bạn hãy chọn các vận đơn muốn xóa');
+        }else {
+            Order::whereIn('id', $orderIds)->delete();
+            Flash::success('Xóa vận đơn thành công');
+        }
+        return route('orders.index');
+    }
+    function updateMany(Request $request) {
+        $orderIds = $request->order_ids;
+        $delivery_status = $request->delivery_status;
+        if (empty($delivery_status)) {
+            Flash::error('Bạn hãy chọn các trạng thái muốn cập nhật');
+        }else if(empty($orderIds)) {
+            Flash::error('Bạn hãy chọn các vận đơn muốn cập nhật');
+        }else {
+            Order::whereIn('id', $orderIds)->update(['delivery_status' => $delivery_status]);
+            Flash::success('Cập nhật vận đơn thành công');
+        }
+        return route('orders.index');
+    }
+
+    public function sendEmail() {
+        $mail = Mail::to('quangquac997@gmail.com')->send(new SendMail('hay', 'test', 'quangbg997@gmail.com', 'quangbg997@gmail.com'));
+        dd($mail);
+    }
+
 }

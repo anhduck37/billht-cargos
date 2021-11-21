@@ -33,7 +33,7 @@
             border-right: 1px solid;
         }
         label {
-            margin-bottom: 0.19rem;
+            margin-bottom: 0;
         }
         body {
             font-size: 0.95rem;
@@ -47,6 +47,7 @@
         }
 
     </style>
+    <script type="text/javascript" src="{{asset('/js/renderCode.js')}}"></script>
 </head>
 <body
     onload="window.print()"
@@ -54,7 +55,7 @@
 
 <div class="main-content">
     @foreach($orders as $order)
-    <div class="card mt-5" style="margin-bottom: 20px;border-right: 1px solid;border-left: 1px solid;">
+    <div class="card mt-1" style="margin-bottom: 20px;border-right: 1px solid;border-left: 1px solid;">
         <div class="card-body">
             <div class="row custom-row">
                 <div class="col" >
@@ -71,8 +72,7 @@
                 </div>
                 <div class="col">
                     <div class="card-body text-center">
-                        <p><i class="fa fa-barcode fa-5x" aria-hidden="true" ></i><i class="fa fa-barcode fa-5x" aria-hidden="true" ></i></p>
-                        <label><b>{{$order->order_code}}</b></label>
+                        <p><svg id="{{$order->order_code}}"></svg></p>
                     </div>
                 </div>
             </div>
@@ -238,7 +238,7 @@
                     <div class="row custom-row">
                         <div class="col" >
                             <div class="card-body">
-                                <img width="450" src="{{asset('image/order_manager.png')}}">
+                                <img width="450" src="{{asset('image/logo_print.jpg')}}">
                             </div>
                         </div>
                         <div class="col" style="margin-left: 10px">
@@ -250,8 +250,7 @@
                         </div>
                         <div class="col">
                             <div class="card-body text-center">
-                                <p><i class="fa fa-barcode fa-5x" aria-hidden="true" ></i><i class="fa fa-barcode fa-5x" aria-hidden="true" ></i></p>
-                                <label><b>{{$order->order_code}}</b></label>
+                                <p><svg id="{{$order->order_code . \App\User::LEVEL_ADMIN}}"></svg></p>
                             </div>
                         </div>
                     </div>
@@ -414,6 +413,19 @@
         @endif
     @endforeach
 </div>
-
+<script type="text/javascript">
+    let orders = {!! json_encode($orders) !!};
+    let level = {!! json_encode($level) !!};
+    let levelAdmin = {!! json_encode(\App\User::LEVEL_ADMIN) !!};
+    console.log('levelAdmin', levelAdmin);
+    orders && orders.length > 0 && orders.forEach(order => {
+        let idRender = '#'+ order.order_code;
+        JsBarcode(idRender, order.order_code);
+        if(level == levelAdmin) {
+            let idRenderAdmin = '#'+ order.order_code + levelAdmin;
+            JsBarcode(idRenderAdmin, order.order_code);
+        }
+    })
+</script>
 </body>
 </html>

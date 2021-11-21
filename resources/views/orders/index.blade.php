@@ -52,7 +52,7 @@
                             @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                             <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Trạng thái vận đơn</label>
-                                <select name="order_status" class="form-control">
+                                <select name="delivery_status" class="form-control">
                                     <option value=""></option>
                                     @foreach(\App\Models\Order::DELIVERY_MAP as $key => $status)
                                         <option value="{{$key}}" @if(request('delivery_status') == $key) selected @endif>{{$status}}</option>
@@ -79,6 +79,14 @@
                                     Tạo vận đơn
                                 </a>
                             </div>
+                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                            <div class="col mb-1">
+                                <button style="width: 100%" type="button" id="deleteMany" class="btn btn-primary">Xóa vận đơn</button>
+                            </div>
+                            <div class="col mb-1">
+                                <button style="width: 100%" type="button" id="updateMany" class="btn btn-primary">Cập nhật trạng thái</button>
+                            </div>
+                            @endif
                         </div>
                     </div>
 

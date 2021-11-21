@@ -9,11 +9,15 @@ use App\Service;
 class OrderService
 {
     public function getOrderCode($prefix) {
-        $totalOrder = Order::count();
-        for ($i = 0; $i <= 6 - strlen($totalOrder); $i++){
+        $order = Order::latest()->first();
+        $order_id = 0;
+        if($order){
+            $order_id = $order->id;
+        }
+        for ($i = 0; $i < 6 - strlen($order_id + 1); $i++){
             $prefix .= '0';
         }
-        return $prefix.($totalOrder + 1);
+        return $prefix.($order_id + 1);
     }
 
     public function explodeDate($date) {
