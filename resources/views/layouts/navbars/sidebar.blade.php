@@ -56,7 +56,7 @@
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link" href="#navbar-order" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
-                        <i class="fab fa-laravel" style="color: #f4645f;"></i>
+                        <i class="fas fa-clipboard-list" style="color: #f4645f;"></i>
                         <span class="nav-link-text">Vận đơn</span>
                     </a>
 
@@ -80,7 +80,7 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <a class="nav-link active" href="#navbar-partner" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
-                            <i class="fab fa-laravel" style="color: #f4645f;"></i>
+                            <i class="fas fa-shipping-fast" style="color: #f4645f;"></i>
                             <span class="nav-link-text">Đơn vị vận chuyển</span>
                         </a>
 
@@ -103,7 +103,7 @@
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link active" href="#navbar-examples" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
-                        <i class="fab fa-laravel" style="color: #f4645f;"></i>
+                        <i class="fas fa-users" style="color: #f4645f;"></i>
                         <span class="nav-link-text">Tài khoản</span>
                     </a>
 
@@ -128,7 +128,7 @@
             <ul class="navbar-nav mb-md-3">
                 <li class="nav-item">
                     <a class="nav-link @if(Request::url() == route('tracking')) active-custom @endif" href="{{route('tracking')}}">
-                        <i class="ni ni-tv-2 text-primary"></i> Tra cứu đơn hàng
+                        <i class="fas fa-search-location" style="color: #f4645f;"></i> Tra cứu đơn hàng
                     </a>
                 </li>
             </ul>
