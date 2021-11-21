@@ -41,6 +41,10 @@
         body {
             font-size: 0.95rem;
             color: black;
+            font-weight: normal;
+        }
+        .size-text {
+            font-weight: 400;
         }
         .card-title {
             margin: 0;
@@ -68,14 +72,14 @@
                 </div>
                 <div class="col-3 mt-4">
                     <div class="card-body">
-                        <h2 class="card-title mt-2">Hotline: <b>1900 633 656</b></h2>
-                        <p class="card-text">Website: www.ht-cargos.com</p>
-                        <p class="card-text">Email: info@ht-cargos.com</p>
+                        <h2 class="card-title mt-2 size-text">Hotline: <b>1900 633 656</b></h2>
+                        <p class="card-text size-text">Website: www.ht-cargos.com</p>
+                        <p class="card-text size-text">Email: info@ht-cargos.com</p>
                     </div>
                 </div>
                 <div class="col-4">
                     <div class="card-body text-center">
-                        <p><svg id="{{$order->order_code}}"></svg></p>
+                        <p class="size-text"><svg id="{{$order->order_code}}"></svg></p>
                     </div>
                 </div>
             </div>
@@ -84,10 +88,10 @@
             <div class="row custom-row">
                 <div class="col custom-col">
                     <div class="card-body">
-                        <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
-                        <p >{{isset($order->sender) ? $order->sender->sender_name : '.....'}}</p>
-                        <p >{{isset($order->sender) ? $order->sender->address . ', ' . (isset($order->sender->ward) ? $order->sender->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
-                        <p><b>Điện thoại:</b> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
+                        <h4 class="card-title size-text">Họ tên, địa chỉ người gửi: </h4>
+                        <p class="size-text">{{isset($order->sender) ? $order->sender->sender_name : '.....'}}</p>
+                        <p class="size-text" >{{isset($order->sender) ? $order->sender->address . ', ' . (isset($order->sender->ward) ? $order->sender->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
+                        <p class="size-text"><b>Điện thoại:</b> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
                     </div>
                 </div>
                 <div class="col">
@@ -95,12 +99,12 @@
 
                         <div class="row">
                             <div class="col-8">
-                                <h4 class="card-title">{{\App\Service::SERVICE_MAP[\App\Service::SERVICE_DOMESTIC]['name']}}</h4>
+                                <h4 class="card-title size-text">{{\App\Service::SERVICE_MAP[\App\Service::SERVICE_DOMESTIC]['name']}}</h4>
                                 <div class="row">
                                     @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_DOMESTIC]['value'] as $key => $item )
                                     <div class="col-md-4" style="margin-left: 20px">
                                             <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
-                                            <label for="check1">{{$item}}</label>
+                                            <label class="size-text" for="check1">{{$item}}</label>
                                     </div>
                                     @endforeach
                                 </div>
@@ -111,7 +115,7 @@
                                     @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_INTERNATIONAL]['value'] as $key => $item )
                                         <div class="col-md-12" style="margin-left: 20px">
                                             <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
-                                            <label>{{$item}}</label>
+                                            <label class="size-text">{{$item}}</label>
                                         </div>
                                     @endforeach
                                 </div>
@@ -124,10 +128,10 @@
             <div class="row custom-row">
                 <div class="col custom-col">
                     <div class="card-body">
-                        <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
-                        <p class="card-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
-                        <p class="card-text"><small class="text-muted">{{isset($order->receiver) ? $order->receiver->address . ', ' . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
-                        <p class="card-text"><b>Điện thoại:</b> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
+                        <h4 class="card-title size-text">Họ tên, địa chỉ người nhận: </h4>
+                        <p class="card-text size-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
+                        <p class="card-text size-text"><small class="text-muted">{{isset($order->receiver) ? $order->receiver->address . ', ' . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
+                        <p class="card-text size-text"><b>Điện thoại:</b> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
                     </div>
                 </div>
                 <div class="col">
@@ -139,7 +143,7 @@
                                     @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_EXTRA]['value'] as $key => $item )
                                         <div class="col-md-3" style="margin-left: 20px">
                                             <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
-                                            <label>{{$item}}</label>
+                                            <label class="size-text">{{$item}}</label>
                                         </div>
                                     @endforeach
                                 </div>
@@ -147,11 +151,11 @@
                         </div>
                         <div class="row">
                             <div class="col">
-                                <h4 class="card-title">Khai báo nội dung và số lượng gửi:</h4>
-                                <p>{{$order->note}}</p>
+                                <h4 class="card-title size-text">Khai báo nội dung và số lượng gửi:</h4>
+                                <p class="size-text">{{$order->note}}</p>
                             </div>
                         </div>
-                        <p style="margin-top: 20px">Giá trị hàng hóa: {{$order->total}}</p>
+                        <p style="margin-top: 20px" class="size-text">Giá trị hàng hóa: {{$order->total}}</p>
                     </div>
                 </div>
             </div>
@@ -160,31 +164,31 @@
                 <div class="col custom-col">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-8">
-                                <h4 class="card-title">Ký xác nhận người gửi hàng: </h4>
-                                <p class="card-text"><b>Ngày gửi:</b> </p>
+                            <div class="col-md-7">
+                                <h4 class="card-title size-text">Ký xác nhận người gửi hàng: </h4>
+                                <p class="card-text size-text"><b>Ngày gửi:</b> </p>
                                 <div class="row">
-                                    <div class="col-md-8">
-                                        <p class="card-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
+                                    <div class="col-md-6">
+                                        <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
                                     </div>
-                                    <div class="col-md-4">
-                                        <p class="card-text">Dấu ngày gửi</p>
+                                    <div class="col-md-6">
+                                        <p class="card-text size-text">Dấu ngày gửi</p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <h4 class="card-title">Thông tin giao nhận</h4>
-                                <p class="card-text">Ngày gửi:..............</p>
-                                <p class="card-text">Nv phát:..............</p>
-                                <p class="card-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người nhận</p>
+                            <div class="col-md-5">
+                                <h4 class="card-title size-text">Thông tin giao nhận</h4>
+                                <p class="card-text size-text">Ngày gửi:..............</p>
+                                <p class="card-text size-text">Nv phát:..............</p>
+                                <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người nhận</p>
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-8">
-                                <p class="card-text">NV-Chấp nhận:..............</p>
+                            <div class="col-md-7">
+                                <p class="card-text size-text">NV-Chấp nhận:..............</p>
                             </div>
-                            <div class="col-md-4">
-                                <p class="card-text">Bộ phận:..............</p>
+                            <div class="col-md-5">
+                                <p class="card-text size-text">Bộ phận:..............</p>
                             </div>
                         </div>
 
@@ -199,20 +203,20 @@
                                     <div class="col">
                                         <h4 class="card-title">Thông tin hàng hóa</h4>
                                         <div class="row" style="margin-bottom: 100px">
-                                            <div class="col-md-4">Số kiện</div>
-                                            <div class="col-md-8">Trọng lượng thức tế</div>
+                                            <div class="col-md-4 size-text">Số kiện</div>
+                                            <div class="col-md-8 size-text">Trọng lượng thức tế</div>
                                         </div>
-                                        <p style="margin-left: 30px">Kích thước ({{($order->width ? $order->width : 0) . ' x '. ($order->height ? $order->height : 0) . ' cm'. ' ' . ($order->weight ? $order->weight : 0) . ' g'}})</p>
+                                        <p class="size-text" style="margin-left: 30px">Kích thước ({{($order->width ? $order->width : 0) . ' x '. ($order->height ? $order->height : 0) . ' cm'. ' ' . ($order->weight ? $order->weight : 0) . ' g'}})</p>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <h4 class="card-title" >Hình thức thanh toán</h4>
+                                        <h4 class="card-title size-text" >Hình thức thanh toán</h4>
                                         <div class="row">
                                             @foreach(\App\Models\Order::PAYMENT_METHOD_MAP as $key => $item )
                                                 <div class="col-md-4" style="margin-left: 20px">
                                                     <input type="checkbox" @if($order->payment_method == $key) checked @endif class="form-check-input">
-                                                    <label>{{$item}}</label>
+                                                    <label class="size-text">{{$item}}</label>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -220,14 +224,14 @@
                                 </div>
                             </div>
                             <div class="col-md-5">
-                                <h4 class="card-title">Trọng lượng thanh toán</h4>
-                                <p>Trọng lượng tính cước</p>
+                                <h4 class="card-title size-text">Trọng lượng thanh toán</h4>
+                                <p class="size-text">Trọng lượng tính cước</p>
                                 <p>...........................................</p>
-                                <p>Cước phí:.........................</p>
-                                <p>Phí khác:..........................</p>
-                                <p>VAT:...................................</p>
-                                <p>Bảo hiểm:........................</p>
-                                <p>Tổng cộng:......................</p>
+                                <p class="size-text">Cước phí:.........................</p>
+                                <p class="size-text">Phí khác:..........................</p>
+                                <p class="size-text">VAT:...................................</p>
+                                <p class="size-text">Bảo hiểm:........................</p>
+                                <p class="size-text">Tổng cộng:......................</p>
                             </div>
                         </div>
                     </div>
@@ -246,14 +250,14 @@
                         </div>
                         <div class="col-3 mt-4">
                             <div class="card-body">
-                                <h2 class="card-title">Hotline: <b>1900 633 656</b></h2>
-                                <p class="card-text">Website: www.ht-cargos.com</p>
-                                <p class="card-text">Email: info@ht-cargos.com</p>
+                                <h2 class="card-title size-text">Hotline: <b>1900 633 656</b></h2>
+                                <p class="card-text size-text">Website: www.ht-cargos.com</p>
+                                <p class="card-text size-text">Email: info@ht-cargos.com</p>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="card-body text-center">
-                                <p><svg id="{{$order->order_code . \App\User::LEVEL_ADMIN}}"></svg></p>
+                                <p class="size-text"><svg id="{{$order->order_code . \App\User::LEVEL_ADMIN}}"></svg></p>
                             </div>
                         </div>
                     </div>
@@ -262,10 +266,10 @@
                     <div class="row custom-row">
                         <div class="col custom-col">
                             <div class="card-body">
-                                <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
-                                <p >{{isset($order->sender) ? $order->sender->sender_name : '.....'}}</p>
-                                <p >{{isset($order->sender) ? $order->sender->address . ', ' . (isset($order->sender->ward) ? $order->sender->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
-                                <p><b>Điện thoại:</b> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
+                                <h4 class="card-title size-text">Họ tên, địa chỉ người gửi: </h4>
+                                <p class="size-text" >{{isset($order->sender) ? $order->sender->sender_name : '.....'}}</p>
+                                <p class="size-text" >{{isset($order->sender) ? $order->sender->address . ', ' . (isset($order->sender->ward) ? $order->sender->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
+                                <p class="size-text"><b>Điện thoại:</b> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
                             </div>
                         </div>
                         <div class="col">
@@ -273,12 +277,12 @@
 
                                 <div class="row">
                                     <div class="col-8">
-                                        <h4 class="card-title">{{\App\Service::SERVICE_MAP[\App\Service::SERVICE_DOMESTIC]['name']}}</h4>
+                                        <h4 class="card-title size-text">{{\App\Service::SERVICE_MAP[\App\Service::SERVICE_DOMESTIC]['name']}}</h4>
                                         <div class="row">
                                             @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_DOMESTIC]['value'] as $key => $item )
                                                 <div class="col-md-4" style="margin-left: 20px">
                                                     <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
-                                                    <label for="check1">{{$item}}</label>
+                                                    <label class="size-text" for="check1">{{$item}}</label>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -289,7 +293,7 @@
                                             @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_INTERNATIONAL]['value'] as $key => $item )
                                                 <div class="col-md-12" style="margin-left: 20px">
                                                     <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
-                                                    <label>{{$item}}</label>
+                                                    <label class="size-text">{{$item}}</label>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -302,22 +306,22 @@
                     <div class="row custom-row">
                         <div class="col custom-col">
                             <div class="card-body">
-                                <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
-                                <p class="card-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
-                                <p class="card-text"><small class="text-muted">{{isset($order->receiver) ? $order->receiver->address . ', ' . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
-                                <p class="card-text"><b>Điện thoại:</b> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
+                                <h4 class="card-title size-text">Họ tên, địa chỉ người nhận: </h4>
+                                <p class="card-text size-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
+                                <p class="card-text"><small class="text-muted size-text">{{isset($order->receiver) ? $order->receiver->address . ', ' . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
+                                <p class="card-text size-text"><b>Điện thoại:</b> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
                             </div>
                         </div>
                         <div class="col">
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col">
-                                        <h4 class="card-title">{{\App\Service::SERVICE_MAP[\App\Service::SERVICE_EXTRA]['name']}}</h4>
+                                        <h4 class="card-title size-text">{{\App\Service::SERVICE_MAP[\App\Service::SERVICE_EXTRA]['name']}}</h4>
                                         <div class="row">
                                             @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_EXTRA]['value'] as $key => $item )
                                                 <div class="col-md-3" style="margin-left: 20px">
                                                     <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
-                                                    <label>{{$item}}</label>
+                                                    <label class="size-text">{{$item}}</label>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -325,11 +329,11 @@
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <h4 class="card-title">Khai báo nội dung và số lượng gửi:</h4>
-                                        <p>{{$order->note}}</p>
+                                        <h4 class="card-title size-text">Khai báo nội dung và số lượng gửi:</h4>
+                                        <p class="size-text">{{$order->note}}</p>
                                     </div>
                                 </div>
-                                <p style="margin-top: 20px">Giá trị hàng hóa: {{$order->total}}</p>
+                                <p class="size-text" style="margin-top: 20px">Giá trị hàng hóa: {{$order->total}}</p>
                             </div>
                         </div>
                     </div>
@@ -338,31 +342,31 @@
                         <div class="col custom-col">
                             <div class="card-body">
                                 <div class="row">
-                                    <div class="col-md-8">
-                                        <h4 class="card-title">Ký xác nhận người gửi hàng: </h4>
-                                        <p class="card-text"><b>Ngày gửi:</b> </p>
+                                    <div class="col-md-7">
+                                        <h4 class="card-title size-text">Ký xác nhận người gửi hàng: </h4>
+                                        <p class="card-text size-text"><b>Ngày gửi:</b> </p>
                                         <div class="row">
-                                            <div class="col-md-8">
-                                                <p class="card-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
+                                            <div class="col-md-6">
+                                                <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
                                             </div>
-                                            <div class="col-md-4">
-                                                <p class="card-text">Dấu ngày gửi</p>
+                                            <div class="col-md-6">
+                                                <p class="card-text size-text">Dấu ngày gửi</p>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
-                                        <h4 class="card-title">Thông tin giao nhận</h4>
-                                        <p class="card-text">Ngày gửi:..............</p>
-                                        <p class="card-text">Nv phát:..............</p>
-                                        <p class="card-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người nhận</p>
+                                    <div class="col-md-5">
+                                        <h4 class="card-title size-text">Thông tin giao nhận</h4>
+                                        <p class="card-text size-text">Ngày gửi:..............</p>
+                                        <p class="card-text size-text">Nv phát:..............</p>
+                                        <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người nhận</p>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <p class="card-text">NV-Chấp nhận:..............</p>
+                                        <p class="card-text size-text">NV-Chấp nhận:..............</p>
                                     </div>
                                     <div class="col-md-4">
-                                        <p class="card-text">Bộ phận:..............</p>
+                                        <p class="card-text size-text">Bộ phận:..............</p>
                                     </div>
                                 </div>
 
@@ -375,22 +379,22 @@
                                     <div class="col-md-7">
                                         <div class="row">
                                             <div class="col">
-                                                <h4 class="card-title">Thông tin hàng hóa</h4>
+                                                <h4 class="card-title size-text">Thông tin hàng hóa</h4>
                                                 <div class="row" style="margin-bottom: 100px">
-                                                    <div class="col-md-4">Số kiện</div>
-                                                    <div class="col-md-8">Trọng lượng thức tế</div>
+                                                    <div class="col-md-4 size-text">Số kiện</div>
+                                                    <div class="col-md-8 size-text">Trọng lượng thức tế</div>
                                                 </div>
-                                                <p style="margin-left: 30px">Kích thước ({{($order->width ? $order->width : 0) . ' x '. ($order->height ? $order->height : 0) . ' cm'. ' ' . ($order->weight ? $order->weight : 0) . ' g'}})</p>
+                                                <p class="size-text" style="margin-left: 30px">Kích thước ({{($order->width ? $order->width : 0) . ' x '. ($order->height ? $order->height : 0) . ' cm'. ' ' . ($order->weight ? $order->weight : 0) . ' g'}})</p>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col">
-                                                <h4 class="card-title" >Hình thức thanh toán</h4>
+                                                <h4 class="card-title size-text" >Hình thức thanh toán</h4>
                                                 <div class="row">
                                                     @foreach(\App\Models\Order::PAYMENT_METHOD_MAP as $key => $item )
                                                         <div class="col-md-4" style="margin-left: 20px">
                                                             <input type="checkbox" @if($order->payment_method == $key) checked @endif class="form-check-input">
-                                                            <label>{{$item}}</label>
+                                                            <label class="size-text">{{$item}}</label>
                                                         </div>
                                                     @endforeach
                                                 </div>
@@ -398,14 +402,14 @@
                                         </div>
                                     </div>
                                     <div class="col-md-5">
-                                        <h4 class="card-title">Trọng lượng thanh toán</h4>
-                                        <p>Trọng lượng tính cước</p>
+                                        <h4 class="card-title size-text">Trọng lượng thanh toán</h4>
+                                        <p class="size-text">Trọng lượng tính cước</p>
                                         <p>...........................................</p>
-                                        <p>Cước phí:.........................</p>
-                                        <p>Phí khác:..........................</p>
-                                        <p>VAT:...................................</p>
-                                        <p>Bảo hiểm:........................</p>
-                                        <p>Tổng cộng:......................</p>
+                                        <p class="size-text">Cước phí:.........................</p>
+                                        <p class="size-text">Phí khác:..........................</p>
+                                        <p class="size-text">VAT:...................................</p>
+                                        <p class="size-text">Bảo hiểm:........................</p>
+                                        <p class="size-text">Tổng cộng:......................</p>
                                     </div>
                                 </div>
                             </div>
