@@ -48,6 +48,8 @@
         }
         .card-title {
             margin: 0;
+            font-weight: bold;
+            color: black;
         }
         p {
             margin-bottom: 0;
@@ -91,7 +93,7 @@
                         <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
                         <p class="size-text">{{isset($order->sender) ? $order->sender->sender_name : '.....'}}</p>
                         <p class="size-text" >{{isset($order->sender) ? $order->sender->address . ', ' . (isset($order->sender->ward) ? $order->sender->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
-                        <p class="size-text"><b>Điện thoại:</b> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
+                        <p class="size-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
                     </div>
                 </div>
                 <div class="col">
@@ -131,7 +133,7 @@
                         <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
                         <p class="card-text size-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
                         <p class="card-text size-text"><small class="text-muted">{{isset($order->receiver) ? $order->receiver->address . ', ' . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
-                        <p class="card-text size-text"><b>Điện thoại:</b> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
+                        <p class="card-text size-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
                     </div>
                 </div>
                 <div class="col">
@@ -269,7 +271,7 @@
                                 <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
                                 <p class="size-text" >{{isset($order->sender) ? $order->sender->sender_name : '.....'}}</p>
                                 <p class="size-text" >{{isset($order->sender) ? $order->sender->address . ', ' . (isset($order->sender->ward) ? $order->sender->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
-                                <p class="size-text"><b>Điện thoại:</b> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
+                                <p class="size-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
                             </div>
                         </div>
                         <div class="col">
@@ -309,7 +311,7 @@
                                 <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
                                 <p class="card-text size-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
                                 <p class="card-text"><small class="text-muted size-text">{{isset($order->receiver) ? $order->receiver->address . ', ' . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
-                                <p class="card-text size-text"><b>Điện thoại:</b> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
+                                <p class="card-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
                             </div>
                         </div>
                         <div class="col">
@@ -427,10 +429,14 @@
     console.log('levelAdmin', levelAdmin);
     orders && orders.length > 0 && orders.forEach(order => {
         let idRender = '#'+ order.order_code;
-        JsBarcode(idRender, order.order_code);
+        JsBarcode(idRender, order.order_code, {
+            fontOptions: "bold"
+        });
         if(level == levelAdmin) {
             let idRenderAdmin = '#'+ order.order_code + levelAdmin;
-            JsBarcode(idRenderAdmin, order.order_code);
+            JsBarcode(idRenderAdmin, order.order_code, {
+                fontOptions: "bold"
+            });
         }
     })
 </script>
