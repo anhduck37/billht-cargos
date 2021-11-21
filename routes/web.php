@@ -17,7 +17,7 @@ Route::get('/', function () {
 });
 Route::get('/test', function () {
     $order = \App\Models\Order::get();
-    $level = 1;
+    $level = 2;
     return view('template.print', ['orders' => $order, 'level' => $level])->render();
 });
 Auth::routes();
@@ -33,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('user/{id}/info', 'UserController@show')->name('users.showInfo');
     Route::resource('orders', 'OrderController');
     Route::post('orders/import', 'OrderController@import')->name('orders.import');
+    Route::get('fileDemo', 'OrderController@fileDownload')->name('fileDemo');
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');
     Route::get('users/{id}', 'UserController@show')->name('users.show');
     Route::resource('partners', 'PartnerController');

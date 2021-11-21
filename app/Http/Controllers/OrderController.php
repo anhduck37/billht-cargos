@@ -296,6 +296,7 @@ class OrderController extends AppBaseController
                                 'note' => $sheet->getCell( 'M' . $row )->getValue(),
                                 'user_id' => auth()->user()->id,
                                 'order_status' => Order::ORDER_BLANK,
+                                'delivery_status' => Order::DELIVERY_STATUS_PROCESSING,
                             ];
                             if(auth()->user()->level == User::LEVEL_ADMIN){
                                 if($sheet->getCell( 'O' . $row )->getValue()) {
@@ -378,6 +379,16 @@ class OrderController extends AppBaseController
         }
         $level = auth()->user()->level;
         return view('template.print', ['orders' => $orders, 'level' => $level])->render();
+    }
+
+    public function fileDownload()
+    {
+        $file= public_path(). "/file/mau_tao_nhanh_bill.xls";
+
+        $headers = array(
+            'Content-Type: application/vnd.ms-excel',
+        );
+        return Response::download($file, 'mau_tao_nhanh_bill.xls', $headers);
     }
 
     function deleteMany(Request $request) {

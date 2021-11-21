@@ -35,6 +35,9 @@
         label {
             margin-bottom: 0;
         }
+        .text-muted {
+            color: black !important;
+        }
         body {
             font-size: 0.95rem;
             color: black;
@@ -50,7 +53,7 @@
     <script type="text/javascript" src="{{asset('/js/renderCode.js')}}"></script>
 </head>
 <body
-    onload="window.print()"
+{{--    onload="window.print()"--}}
 >
 
 <div class="main-content">
