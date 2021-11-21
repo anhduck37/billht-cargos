@@ -68,7 +68,7 @@
                                 {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'width: 100%']) !!}
                             </div>
                             <div class="col mb-1">
-                                <a style="width: 100%" href="{{route('orders.showFormImport')}}" class="btn btn-primary">Import</a>
+                                <a style="width: 100%" href="{{route('orders.showFormImport')}}" class="btn btn-primary">Nhập file excel</a>
                             </div>
                             <div class="col mb-1">
                                 <button style="width: 100%" id="print" type="button" class="btn btn-primary">In đơn</button>
