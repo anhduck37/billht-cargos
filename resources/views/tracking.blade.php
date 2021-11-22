@@ -58,7 +58,7 @@
                                     <td>{{$item->getDeliveryStatusName($item->delivery_status)}}</td>
                                     <td>{{isset($item->order) && isset($item->order->sender) ? $item->order->sender->sender_name : ''}}</td>
                                     <td>{{isset($item->order) && isset($item->order->receiver) ? $item->order->receiver->receiver_name : ''}}</td>
-                                    <td>{{isset($item->location) ? $item->location->city_name : ''}}</td>
+                                    <td>{{isset($item->order->receiver) && isset($item->order->receiver) ? $item->order->receiver->address : ''}}</td>
                                     <td>{{$item->signator}}</td>
                                     <td>
                                         {{$item->updated_at}}

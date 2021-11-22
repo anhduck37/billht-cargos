@@ -29,7 +29,7 @@
                     <div class="form-group col-md-4">
                         <label>Tỉnh / Thành phố</label>
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[city_id]" id="sender_city" class="form-control">
-                            <option value="2"></option>
+                            <option value=""></option>
                             @foreach($citys as $city)
                                 <option value="{{$city->id}}" @if(isset($order->sender) && $order->sender->city_id == $city->id) selected @endif >{{$city->city_name}}</option>
                             @endforeach
@@ -38,7 +38,7 @@
                     <div class="form-group col-md-4">
                             <label>Huyện / Quận</label>
                             <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[district_id]" id="sender_district" class="form-control">
-                                <option value="1"></option>
+                                <option value=""></option>
                             </select>
                     </div>
                     <div class="form-group col-md-4">
