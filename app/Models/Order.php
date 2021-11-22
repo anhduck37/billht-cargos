@@ -142,7 +142,7 @@ class Order extends Model
     }
 
     public function converDate($date) {
-        return app(OrderService::class)->implodeDate($date);
+        return (string) app(OrderService::class)->implodeDate($date);
     }
 
     public function services() {

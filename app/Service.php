@@ -47,7 +47,7 @@ class Service extends Model
             'value' => [
                 self::CPN => 'Chuyển phát nhanh',
                 self::PTN => 'Phát trong ngày',
-                self::WEEKEND => 'T7,C.Nhật',
+                self::WEEKEND => 'T7 C.Nhật',
                 self::TIME_9 => '9:00 AM',
                 self::TIME_12 => '12:00 AM',
                 self::HT => 'Hỏa tốc',

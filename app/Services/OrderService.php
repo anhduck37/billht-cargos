@@ -37,7 +37,7 @@ class OrderService
 
     public function getKeyService($service) {
         foreach (Service::SERVICE_MAP as $key => $item) {
-            if(in_array($service, $item['value'])){
+            if(in_array(trim($service), $item['value'])){
                 $service_key = array_search($service, $item['value']);
                 $service_type = $key;
                 return ['type' => $key, 'service_key' => $service_key];

@@ -166,6 +166,7 @@
                 @endif
                 <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
                     <label> Ngày gửi </label>
+{{--                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[order_date]" value="10/24/1984" id="order_date">--}}
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[order_date]" value="{{old('order.order_date') ? old('order.order_date') : (isset($order->order_date) ? $order->converDate($order->order_date) : '') }}" id="order_date">
                 </div>
                     <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
@@ -216,6 +217,7 @@
                     </select>
                 </div>
                 @endif
+                @if(auth()->user()->level != \App\User::LEVEL_USER)
                 <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
                     <label>Tỉnh / Thành phố </label>
                     <select name="order[location_id]" class="form-control">
@@ -229,6 +231,7 @@
                     <label>Người ký nhận</label>
                     <input type="text" class="form-control" value="{{old('order.signator') ? old('order.signator') : $order->signator }}" name="order[signator]">
                 </div>
+                @endif
             </div>
         </div>
         <div class="form-group">
@@ -237,13 +240,21 @@
                     <label for="validationDefault01">Trọng lượng</label>
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[weight]" placeholder="Trọng lượng" value="{{old('order.weight') ? old('order.weight') :$order->weight}}">
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="validationDefault02">Chiều cao</label>
-                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.height') ? old('order.height') : $order->height}}" name="order[height]" placeholder="Chiều cao">
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="validationDefault01">Chiều dài</label>
-                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[width]" value="{{old('order.width') ? old('order.width') :$order->width}}" placeholder="Chiều dài">
+                <div class="col-md-6 mb-3">
+                    <div class="row">
+                        <div class="col">
+                            <label for="validationDefault02">Chiều cao</label>
+                            <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.height') ? old('order.height') : $order->height}}" name="order[height]" placeholder="Chiều cao">
+                        </div>
+                        <div class="col">
+                            <label for="validationDefault01">Chiều dài</label>
+                            <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[long]" value="{{old('order.long') ? old('order.long') :$order->long}}" placeholder="Chiều dài">
+                        </div>
+                        <div class="col">
+                            <label for="validationDefault01">Chiều rộng</label>
+                            <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[width]" value="{{old('order.width') ? old('order.width') :$order->width}}" placeholder="Chiều rộng">
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-3 mb-3">
                     <label for="validationDefault01">Giá trị hàng hóa</label>
@@ -313,7 +324,8 @@
                     singleDatePicker: true,
                     autoUpdateInput: false,
                     locale: {
-                        cancelLabel: 'Clear'
+                        cancelLabel: 'Clear',
+                        format: "DD/MM/YYYY"
                     }
                 }, function(start, end, label) {
                     var years = moment().diff(start, 'years');

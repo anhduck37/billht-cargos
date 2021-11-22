@@ -92,7 +92,8 @@
                     <div class="card-body">
                         <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
                         <p class="size-text">{{isset($order->sender) ? $order->sender->sender_name : '.....'}}</p>
-                        <p class="size-text" >{{isset($order->sender) ? $order->sender->address . ', ' . (isset($order->sender->ward) ? $order->sender->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
+                        <p class="size-text mb-4" >{{isset($order->sender) ? (isset($order->sender->address) ? $order->sender->address . ', ' : '') . (isset($order->sender->ward) ? $order->sender->ward->ward_name . ', ' : '')  . (isset($order->sender->district) ? $order->sender->district->district_name . ', ' : '') . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
+
                         <p class="size-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
                     </div>
                 </div>
@@ -132,7 +133,8 @@
                     <div class="card-body">
                         <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
                         <p class="card-text size-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
-                        <p class="card-text size-text"><small class="text-muted">{{isset($order->receiver) ? $order->receiver->address . ', ' . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
+                        <p class="card-text"><h4 class="card-title">Phòng ban:</h4> {{ $order->department }}</p>
+                        <p class="card-text size-text"><small class="text-muted">{{isset($order->receiver) ? (isset($order->receiver->address) ? $order->receiver->address . ', ' : '' ). (isset($order->receiver->ward) ? $order->receiver->ward->ward_name . ', ' : '')  . (isset($order->sender->district) ? $order->sender->district->district_name . ', ' : '') . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
                         <p class="card-text size-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
                     </div>
                 </div>
@@ -168,7 +170,7 @@
                         <div class="row">
                             <div class="col-md-7">
                                 <h4 class="card-title">Ký xác nhận người gửi hàng: </h4>
-                                <p class="card-text size-text"><b>Ngày gửi:</b> </p>
+                                <p class="card-text size-text"><b>Ngày gửi:</b> {{$order->converDate($order->order_date)}} </p>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
@@ -206,9 +208,10 @@
                                         <h4 class="card-title">Thông tin hàng hóa</h4>
                                         <div class="row" style="margin-bottom: 100px">
                                             <div class="col-md-4 size-text">Số kiện</div>
-                                            <div class="col-md-8 size-text">Trọng lượng thức tế</div>
+                                            <div class="col-md-8 size-text">Trọng lượng thức tế <p class="col-5 text-center mt-4"> {{($order->weight ? $order->weight : 0) . ' g'}}</p></div>
+
                                         </div>
-                                        <p class="size-text" style="margin-left: 30px">Kích thước ({{($order->width ? $order->width : 0) . ' x '. ($order->height ? $order->height : 0) . ' cm'. ' ' . ($order->weight ? $order->weight : 0) . ' g'}})</p>
+                                        <p class="size-text" style="margin-left: 30px">Kích thước ({{($order->height ? $order->height : 0) . ' x '. ($order->long ? $order->long : 0) . ' x '. ($order->width ? $order->width : 0) .' cm'}})</p>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -270,7 +273,7 @@
                             <div class="card-body">
                                 <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
                                 <p class="size-text" >{{isset($order->sender) ? $order->sender->sender_name : '.....'}}</p>
-                                <p class="size-text" >{{isset($order->sender) ? $order->sender->address . ', ' . (isset($order->sender->ward) ? $order->sender->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
+                                <p class="size-text mb-4" >{{isset($order->sender) ? (isset($order->sender->address) ? $order->sender->address . ', ' : '') . (isset($order->sender->ward) ? $order->sender->ward->ward_name . ', ' : '')  . (isset($order->sender->district) ? $order->sender->district->district_name . ', ' : '')  . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}}</p>
                                 <p class="size-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->sender) ? $order->sender->sender_phone : '.....'}}</p>
                             </div>
                         </div>
@@ -310,7 +313,8 @@
                             <div class="card-body">
                                 <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
                                 <p class="card-text size-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
-                                <p class="card-text"><small class="text-muted size-text">{{isset($order->receiver) ? $order->receiver->address . ', ' . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name : '') . ', ' . (isset($order->sender->district) ? $order->sender->district->district_name : '') . ', ' . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
+                                <p class="card-text"><h4 class="card-title">Phòng ban:</h4> {{ $order->department }}</p>
+                                <p class="card-text"><small class="text-muted size-text">{{isset($order->receiver) ? (isset($order->receiver->address) ? $order->receiver->address . ', ' : '') . (isset($order->receiver->ward) ? $order->receiver->ward->ward_name . ', ' : '')  . (isset($order->sender->district) ? $order->sender->district->district_name . ', ' : '')  . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
                                 <p class="card-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
                             </div>
                         </div>
@@ -346,7 +350,7 @@
                                 <div class="row">
                                     <div class="col-md-7">
                                         <h4 class="card-title">Ký xác nhận người gửi hàng: </h4>
-                                        <p class="card-text size-text"><b>Ngày gửi:</b> </p>
+                                        <p class="card-text size-text"><b>Ngày gửi:</b> {{$order->converDate($order->order_date)}} </p>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
@@ -364,10 +368,10 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-7">
                                         <p class="card-text size-text">NV-Chấp nhận:..............</p>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-5">
                                         <p class="card-text size-text">Bộ phận:..............</p>
                                     </div>
                                 </div>
@@ -384,9 +388,10 @@
                                                 <h4 class="card-title">Thông tin hàng hóa</h4>
                                                 <div class="row" style="margin-bottom: 100px">
                                                     <div class="col-md-4 size-text">Số kiện</div>
-                                                    <div class="col-md-8 size-text">Trọng lượng thức tế</div>
+                                                    <div class="col-md-8 size-text">Trọng lượng thức tế <p class="col-5 text-center mt-4"> {{($order->weight ? $order->weight : 0) . ' g'}}</p></div>
+
                                                 </div>
-                                                <p class="size-text" style="margin-left: 30px">Kích thước ({{($order->width ? $order->width : 0) . ' x '. ($order->height ? $order->height : 0) . ' cm'. ' ' . ($order->weight ? $order->weight : 0) . ' g'}})</p>
+                                                <p class="size-text" style="margin-left: 30px">Kích thước ({{($order->height ? $order->height : 0) . ' x '. ($order->long ? $order->long : 0) . ' x '. ($order->width ? $order->width : 0) .' cm'}})</p>
                                             </div>
                                         </div>
                                         <div class="row">
@@ -426,7 +431,6 @@
     let orders = {!! json_encode($orders) !!};
     let level = {!! json_encode($level) !!};
     let levelAdmin = {!! json_encode(\App\User::LEVEL_ADMIN) !!};
-    console.log('levelAdmin', levelAdmin);
     orders && orders.length > 0 && orders.forEach(order => {
         let idRender = '#'+ order.order_code;
         JsBarcode(idRender, order.order_code, {

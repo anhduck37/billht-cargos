@@ -275,11 +275,11 @@ class OrderController extends AppBaseController
                     try {
                         $senderData = [
                             'sender_name' => $sheet->getCell( 'B' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '',
-                            'sender_phone' => $sheet->getCell( 'E' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '' ,
+                            'sender_phone' => $sheet->getCell( 'C' . $row )->getValue() ? $sheet->getCell( 'C' . $row )->getValue() : '' ,
                         ];
                         // dd($senderData);
                         $receiverData = [
-                            'receiver_name' => $sheet->getCell( 'D' . $row )->getValue() ? $sheet->getCell( 'D' . $row )->getValue() : '',
+                            'receiver_name' => $sheet->getCell( 'E' . $row )->getValue() ? $sheet->getCell( 'E' . $row )->getValue() : '',
                             'address' => $sheet->getCell( 'F' . $row )->getValue() ? $sheet->getCell( 'F' . $row )->getValue() : '',
                             'receiver_phone' => $sheet->getCell( 'G' . $row )->getValue() ? $sheet->getCell( 'G' . $row )->getValue() : '',
                             'receiver_email' => $sheet->getCell( 'H' . $row )->getValue() ? $sheet->getCell( 'H' . $row )->getValue() : '',
@@ -291,20 +291,20 @@ class OrderController extends AppBaseController
                                 'sender_id' => isset($sender) ? $sender->id : 0,
                                 'receiver_id' => isset($receiver) ? $receiver->id: 0,
                                 'order_date' => $sheet->getCell( 'A' . $row )->getValue(),
-                                'department' => $sheet->getCell( 'C' . $row )->getValue(),
+                                'department' => $sheet->getCell( 'D' . $row )->getValue(),
                                 'weight' => $sheet->getCell( 'I' . $row )->getValue(),
-                                'note' => $sheet->getCell( 'M' . $row )->getValue(),
+                                'note' => $sheet->getCell( 'L' . $row )->getValue(),
                                 'user_id' => auth()->user()->id,
                                 'order_status' => Order::ORDER_BLANK,
                                 'delivery_status' => Order::DELIVERY_STATUS_PROCESSING,
                             ];
                             if(auth()->user()->level == User::LEVEL_ADMIN){
-                                if($sheet->getCell( 'O' . $row )->getValue()) {
-                                    $person_charge = User::where('name', 'LIKE', '%'.$sheet->getCell( 'O' . $row )->getValue().'%')->first();
+                                if($sheet->getCell( 'N' . $row )->getValue()) {
+                                    $person_charge = User::where('name', 'LIKE', '%'.$sheet->getCell( 'N' . $row )->getValue().'%')->first();
                                     $orderData['person_charge'] = isset($person_charge) ? $person_charge->id: 0;
                                 }
-                                if($sheet->getCell( 'N' . $row )->getValue()) {
-                                    $orderData['invoice_code'] = $sheet->getCell( 'N' . $row )->getValue();
+                                if($sheet->getCell( 'M' . $row )->getValue()) {
+                                    $orderData['invoice_code'] = $sheet->getCell( 'M' . $row )->getValue();
                                 }
 
                             }
@@ -325,8 +325,8 @@ class OrderController extends AppBaseController
                                 app(OrderTrackingService::class)->create($order, $request->all());
                             }
                             $dataService = [];
-                            if($sheet->getCell( 'K' . $row )->getValue()){
-                                $infoService = app(OrderService::class)->getKeyService($sheet->getCell( 'K' . $row )->getValue());
+                            if($sheet->getCell( 'J' . $row )->getValue()){
+                                $infoService = app(OrderService::class)->getKeyService($sheet->getCell( 'J' . $row )->getValue());
                                 if($infoService && array_key_exists('type', $infoService) && array_key_exists('service_key', $infoService)) {
                                     $dataService[$infoService['type']][] = $infoService['service_key'];
                                 }
