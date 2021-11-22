@@ -221,7 +221,7 @@ class OrderController extends AppBaseController
                     }
                 }
                 Order::where('id', $id)->update($orderForm);
-                if($order &&  $orderForm['delivery_status'] != $order->delivery_status){
+                if($order &&  array_key_exists('delivery_status', $orderForm) && $orderForm['delivery_status'] != $order->delivery_status){
                     $order->delivery_status = $orderForm['delivery_status'];
                     $order->city_id = $orderForm['location_id'];
                     if(array_key_exists('person_charge', $orderForm)){
