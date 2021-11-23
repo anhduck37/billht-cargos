@@ -15,11 +15,16 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('/users', 301);
 });
-Route::get('/test', function () {
-    $order = \App\Models\Order::get();
-    $level = 2;
-    return view('template.print', ['orders' => $order, 'level' => $level])->render();
+//Route::get('/test', function () {
+//    $order = \App\Models\Order::get();
+//    $level = 2;
+//    return view('template.print', ['orders' => $order, 'level' => $level])->render();
+//});
+Route::get('email', function () {
+    $order = \App\Models\Order::first();
+    return view('template.email', ['order' => $order]);
 });
+
 Auth::routes();
 Route::post('/register', 'Auth\RegisterController@create');
 Route::middleware(['checkLevel'])->group(function() {
@@ -40,5 +45,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/template/render', 'OrderController@renderTemplate');
     Route::post('/order/delete-many', 'OrderController@deleteMany');
     Route::post('/order/update-many', 'OrderController@updateMany');
+    Route::post('/order/send-email', 'OrderController@sendEmail');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');

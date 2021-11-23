@@ -206,6 +206,20 @@
                     });
                 }
             })
+            $('#sendEmail').on('click', function () {
+                let typeEmail = $('input[name="type_email"]:checked').val()
+                if(typeEmail) {
+                    $.ajax({
+                        type: "POST",
+                        url: '/order/send-email',
+                        data: {'order_ids': dataPrint, type_email: typeEmail},
+                        success: function (res) {
+                            // window.location.href = res;
+                        },
+                    });
+                }
+                console.log('typeEmail', typeEmail)
+            })
             $('#updateMany').on('click', function () {
                 let isUpdate = confirm('Bạn có chắc muốn cập nhật vận đơn này?');
                 if(isUpdate) {

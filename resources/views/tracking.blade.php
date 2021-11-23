@@ -1,5 +1,4 @@
 @extends('layouts.app')
-
 @section('content')
 
     @include('layouts.headers.cards')
@@ -17,9 +16,9 @@
                     </div>
                     {!! Form::open(['method' => 'GET']) !!}
 
-                    <div class="card-body">
+                    <div class="card-body mt-3">
                         <div class="row">
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-5">
                                 <label>Vui lòng nhập mã vận đơn, ví dụ: HE000001</label>
                                 <!-- {!! Form::label( 'Vui lòng nhập mã vận đơn. Ví dụ: HE000001' ) !!} -->
                                 {!! Form::text('order_code', request('order_code', ''), ['class' => 'form-control']) !!}
@@ -30,6 +29,43 @@
                         </div>
                     </div>
                     {!! Form::close() !!}
+                    <div class="card-body text-center">
+                        <div class = "container">
+                            <div class="centerwrapper">
+                                <table class="text-center p-2">
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-clipboard-list custom-icon-1 @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_RETURN, \App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE]) ) icon-select @endif margin-custom fa-2x"></i>
+                                        </td>
+                                        <td><i @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_RETURN, \App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE])) style="color: #f6821f" @endif class="fas fa-long-arrow-alt-right margin-custom fa-2x"></i></td>
+                                        <td><i class="fas fa-dolly-flatbed custom-icon @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_RETURN, \App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE]) ) icon-select @endif margin-custom fa-2x"></i></td>
+                                        <td><i @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE])) style="color: #f6821f" @endif class="fas fa-long-arrow-alt-right margin-custom fa-2x"></i></td>
+                                        <td><i class="fas fa-shipping-fast custom-icon @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE]) ) icon-select @endif margin-custom fa-2x"></i></td>
+                                        <td><i @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_OK])) style="color: #f6821f" @endif class="fas fa-long-arrow-alt-right margin-custom fa-2x"></i></td>
+                                        <td><i class="fas fa-people-carry custom-icon @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_OK]) ) icon-select @endif margin-custom fa-2x"></i></td>
+                                    </tr>
+                                    <tr>
+                                        <td @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_RETURN, \App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE])) style="color: #f6821f" @endif >
+                                            {{array_key_exists(\App\Models\Order::DELIVERY_STATUS_PROCESSING , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_PROCESSING] : ''}}
+                                        </td>
+                                        <td></td>
+                                        <td @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_RETURN, \App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE])) style="color: #f6821f" @endif>
+                                            {{array_key_exists(\App\Models\Order::DELIVERY_STATUS_RETURN , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_RETURN] : ''}}
+                                        </td>
+                                        <td></td>
+                                        <td @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE])) style="color: #f6821f" @endif>
+                                            {{array_key_exists(\App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE] : ''}}
+                                        </td>
+                                        <td></td>
+                                        <td @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_OK])) style="color: #f6821f" @endif>
+                                            {{array_key_exists(\App\Models\Order::DELIVERY_STATUS_OK , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_OK] : ''}}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
 
                     <div class="table-responsive mt-4">
                         <table class="table align-items-center">

@@ -86,6 +86,9 @@
                             <div class="col mb-1">
                                 <button style="width: 100%" type="button" id="updateMany" class="btn btn-primary">Cập nhật trạng thái</button>
                             </div>
+{{--                            <div class="col mb-1">--}}
+{{--                                <button style="width: 100%" type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button>--}}
+{{--                            </div>--}}
                             @endif
                         </div>
                     </div>
@@ -96,6 +99,38 @@
                 </div>
                 <div class="align-content-center" style="margin-top: 20px">
                     {!! $orders->links() !!}
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="openModalEmail" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title" id="exampleModalLongTitle">Bạn vui lòng template email</h3>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="type_email" id="exampleRadios1" value="1">
+                                    <label class="form-check-label" for="exampleRadios1">
+                                        Đã tiếp nhận bưu phẩm
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="type_email" id="exampleRadios2" value="2">
+                                    <label class="form-check-label" for="exampleRadios2">
+                                        Đã giao
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                <button type="button" id="sendEmail" class="btn btn-primary">Gửi email</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -118,6 +153,7 @@
             $('#order_date').on('cancel.daterangepicker', function(ev, picker) {
                 $(this).val('');
             });
+
         });
     </script>
 @endsection

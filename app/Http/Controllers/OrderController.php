@@ -410,12 +410,14 @@ class OrderController extends AppBaseController
             Flash::error('Bạn hãy chọn các vận đơn muốn cập nhật');
         }else {
             Order::whereIn('id', $orderIds)->update(['delivery_status' => $delivery_status]);
+            app(OrderTrackingService::class)->createMany($orderIds, $delivery_status, $request->all());
             Flash::success('Cập nhật vận đơn thành công');
         }
         return route('orders.index');
     }
 
-    public function sendEmail() {
+    public function sendEmail(Request $request) {
+//        dd($request->all());
         $mail = Mail::to('quangquac997@gmail.com')->send(new SendMail('hay', 'test', 'quangbg997@gmail.com', 'quangbg997@gmail.com'));
     }
 

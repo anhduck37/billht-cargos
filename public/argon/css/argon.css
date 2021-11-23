@@ -67,6 +67,93 @@
 .table-wrapper-scroll-y {
     display: block;
 }
+.custom-icon-1 {
+    display: inline-block;
+    border-radius: 60px;
+    box-shadow: 0px 0px 2px #888;
+    padding: 0.8em 0.9em;
+}
+
+.custom-icon {
+    display: inline-block;
+    border-radius: 50px;
+    box-shadow: 0px 0px 2px #888;
+    padding: 0.8em 0.7em;
+}
+
+.icon-select {
+    background-color: #f6821f;
+    color: white;
+}
+
+.square
+{
+    float: left;
+    margin:1pt;
+    width:72pt;
+    height:72pt;
+}
+
+@media (min-width: 375px)
+{
+    .margin-custom {
+        margin-right: 0px;
+        margin-left: 0px;
+    }
+    .fa-2x {
+        font-size: 1.2em;
+    }
+}
+@media (min-width: 576px)
+{
+    .margin-custom {
+        margin-right: 10px;
+        margin-left: 10px;
+    }
+    .fa-2x {
+        font-size: 1.3em;
+    }
+}
+@media (min-width: 768px)
+{
+    .margin-custom {
+        margin-right: 15px;
+        margin-left: 0px;
+    }
+    .fa-2x {
+        font-size: 1.4em;
+    }
+}
+@media (min-width: 992px)
+{
+    .margin-custom {
+        margin-right: 20px;
+        margin-left: 0px;
+    }
+    .centerwrapper
+    {
+        margin: auto;
+        width: 490pt;
+    }
+    .fa-2x {
+        font-size: 2em;
+    }
+}
+@media (min-width: 1200px)
+{
+    .margin-custom {
+        margin-right: 30px;
+        margin-left: 20px;
+    }
+    .centerwrapper
+    {
+        margin: auto;
+        width: 630pt;
+    }
+    .fa-2x {
+        font-size: 2em;
+    }
+}
 
 html
 {
