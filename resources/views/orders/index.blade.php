@@ -143,7 +143,8 @@
                 $('#order_date').daterangepicker({
                     autoUpdateInput: false,
                     locale: {
-                        cancelLabel: 'Clear'
+                        cancelLabel: 'Clear',
+                        format: "DD/MM/YYYY"
                     }
                 });
             });
