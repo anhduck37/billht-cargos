@@ -209,7 +209,7 @@
                                         <h4 class="card-title">Thông tin hàng hóa</h4>
                                         <div class="row" style="margin-bottom: 70px">
                                             <div class="col-md-4 size-text">Số kiện</div>
-                                            <div class="col-md-8 size-text">Trọng lượng thức tế <p class="col-5 text-center"> {{($order->weight ? $order->weight : 0) . ' g'}}</p></div>
+                                            <div class="col-md-8 size-text">Trọng lượng thực tế <p class="col-5 text-center"> {{($order->weight ? $order->weight : 0) . ' g'}}</p></div>
 
                                         </div>
                                         <p class="size-text" style="margin-left: 30px">Kích thước ({{($order->height ? $order->height : 0) . ' x '. ($order->long ? $order->long : 0) . ' x '. ($order->width ? $order->width : 0) .' cm'}})</p>

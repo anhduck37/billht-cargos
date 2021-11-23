@@ -46,19 +46,19 @@
                                     </tr>
                                     <tr>
                                         <td @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_RETURN, \App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE])) style="color: #f6821f" @endif >
-                                            {{array_key_exists(\App\Models\Order::DELIVERY_STATUS_PROCESSING , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_PROCESSING] : ''}}
+                                            <p class="mt-1">{{array_key_exists(\App\Models\Order::DELIVERY_STATUS_PROCESSING , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_PROCESSING] : ''}}</p>
                                         </td>
                                         <td></td>
                                         <td @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_RETURN, \App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE])) style="color: #f6821f" @endif>
-                                            {{array_key_exists(\App\Models\Order::DELIVERY_STATUS_RETURN , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_RETURN] : ''}}
+                                            <p class="mt-1">{{array_key_exists(\App\Models\Order::DELIVERY_STATUS_RETURN , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_RETURN] : ''}}</p>
                                         </td>
                                         <td></td>
                                         <td @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_OK, \App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE])) style="color: #f6821f" @endif>
-                                            {{array_key_exists(\App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE] : ''}}
+                                            <p class="mt-1">{{array_key_exists(\App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_PERSON_CHARGE] : ''}}</p>
                                         </td>
                                         <td></td>
                                         <td @if(in_array($delivery_status, [\App\Models\Order::DELIVERY_STATUS_OK])) style="color: #f6821f" @endif>
-                                            {{array_key_exists(\App\Models\Order::DELIVERY_STATUS_OK , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_OK] : ''}}
+                                            <p class="mt-1">{{array_key_exists(\App\Models\Order::DELIVERY_STATUS_OK , \App\Models\Order::DELIVERY_MAP) ? \App\Models\Order::DELIVERY_MAP[\App\Models\Order::DELIVERY_STATUS_OK] : ''}}</p>
                                         </td>
                                     </tr>
                                 </table>
