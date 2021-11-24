@@ -263,7 +263,7 @@ class OrderController extends AppBaseController
     public function import(Request $request) {
         $file = $request->file('file');
         if($file) {
-            $mimes = array('application/vnd.ms-excel','text/xls','text/xlsx');
+            $mimes = array('application/vnd.ms-excel','text/xls','text/xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             if(in_array($_FILES["file"]["type"], $mimes)) {
                 $spreadsheet = IOFactory::load($file->getRealPath());
                 $sheet        = $spreadsheet->getActiveSheet();
@@ -319,7 +319,7 @@ class OrderController extends AppBaseController
                                     $orderData['order_date'] = $convertDate;
                                 }
                             } else {
-                                $order['order_date'] = date('Y-m-d');
+                                $orderData['order_date'] = date('Y-m-d');
                             }
                             $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
                             $order = Order::create($orderData);
