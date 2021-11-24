@@ -436,12 +436,14 @@
     orders && orders.length > 0 && orders.forEach(order => {
         let idRender = '#'+ order.order_code;
         JsBarcode(idRender, order.order_code, {
-            fontOptions: "bold"
+            fontOptions: "bold",
+            height: 97
         });
         if(level == levelAdmin) {
             let idRenderAdmin = '#'+ order.order_code + levelAdmin;
             JsBarcode(idRenderAdmin, order.order_code, {
-                fontOptions: "bold"
+                fontOptions: "bold",
+                height: 97
             });
         }
     })

@@ -15,14 +15,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('/users', 301);
 });
-//Route::get('/test', function () {
-//    $order = \App\Models\Order::get();
-//    $level = 2;
-//    return view('template.print', ['orders' => $order, 'level' => $level])->render();
-//});
+Route::get('/test', function () {
+    $order = \App\Models\Order::get();
+    $level = 2;
+    return view('template.print', ['orders' => $order, 'level' => $level])->render();
+});
 Route::get('email', function () {
     $order = \App\Models\Order::first();
-    return view('template.email', ['order' => $order]);
+    return view('template.email_confirm', ['order' => $order]);
 });
 
 Auth::routes();
@@ -31,16 +31,16 @@ Route::middleware(['checkLevel'])->group(function() {
     Route::resource('users', 'UserController');
 });
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profile', 'ProfileController@index');
-    Route::any('/profile/password', 'ProfileController@changePass');
-    Route::get('user/{id}', 'UserController@showFormPassword')->name('users.showFormPassword');
-    Route::post('user/{id}','UserController@updatePassword' )->name('users.updatePassword');
-    Route::get('user/{id}/info', 'UserController@show')->name('users.showInfo');
+//    Route::get('/profile', 'ProfileController@index');
+//    Route::any('/profile/password', 'ProfileController@changePass');
+//    Route::get('user/{id}', 'UserController@showFormPassword')->name('users.showFormPassword');
+//    Route::post('user/{id}','UserController@updatePassword' )->name('users.updatePassword');
+//    Route::get('user/{id}/info', 'UserController@show')->name('users.showInfo');
     Route::resource('orders', 'OrderController');
     Route::post('orders/import', 'OrderController@import')->name('orders.import');
     Route::get('fileDemo', 'OrderController@fileDownload')->name('fileDemo');
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');
-    Route::get('users/{id}', 'UserController@show')->name('users.show');
+//    Route::get('users/{id}', 'UserController@show')->name('users.show');
     Route::resource('partners', 'PartnerController');
     Route::post('/template/render', 'OrderController@renderTemplate');
     Route::post('/order/delete-many', 'OrderController@deleteMany');

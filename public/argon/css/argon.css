@@ -20267,7 +20267,6 @@ textarea[resize='horizontal']
     .navbar-collapse.show
     {
         padding: 1.5rem;
-
         animation: show-navbar-collapse .2s ease forwards;
 
         border-radius: .375rem;

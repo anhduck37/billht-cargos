@@ -5,9 +5,9 @@
     @include('layouts.headers.cards')
 
     <div class="container-fluid mt--3">
-
         <div class="row mt-5">
             <div class="col-xl-12 mb-5 mb-xl-0">
+                @include('flash::message')
                 <div class="card shadow">
                     <div class="card-header border-0">
                         <div class="row align-items-center">

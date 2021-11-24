@@ -116,10 +116,18 @@ class UserController extends AppBaseController
         } else {
             unset($formData['password']);
         }
-        if (array_key_exists('email', $formData)) {
+        if (array_key_exists('email', $formData) && auth()->user()->level != User::LEVEL_ADMIN) {
             unset($formData['email']);
+        } else {
+            $email = $request->email;
+            if($email && $user->email  != $email) {
+                $findUser = User::where('email',  $email)->first();
+                if($findUser) {
+                    Flash::error('Email ' . $email . ' này đã tồn tại');
+                    return back();
+                }
+            }
         }
-
         $user = $this->userRepository->update($formData, $id);
 
         Flash::success('Cập nhật tài khoản thành công.');

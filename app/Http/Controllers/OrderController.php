@@ -270,7 +270,7 @@ class OrderController extends AppBaseController
                 $row_limit    = $sheet->getHighestDataRow();
                 $column_limit = $sheet->getHighestDataColumn();
                 $row_range    = range( 2, $row_limit );
-                $column_range = range( 'F', $column_limit );
+                $column_range = range( 'O', $column_limit );
                 $startcount = 2;
                 foreach ( $row_range as $row ) {
                     DB::beginTransaction();

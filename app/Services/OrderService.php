@@ -9,15 +9,15 @@ use App\Service;
 class OrderService
 {
     public function getOrderCode($prefix) {
-        $order = Order::latest()->first();
-        $order_id = 0;
+        $order = Order::orderBy('id', 'DESC')->first();
+        $order_id = 1;
         if($order){
-            $order_id = $order->id;
+            $order_id = (int)$order->id + 1;
         }
-        for ($i = 0; $i < 6 - strlen($order_id + 1); $i++){
+        for ($i = 0; $i < 6 - strlen($order_id); $i++){
             $prefix .= '0';
         }
-        return $prefix.($order_id + 1);
+        return $prefix.($order_id);
     }
 
     public function explodeDate($date) {
@@ -33,6 +33,16 @@ class OrderService
             return $convertDate;
         }
         return null;
+    }
+    function ConvertToUTF8($text){
+
+        $encoding = mb_detect_encoding($text, mb_detect_order(), false);
+        if($encoding == "UTF-8")
+        {
+            $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
+        }
+        $out = iconv(mb_detect_encoding($text, mb_detect_order(), false), "UTF-8//IGNORE", $text);
+        return $out;
     }
 
     public function getKeyService($service) {

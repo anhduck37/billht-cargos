@@ -60,8 +60,7 @@
     <script type="text/javascript" src="{{asset('/js/renderCode.js')}}"></script>
 </head>
 <body>
-
-<div class="main-content">
+<div class="container">
     <div class="text-center">
         <img width="400" src="{{asset('/image/logo_print.png')}}">
     </div>
@@ -71,8 +70,10 @@
         <div class="col-4">
             <div class="row">
                 <div class="col-6 text-center">
-                    <i class="fas fa-search-location fa-2x" style="color: #f6821f;"></i>
-                    <p>Theo dõi đơn hàng</p>
+                    <a href="{{route('tracking')}}">
+                        <i class="fas fa-search-location fa-2x" style="color: #f6821f;"></i>
+                        <p style="color: black">Theo dõi đơn hàng</p>
+                    </a>
                 </div>
                 <div class="col-6 text-center">
                     <i class="far fa-question-circle fa-2x" style="color: #f6821f;"></i>
@@ -83,7 +84,14 @@
         <div class="col-4">
         </div>
     </div>
-    <div class="text-center"><h1 style="color: #f6821f">Đơn hàng của bạn đã được xác nhận!</h1></div>
+    <div class="text-center row mt-4"><div class="col"><h1 style="color: #f6821f">Đơn hàng của bạn đã được xác nhận!</h1></div></div>
+    <div class="mt-4">
+        <label>Chào {{isset($order->sender) ? $order->sender->sender_name : '' }}</label>
+    </div>
+    <div class="row mt-4">
+        <div class="col"><label>HTEXPRESS đã tiếp nhận đơn hàng của bạn. Chúng tôi đang sắp xếp để chuyển đơn hàng của bạn đi. <b>Mã vận đơn của bạn là {{$order->order_code}}</b></label></div>
+    </div>
+    @yield('table')
 </div>
 </body>
 </html>

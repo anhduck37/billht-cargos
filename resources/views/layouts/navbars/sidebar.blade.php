@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <!-- Toggler -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidenav-collapse-main" aria-controls="sidenav-main" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+        <i style="color: white" class="fas fa-bars fa-2x"></i>
         </button>
         <!-- Brand -->
         <a class="navbar-brand pt-0" href="#">
@@ -39,16 +39,16 @@
         <div class="collapse navbar-collapse" id="sidenav-collapse-main">
             <!-- Collapse header -->
             <div class="navbar-collapse-header d-md-none">
-                <div class="row">
-                    <div class="col-6 collapse-brand">
+                <div class="row" style="background-color: #333537;border-radius: 5px;">
+                    <div class="col-6 collapse-brand mt-2 mb-2">
                         <a href="#">
                             <img src="{{ asset('image/order_manager.png') }}">
                         </a>
                     </div>
-                    <div class="col-6 collapse-close">
+                    <div class="col-6 collapse-close mb-2 mt-2">
                         <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#sidenav-collapse-main" aria-controls="sidenav-main" aria-expanded="false" aria-label="Toggle sidenav">
-                            <span></span>
-                            <span></span>
+                            <span style="background-color: white;"></span>
+                            <span style="background-color: white;"></span>
                         </button>
                     </div>
                 </div>

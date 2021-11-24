@@ -28,7 +28,7 @@ class UpdateUserRequest extends FormRequest
         $rules = [
             'level'         => 'required',
             'status'        => 'required',
-            'name' => 'required'
+            'name' => 'required',
         ];
 
         if ($this->password != '') {
