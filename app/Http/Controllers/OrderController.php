@@ -427,7 +427,7 @@ class OrderController extends AppBaseController
         }
         $errors = [];
         $success = [];
-        try {
+//        try {
             if($type_email && !empty($orderIds)) {
                 foreach ($orderIds as $id) {
                     $order = Order::where('id', $id)->first();
@@ -445,10 +445,10 @@ class OrderController extends AppBaseController
             if(!empty($success)){
                 Flash::success('Gửi email thành công với các vận đơn: ' . implode($success));
             }
-        }catch (Exception $e) {
-            Flash::error('Xảy ra lỗi gửi email với tất cả vận đơn');
-        }
-        return route('orders.index');
+//        }catch (Exception $e) {
+//            Flash::error('Xảy ra lỗi gửi email với tất cả vận đơn');
+//        }
+//        return route('orders.index');
     }
 
 }
