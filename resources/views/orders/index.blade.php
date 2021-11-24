@@ -86,9 +86,9 @@
                             <div class="col mb-1">
                                 <button style="width: 100%" type="button" id="updateMany" class="btn btn-primary">Cập nhật trạng thái</button>
                             </div>
-{{--                            <div class="col mb-1">--}}
-{{--                                <button style="width: 100%" type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button>--}}
-{{--                            </div>--}}
+                            <div class="col mb-1">
+                                <button style="width: 100%" type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button>
+                            </div>
                             @endif
                         </div>
                     </div>
@@ -111,14 +111,16 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
-                            <div class="modal-body">
-                                <div class="form-check">
+                            <div class="modal-body" id="loading">
+                                <div id="isLoading" style="display: none" class="text-center"><img width="70px" src="{{asset('/image/loading.jpg')}}" ></div>
+
+                                <div class="form-check isShow">
                                     <input class="form-check-input" type="radio" name="type_email" id="exampleRadios1" value="1">
                                     <label class="form-check-label" for="exampleRadios1">
                                         Đã tiếp nhận bưu phẩm
                                     </label>
                                 </div>
-                                <div class="form-check">
+                                <div class="form-check isShow">
                                     <input class="form-check-input" type="radio" name="type_email" id="exampleRadios2" value="2">
                                     <label class="form-check-label" for="exampleRadios2">
                                         Đã giao

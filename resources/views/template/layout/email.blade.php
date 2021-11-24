@@ -84,7 +84,7 @@
         <div class="col-4">
         </div>
     </div>
-    <div class="text-center row mt-4"><div class="col"><h1 style="color: #f6821f">Đơn hàng của bạn đã được xác nhận!</h1></div></div>
+    <div class="text-center row mt-4"><div class="col"><h1 style="color: #f6821f">@yield('title')</h1></div></div>
     <div class="mt-4">
         <label>Chào {{isset($order->sender) ? $order->sender->sender_name : '' }}</label>
     </div>

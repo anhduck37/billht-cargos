@@ -12,22 +12,18 @@ class SendMail extends Mailable
     use Queueable, SerializesModels;
 
     public $data;
-    public $title;
-    public $from_address;
-    public $from_sender;
+    public $type;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($data, $title, $from_address, $from_sender)
+    public function __construct($data, $type)
     {
         //
         $this->data = $data;
-        $this->title = $title;
-        $this->from_address = $from_address;
-        $this->from_sender = $from_sender;
+        $this->type = $type;
     }
 
     /**
@@ -37,9 +33,17 @@ class SendMail extends Mailable
      */
     public function build()
     {
-        return $this->view('template.email')
-            ->from($this->from_address, $this->from_sender)
-            ->subject($this->title)
-            ->with('data', $this->data);
+        $template = '';
+        $title = '';
+        if($this->type == 2){
+            $template = $this->view('template.email_success');
+            $title = 'Đơn hàng '. $this->data->order_code .' của bạn đã được chuyển thành công!';
+        } else {
+            $template = $this->view('template.email_confirm');
+            $title = 'Đơn hàng '. $this->data->order_code .' của bạn đã được xác nhận!';
+        }
+        return $template->from($this->data->sender->sender_email, 'HT Express')
+                ->subject($title)
+                ->with('order', $this->data);
     }
 }

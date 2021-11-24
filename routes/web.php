@@ -15,14 +15,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('/users', 301);
 });
-Route::get('/test', function () {
-    $order = \App\Models\Order::get();
-    $level = 2;
-    return view('template.print', ['orders' => $order, 'level' => $level])->render();
-});
+//Route::get('/test', function () {
+//    $order = \App\Models\Order::get();
+//    $level = 2;
+//    return view('template.print', ['orders' => $order, 'level' => $level])->render();
+//});
 Route::get('email', function () {
     $order = \App\Models\Order::first();
-    return view('template.email_confirm', ['order' => $order]);
+    return view('template.email_success', ['order' => $order]);
 });
 
 Auth::routes();

@@ -1,11 +1,12 @@
 @extends('template.layout.email')
 @section('title')
-    Đơn hàng của bạn đã được xác nhận!
+    Đơn hàng của bạn đã giao thành công!
 @endsection
 @section('table')
-    <table class="table table-bordered mt-4" style="width: 100%">
+    <table class="table mt-4" style="width: 100%; border-spacing:0">
         <tr style="background-color: #f6821f">
             <td><p style="color: white">Thông tin giao hàng chi tiết</p></td>
+            <td></td>
         </tr>
         <tr>
             <td style="background-color: #d9e0e7;">
@@ -25,10 +26,25 @@
                     @endif
                 </label>
             </td>
+            <td style="background-color: #d9e0e7;">
+
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: #d9e0e7;">
+                <p>Thời gian giao hàng:</p>
+                <label>
+                    {{$order->updated_at}}
+                </label>
+            </td>
+            <td style="background-color: #d9e0e7;">
+                <p>Người kí nhận:</p>
+                <label>
+                    {{$order->signator}}
+                </label>
+            </td>
+
         </tr>
     </table>
-
-    <div class="text-center mt-7">
-        <a href="{{route('tracking')}}" class="btn btn-primary" role="button" aria-pressed="true">Theo dõi đơn hàng</a>
-    </div>
+    
 @endsection

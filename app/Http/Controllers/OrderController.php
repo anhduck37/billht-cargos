@@ -419,8 +419,36 @@ class OrderController extends AppBaseController
     }
 
     public function sendEmail(Request $request) {
-//        dd($request->all());
-        $mail = Mail::to('quangquac997@gmail.com')->send(new SendMail('hay', 'test', 'quangbg997@gmail.com', 'quangbg997@gmail.com'));
+        $type_email = $request->type_email;
+        $orderIds = $request->order_ids;
+        if(empty($type_email) || empty($orderIds)){
+            Flash::error('Bạn vui lòng chọn vận đơn và temlate email');
+            return route('orders.index');
+        }
+        $errors = [];
+        $success = [];
+        try {
+            if($type_email && !empty($orderIds)) {
+                foreach ($orderIds as $id) {
+                    $order = Order::where('id', $id)->first();
+                    if($order && isset($order->sender) && $order->sender->sender_email){
+                        Mail::to($order->sender->sender_email)->send(new SendMail($order, $type_email));
+                        array_push($success, $order->order_code);
+                    }else {
+                        array_push($errors, $order->order_code);
+                    }
+                }
+            }
+            if(!empty($errors)) {
+                Flash::error('Xảy ra lỗi gửi email với các vận đơn: '. implode($errors));
+            }
+            if(!empty($success)){
+                Flash::success('Gửi email thành công với các vận đơn: ' . implode($success));
+            }
+        }catch (Exception $e) {
+            Flash::error('Xảy ra lỗi gửi email với tất cả vận đơn');
+        }
+        return route('orders.index');
     }
 
 }

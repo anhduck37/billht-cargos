@@ -23,6 +23,8 @@
 
                         <div class="card-footer text-center">
                             {!! Form::submit( 'Cập nhật vận đơn' , ['class' => 'btn btn-primary']) !!}
+                            <button id="print" type="button" data-id="{{$order->id}}" class="btn btn-primary">In đơn</button>
+                            <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button>
                             <a class='btn btn-light' href="{{route('orders.index')}}">Thoát</a>
                         </div>
 
@@ -31,6 +33,83 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="openModalEmail" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="exampleModalLongTitle">Bạn vui lòng template email</h3>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="loading">
+                        <div id="isLoading" style="display: none" class="text-center"><img width="70px" src="{{asset('/image/loading.jpg')}}" ></div>
+
+                        <div class="form-check isShow">
+                            <input class="form-check-input" type="radio" name="type_email" id="exampleRadios1" value="1">
+                            <label class="form-check-label" for="exampleRadios1">
+                                Đã tiếp nhận bưu phẩm
+                            </label>
+                        </div>
+                        <div class="form-check isShow">
+                            <input class="form-check-input" type="radio" name="type_email" id="exampleRadios2" value="2">
+                            <label class="form-check-label" for="exampleRadios2">
+                                Đã giao
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                        <button type="button" data-id="{{$order->id}}" id="sendEmail" class="btn btn-primary">Gửi email</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
+@section('js')
+    <script type="text/javascript">
+        $(function() {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
 
+            $('#print').on('click', function (e) {
+                let orderId = $(this).attr('data-id');
+                console.log(orderId)
+                $.ajax({
+                    type: "POST",
+                    url: '/template/render',
+                    data: {'order': [orderId]},
+                    success: function (res) {
+                        print(res)
+                    },
+                });
+            })
+
+            $('#sendEmail').on('click', function () {
+                let orderId = $(this).attr('data-id');
+                let typeEmail = $('input[name="type_email"]:checked').val()
+                if(typeEmail) {
+                    $('.isShow').css('display', 'none')
+                    $('#isLoading').css('display', '')
+                    $.ajax({
+                        type: "POST",
+                        url: '/order/send-email',
+                        data: {'order_ids': [orderId], type_email: typeEmail, isUpdate: true },
+                        success: function (res) {
+                            window.location.href = res;
+                        },
+                    });
+                }
+            })
+        });
+        function print(html) {
+            var a = window.open();
+            a.document.write(html);
+            a.document.close();
+        }
+    </script>
+@endsection
