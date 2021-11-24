@@ -170,6 +170,7 @@ class OrderController extends AppBaseController
             }
             DB::commit();
             Flash::success('Tạo vận đơn thành công.');
+            return redirect()->route('orders.edit', [$order->id]);
         }catch (Exception $e) {
             Flash::error('Tạo vận đơn thất bại.');
             DB::rollback();
@@ -251,6 +252,7 @@ class OrderController extends AppBaseController
             }
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
+            return back();
         }catch (Exception $e) {
             Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
             DB::rollback();
