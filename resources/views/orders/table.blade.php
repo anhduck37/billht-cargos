@@ -53,11 +53,13 @@
                 <th>{{$key + 1}}</th>
                 <td>{{$order->converDate($order->order_date)}}</td>
                 <th scope="row">
+                    <a href="{{ route('orders.edit', [$order->id]) }}">
                     <div class="media align-items-center">
                         <div class="media-body">
                             <span class="mb-0 text-sm">{{$order->order_code}}</span>
                         </div>
                     </div>
+                    </a>
                 </th>
                 @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                     <th>{{$order->invoice_code}}</th>

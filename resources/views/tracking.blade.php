@@ -18,16 +18,12 @@
 
                     <div class="card-body mt-3">
                         <div class="row">
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-5">
                                 <label>Vui lòng nhập mã vận đơn, ví dụ: HE000001</label>
                                 <!-- {!! Form::label( 'Vui lòng nhập mã vận đơn. Ví dụ: HE000001' ) !!} -->
                                 {!! Form::text('order_code', request('order_code', ''), ['class' => 'form-control']) !!}
                             </div>
-                            <div class="form-group col-md-4">
-                                <label>Vui lòng nhập mã khác</label>
-                                {!! Form::text('invoice_code', request('invoice_code', ''), ['class' => 'form-control']) !!}
-                            </div>
-                            <div class="form-group col-md-4">
+                            <div class="form-group col-md-3">
                                 {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'margin-bottom: -83px;']) !!}
                             </div>
                         </div>
@@ -76,6 +72,7 @@
                             <thead style="background-color: #f6821f; color: white" class="thead-light">
                             <tr>
                                 <td>Mã vận đơn</td>
+                                <td>Mã khác</td>
                                 <td>Trạng thái vận đơn</td>
                                 <td>Người gửi</td>
                                 <td>Người nhận</td>
@@ -92,6 +89,13 @@
                                         <div class="media align-items-center">
                                             <div class="media-body">
                                                 <span class="mb-0 text-sm">{{$item->order_code}}</span>
+                                            </div>
+                                        </div>
+                                    </th>
+                                    <th scope="row">
+                                        <div class="media align-items-center">
+                                            <div class="media-body">
+                                                <span class="mb-0 text-sm">{{$item->invoice_code}}</span>
                                             </div>
                                         </div>
                                     </th>
