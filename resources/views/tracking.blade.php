@@ -18,12 +18,16 @@
 
                     <div class="card-body mt-3">
                         <div class="row">
-                            <div class="form-group col-md-5">
+                            <div class="form-group col-md-4">
                                 <label>Vui lòng nhập mã vận đơn, ví dụ: HE000001</label>
                                 <!-- {!! Form::label( 'Vui lòng nhập mã vận đơn. Ví dụ: HE000001' ) !!} -->
                                 {!! Form::text('order_code', request('order_code', ''), ['class' => 'form-control']) !!}
                             </div>
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-4">
+                                <label>Vui lòng nhập mã khác</label>
+                                {!! Form::text('invoice_code', request('invoice_code', ''), ['class' => 'form-control']) !!}
+                            </div>
+                            <div class="form-group col-md-4">
                                 {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'margin-bottom: -83px;']) !!}
                             </div>
                         </div>

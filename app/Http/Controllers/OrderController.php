@@ -118,7 +118,7 @@ class OrderController extends AppBaseController
         return view('orders.create', ['citys' => $citys, 'partners' => $partners, 'order' => new Order(), 'users' => $users]);
     }
 
-    public function store(CreateOrderRequest $request)
+    public function store(Request $request)
     {
         $senderForm = $request->sender;
         $receiverForm = $request->receiver;
@@ -202,7 +202,7 @@ class OrderController extends AppBaseController
         return back();
     }
 
-    public function update(UpdateOrderRequest $request, $id) {
+    public function update(Request $request, $id) {
         $senderForm = $request->sender;
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
@@ -286,7 +286,7 @@ class OrderController extends AppBaseController
                             'receiver_phone' => $sheet->getCell( 'G' . $row )->getValue() ? $sheet->getCell( 'G' . $row )->getValue() : '',
                             'receiver_email' => $sheet->getCell( 'H' . $row )->getValue() ? $sheet->getCell( 'H' . $row )->getValue() : '',
                         ];
-                        if($receiverData['receiver_name'] != '' && $receiverData['receiver_phone'] != '' && $receiverData['address'] != ''){
+//                        if($receiverData['receiver_name'] != '' && $receiverData['receiver_phone'] != '' && $receiverData['address'] != ''){
                             $sender = Sender::create($senderData);
                             $receiver = Receiver::create($receiverData);
                             $orderData = [
@@ -347,7 +347,7 @@ class OrderController extends AppBaseController
                                     app(OrderService::class)->insertService($dataService, $order->id);
                                 }
                             }
-                        }
+//                        }
 
                         DB::commit();
                     }catch (Exception $e) {
