@@ -211,14 +211,14 @@ class OrderController extends AppBaseController
         try {
             $order = $this->orderRepository->find($id);
             if($order) {
-                if(auth()->user()->level !== User::LEVEL_POSTMAN) {luôn
+                if(auth()->user()->level !== User::LEVEL_POSTMAN) {
                     if($senderForm) {
                         $sender = Sender::where('id', $order->sender_id)->update($senderForm);
                     }
                     if($receiverForm) {
                         $receiver = Receiver::where('id', $order->receiver_id)->update($receiverForm);
                     }
-                    
+
                     if(array_key_exists('order_date', $orderForm) && !empty($orderForm['order_date'])){
                         $orderForm['order_date'] = app(OrderService::class)->explodeDate($orderForm['order_date']);
                         if(empty($orderForm['order_date'])) {
