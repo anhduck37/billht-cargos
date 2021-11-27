@@ -364,10 +364,11 @@ class OrderController extends AppBaseController
                                         $dataService[$item['type']][] = $item['service_key'];
                                     }
                                 }
-                                if($order){
-                                    app(OrderService::class)->insertService($dataService, $order->id);
-                                }
+
                             }
+                        if($order && !empty($dataService)){
+                            app(OrderService::class)->insertService($dataService, $order->id);
+                        }
 //                        }
 
                         DB::commit();
