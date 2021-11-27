@@ -269,9 +269,16 @@ class OrderController extends AppBaseController
         return redirect()->route('orders.index');
     }
 
-    public function export() {
-        $file = Excel::download(new OrderExport(), 'orders.xlsx');
-        return $file;
+    public function export(Request $request) {
+        $start_date = app(OrderService::class)->explodeDate($request->start_date);
+        $end_date = app(OrderService::class)->explodeDate($request->end_date);
+        try {
+            $file = Excel::download(new OrderExport($start_date, $end_date), 'orders.xlsx');
+            return $file;
+        } catch (Exception $exception) {
+            Flash::error('Không có đơn nào trong '. $request->start_date. ' - '. $request->end_date);
+            return back();
+        }
     }
 
     public function import(Request $request) {

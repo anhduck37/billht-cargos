@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Order;
+use App\Service;
 use App\Services\OrderService;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithEvents;
@@ -14,10 +15,35 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
     /**
     * @return \Illuminate\Support\Collection
     */
+    public $start_date;
+    public $end_date;
+
+    public function __construct($start_date, $end_date) {
+        $this->start_date = $start_date;
+        $this->end_date = $end_date;
+    }
+
     public function collection()
     {
-        $orders = Order::all();
+        $orders = Order::where('order_date', '>=', $this->start_date)->where('order_date', '<=', $this->end_date)->get();
+        $order = [];
         foreach ($orders as $item) {
+            $services = Service::where('order_id', $item->id)->get();
+            $dataService = [];
+            $dataServiceAdd = [];
+            foreach ($services as $service) {
+                if(array_key_exists($service->type, Service::SERVICE_MAP) && $service->type == Service::SERVICE_DOMESTIC) {
+                    $data = Service::SERVICE_MAP[$service->type]['value'];
+                    if(array_key_exists($service->service, $data) ){
+                        $dataService[] = $data[$service->service];
+                    }
+                }else if(array_key_exists($service->type, Service::SERVICE_MAP)) {
+                    $data = Service::SERVICE_MAP[$service->type]['value'];
+                    if(array_key_exists($service->service, $data) ){
+                        $dataServiceAdd[] = $data[$service->service];
+                    }
+                }
+            }
             $order[] = array(
                 '0' => app(OrderService::class)->implodeDate($item->order_date),
                 '1' => $item->order_code,
@@ -29,8 +55,8 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
                 '7' => isset($item->receiver) ? $item->receiver->address : '',
                 '8' => isset($item->receiver) ? $item->receiver->receiver_phone : '',
                 '9' => $item->weight,
-                '10' => '',
-                '11' => '',
+                '10' => implode(', ', $dataService),
+                '11' => implode(', ', $dataServiceAdd),
                 '12' => $item->note
             );
         }

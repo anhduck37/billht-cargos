@@ -70,15 +70,18 @@
                             <div class="col mb-1">
                                 <a style="width: 100%" href="{{route('orders.showFormImport')}}" class="btn btn-primary">Nhập file excel</a>
                             </div>
+                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                             <div class="col mb-1">
-                                <button style="width: 100%" id="print" type="button" class="btn btn-primary">In đơn</button>
-                            </div>
-                            <div class="col mb-1">
-                                <a href="{{route('orders.export')}}" style="width: 100%" class="btn btn-primary float-right"
-                                   >
+                                <a href="#" id="export" style="width: 100%" class="btn btn-primary float-right"
+                                >
                                     Xuất file excel
                                 </a>
                             </div>
+                            @endif
+                            <div class="col mb-1">
+                                <button style="width: 100%" id="print" type="button" class="btn btn-primary">In đơn</button>
+                            </div>
+
                             @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                             <div class="col mb-1">
                                 <button style="width: 100%" type="button" id="deleteMany" class="btn btn-primary">Xóa vận đơn</button>
@@ -152,11 +155,12 @@
             });
             $('#order_date').on('apply.daterangepicker', function(ev, picker) {
                 $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+                let url = {!! json_encode(route('orders.export')) !!};
+                $('#export').attr('href', url + `?start_date=${picker.startDate.format('DD/MM/YYYY')}&end_date=${picker.endDate.format('DD/MM/YYYY')}`)
             });
             $('#order_date').on('cancel.daterangepicker', function(ev, picker) {
                 $(this).val('');
             });
-
         });
     </script>
 @endsection
