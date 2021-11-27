@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\City;
+use App\Exports\OrderExport;
 use App\Http\Requests\CreateOrderRequest;
 use App\Http\Requests\UpdateOrderRequest;
 use App\Mail\SendMail;
@@ -226,6 +227,9 @@ class OrderController extends AppBaseController
                         }
                     }
                 }
+                if($orderForm['signator']) {
+                    $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
+                }
                 Order::where('id', $id)->update($orderForm);
                 if($order &&  array_key_exists('delivery_status', $orderForm) && $orderForm['delivery_status'] != $order->delivery_status){
                     $order->delivery_status = $orderForm['delivery_status'];
@@ -263,6 +267,11 @@ class OrderController extends AppBaseController
             DB::rollback();
         }
         return redirect()->route('orders.index');
+    }
+
+    public function export() {
+        $file = Excel::download(new OrderExport(), 'orders.xlsx');
+        return $file;
     }
 
     public function import(Request $request) {

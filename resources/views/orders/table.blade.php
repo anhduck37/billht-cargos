@@ -208,6 +208,26 @@
                     });
                 }
             })
+            $('#export').on('click', function () {
+                    $.ajax({
+                        type: "GET",
+                        url: '/order/export',
+                        data: {'order_ids': dataPrint},
+                    }).done((res) => {
+                        var bin = atob(res);
+                        var ab = s2ab(bin); // from example above
+                        let blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;' })
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = 'demo.xlsx';
+
+                        document.body.appendChild(link);
+
+                        link.click();
+
+                        document.body.removeChild(link);
+                    });
+            })
             $('#sendEmail').on('click', function () {
                 let typeEmail = $('input[name="type_email"]:checked').val()
                 if(typeEmail) {

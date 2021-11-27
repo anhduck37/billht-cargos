@@ -207,8 +207,8 @@
 {{--                        @endforeach--}}
 {{--                    </select>--}}
 {{--                </div>--}}
-                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
-                <div class="col-md-3 mb-3">
+                @if(auth()->user()->level != \App\User::LEVEL_USER)
+                <div class=" @if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
                     <label for="validationDefault01">Tình trạng vận chuyển</label>
                     <select name="order[delivery_status]" class="form-control">
                         <option value="{{\App\Models\Order::DELIVERY_STATUS_PROCESSING}}" @if(!isset($order->delivery_status)) selected @endif></option>
@@ -219,7 +219,7 @@
                 </div>
                 @endif
                 @if(auth()->user()->level != \App\User::LEVEL_USER)
-                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
+                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Tỉnh / Thành phố </label>
                     <select name="order[location_id]" class="form-control">
                         <option value=""></option>
@@ -228,7 +228,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-6 @endif mb-3">
+                <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Người ký nhận</label>
                     <input type="text" class="form-control" value="{{old('order.signator') ? old('order.signator') : $order->signator }}" name="order[signator]">
                 </div>

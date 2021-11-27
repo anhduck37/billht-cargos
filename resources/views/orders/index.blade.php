@@ -74,9 +74,9 @@
                                 <button style="width: 100%" id="print" type="button" class="btn btn-primary">In đơn</button>
                             </div>
                             <div class="col mb-1">
-                                <a style="width: 100%" class="btn btn-primary float-right"
-                                   href="{{ route('orders.create') }}">
-                                    Tạo vận đơn
+                                <a href="{{route('orders.export')}}" style="width: 100%" class="btn btn-primary float-right"
+                                   >
+                                    Xuất file excel
                                 </a>
                             </div>
                             @if(auth()->user()->level == \App\User::LEVEL_ADMIN)

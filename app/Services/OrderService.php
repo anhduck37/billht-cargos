@@ -34,26 +34,18 @@ class OrderService
         }
         return null;
     }
-    function ConvertToUTF8($text){
-
-        $encoding = mb_detect_encoding($text, mb_detect_order(), false);
-        if($encoding == "UTF-8")
-        {
-            $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
-        }
-        $out = iconv(mb_detect_encoding($text, mb_detect_order(), false), "UTF-8//IGNORE", $text);
-        return $out;
-    }
 
     public function getKeyService($service) {
+        $data = null;
         foreach (Service::SERVICE_MAP as $key => $item) {
-            if(in_array(trim($service), $item['value'])){
-                $service_key = array_search($service, $item['value']);
+            $value = ucfirst(trim($service));
+            if(in_array($value, $item['value'])){
+                $service_key = array_search($value, $item['value']);
                 $service_type = $key;
-                return ['type' => $key, 'service_key' => $service_key];
+                $data = ['type' => $key, 'service_key' => $service_key];
             }
         }
-        return null;
+        return $data;
     }
 
     public function insertService($services, $order_id) {

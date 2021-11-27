@@ -20,10 +20,10 @@ Route::get('/', function () {
 //    $level = 2;
 //    return view('template.print', ['orders' => $order, 'level' => $level])->render();
 //});
-Route::get('email', function () {
-    $order = \App\Models\Order::first();
-    return view('template.email_success', ['order' => $order]);
-});
+//Route::get('email', function () {
+//    $order = \App\Models\Order::first();
+//    return view('template.email_success', ['order' => $order]);
+//});
 
 Auth::routes();
 Route::post('/register', 'Auth\RegisterController@create');
@@ -40,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('orders/import', 'OrderController@import')->name('orders.import');
     Route::get('fileDemo', 'OrderController@fileDownload')->name('fileDemo');
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');
-//    Route::get('users/{id}', 'UserController@show')->name('users.show');
+    Route::get('order/export', 'OrderController@export')->name('orders.export');
     Route::resource('partners', 'PartnerController');
     Route::post('/template/render', 'OrderController@renderTemplate');
     Route::post('/order/delete-many', 'OrderController@deleteMany');
