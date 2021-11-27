@@ -48,6 +48,15 @@ class OrderService
         return $data;
     }
 
+    public function getKeyPaymentMethod($name) {
+        $convertName = ucfirst(trim($name));
+        $key = array_search($convertName, Order::PAYMENT_METHOD_MAP);
+        if($key) {
+            return $key;
+        }
+        return 0;
+    }
+
     public function insertService($services, $order_id) {
         $data = [];
         foreach ($services as $key => $value) {

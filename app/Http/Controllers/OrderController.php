@@ -305,9 +305,10 @@ class OrderController extends AppBaseController
                             'receiver_name' => $sheet->getCell( 'E' . $row )->getValue() ? $sheet->getCell( 'E' . $row )->getValue() : '',
                             'address' => $sheet->getCell( 'F' . $row )->getValue() ? $sheet->getCell( 'F' . $row )->getValue() : '',
                             'receiver_phone' => $sheet->getCell( 'G' . $row )->getValue() ? $sheet->getCell( 'G' . $row )->getValue() : '',
-                            'receiver_email' => $sheet->getCell( 'H' . $row )->getValue() ? $sheet->getCell( 'H' . $row )->getValue() : '',
+//                            'receiver_email' => $sheet->getCell( 'H' . $row )->getValue() ? $sheet->getCell( 'H' . $row )->getValue() : '',
                         ];
 //                        if($receiverData['receiver_name'] != '' && $receiverData['receiver_phone'] != '' && $receiverData['address'] != ''){
+
                             $sender = Sender::create($senderData);
                             $receiver = Receiver::create($receiverData);
                             $orderData = [
@@ -321,6 +322,9 @@ class OrderController extends AppBaseController
                                 'order_status' => Order::ORDER_BLANK,
                                 'delivery_status' => Order::DELIVERY_STATUS_PROCESSING,
                             ];
+                            if($sheet->getCell( 'H' . $row )->getValue()) {
+                                $orderData['payment_method'] = app(OrderService::class)->getKeyPaymentMethod($sheet->getCell( 'H' . $row )->getValue());
+                            }
                             if(auth()->user()->level == User::LEVEL_ADMIN){
                                 if($sheet->getCell( 'N' . $row )->getValue()) {
                                     $person_charge = User::where('name', 'LIKE', '%'.$sheet->getCell( 'N' . $row )->getValue().'%')->first();
@@ -331,17 +335,22 @@ class OrderController extends AppBaseController
                                 }
 
                             }
+
                             if($orderData['order_date']){
-                                $date = intval($orderData['order_date']);
-                                $orderData['order_date'] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($date)->format('d/m/Y');
+                                if(gettype($orderData['order_date']) == 'integer'){
+                                    $date = intval($orderData['order_date']);
+                                    $orderData['order_date'] = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($date)->format('d/m/Y');
+                                }
                                 $times = explode('/',$orderData['order_date']);
                                 if(count($times) >= 3){
                                     $convertDate = $times[2].'-'.$times[1].'-'.$times[0];
                                     $orderData['order_date'] = $convertDate;
                                 }
+
                             } else {
                                 $orderData['order_date'] = date('Y-m-d');
                             }
+
                             $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
                             $order = Order::create($orderData);
                             if($order ){
