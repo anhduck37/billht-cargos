@@ -28,6 +28,8 @@
         }
         .custom-row {
             border: 1px solid;
+            margin-left: 10px;
+            margin-right: 10px;
         }
         .custom-col {
             border-right: 1px solid;
@@ -39,12 +41,12 @@
             color: black !important;
         }
         body {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: black;
             font-weight: normal;
         }
         .size-text {
-            font-weight: 400;
+            font-weight: 500;
         }
         .card-title {
             margin: 0;
@@ -54,7 +56,13 @@
         p {
             margin-bottom: 0;
         }
-
+        .card {
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+        @media print {
+            .page {page-break-after: always;}
+        }
     </style>
     <script type="text/javascript" src="{{asset('/js/renderCode.js')}}"></script>
 </head>
@@ -64,7 +72,8 @@
 
 <div class="main-content">
     @foreach($orders as $order)
-    <div class="card mt-1" style="margin-bottom: 20px;border-right: 1px solid;border-left: 1px solid;">
+        <div class="page">
+    <div class="card mt-1">
         <div class="card-body">
             <div class="row custom-row">
                 <div class="col-5 mt-4" >
@@ -246,7 +255,7 @@
         </div>
     </div>
         @if($level == \App\User::LEVEL_ADMIN)
-            <div class="card" style="margin-bottom: 20px;border-right: 1px solid;border-left: 1px solid;">
+            <div class="card" style="margin-top: 90px;margin-bottom: 20px;">
                 <div class="card-body">
                     <div class="row custom-row">
                         <div class="col-5 mt-4" >
@@ -427,6 +436,7 @@
                 </div>
             </div>
         @endif
+            </div>
     @endforeach
 </div>
 <script type="text/javascript">
@@ -437,13 +447,13 @@
         let idRender = '#'+ order.order_code;
         JsBarcode(idRender, order.order_code, {
             fontOptions: "bold",
-            height: 97
+            height: 90
         });
         if(level == levelAdmin) {
             let idRenderAdmin = '#'+ order.order_code + levelAdmin;
             JsBarcode(idRenderAdmin, order.order_code, {
                 fontOptions: "bold",
-                height: 97
+                height: 90
             });
         }
     })
