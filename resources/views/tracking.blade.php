@@ -78,7 +78,7 @@
                                 <td>Người nhận</td>
                                 <td>Địa chỉ</td>
                                 <td>Người ký nhận</td>
-                                <td>Thời gian cập nhật</td>
+                                <!-- <td>Thời gian cập nhật</td> -->
                                 <td>Nội dung</td>
                             </tr>
                             </thead>
@@ -104,9 +104,7 @@
                                     <td>{{isset($item->order) && isset($item->order->receiver) ? $item->order->receiver->receiver_name : ''}}</td>
                                     <td>{{isset($item->order->receiver) && isset($item->order->receiver) ? $item->order->receiver->address : ''}}</td>
                                     <td>{{$item->signator}}</td>
-                                    <td>
-                                        {{$item->updated_at}}
-                                    </td>
+                                    <!-- <td>{{$item->updated_at}}</td> -->
                                     <td>{{isset($item->order) ? $item->order->note : ''}}</td>
                                 </tr>
                             @endforeach
