@@ -41,7 +41,7 @@
             color: black !important;
         }
         body {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: black;
             font-weight: normal;
         }
@@ -73,12 +73,12 @@
 <div class="main-content">
     @foreach($orders as $order)
         <div class="page">
-    <div class="card mt-1">
+    <div class="card">
         <div class="card-body">
             <div class="row custom-row">
                 <div class="col-5 mt-4" >
                     <div class="card-body">
-                        <img width="350" src="{{asset('image/logo_print.png')}}">
+                        <img width="300" src="{{asset('image/logo_print.png')}}">
                     </div>
                 </div>
                 <div class="col-3 mt-4">
@@ -255,7 +255,7 @@
         </div>
     </div>
         @if($level == \App\User::LEVEL_ADMIN)
-            <div class="card" style="margin-top: 90px;margin-bottom: 20px;">
+            <div class="card" style="margin-top: 70px;margin-bottom: 20px;">
                 <div class="card-body">
                     <div class="row custom-row">
                         <div class="col-5 mt-4" >
