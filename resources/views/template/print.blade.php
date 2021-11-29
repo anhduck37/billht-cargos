@@ -143,7 +143,7 @@
                         <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
                         <p class="card-text size-text">{{isset($order->receiver) ? $order->receiver->receiver_name : '.....'}}</p>
 
-                        <p class="card-text size-text"><small class="text-muted">{{isset($order->receiver) ? (isset($order->receiver->address) ? $order->receiver->address . ', ' : '' ). (isset($order->receiver->ward) ? $order->receiver->ward->ward_name . ', ' : '')  . (isset($order->sender->district) ? $order->sender->district->district_name . ', ' : '') . (isset($order->sender->city) ? $order->sender->city->city_name : '') : '.....'}} </small></p>
+                        <p class="card-text size-text"><small class="text-muted">{{isset($order->receiver) ? (isset($order->receiver->address) ? $order->receiver->address . ', ' : '' ). (isset($order->receiver->ward) ? $order->receiver->ward->ward_name . ', ' : '')  . (isset($order->receiver->district) ? $order->receiver->district->district_name . ', ' : '') . (isset($order->receiver->city) ? $order->receiver->city->city_name : '') : '.....'}} </small></p>
 
                         <p class="card-text size-text"><h4 class="card-title">Điện thoại:</h4> {{isset($order->receiver) ? $order->receiver->receiver_phone : '.....'}}</p>
                     </div>
