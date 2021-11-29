@@ -16,7 +16,7 @@ Route::get('/', function () {
     return redirect('/orders');
 });
 Route::get('/test', function () {
-   $order = \App\Models\Order::get();
+   $order = \App\Models\Order::limit(10)->get();
    $level = 2;
    return view('template.print', ['orders' => $order, 'level' => $level])->render();
 });
