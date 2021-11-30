@@ -325,7 +325,7 @@ class OrderController extends AppBaseController
                             if($sheet->getCell( 'H' . $row )->getValue()) {
                                 $orderData['payment_method'] = app(OrderService::class)->getKeyPaymentMethod($sheet->getCell( 'H' . $row )->getValue());
                             }
-                            if(auth()->user()->level == User::LEVEL_ADMIN){
+                            if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])){
                                 if($sheet->getCell( 'N' . $row )->getValue()) {
                                     $person_charge = User::where('name', 'LIKE', '%'.$sheet->getCell( 'N' . $row )->getValue().'%')->first();
                                     $orderData['person_charge'] = isset($person_charge) ? $person_charge->id: 0;
@@ -410,7 +410,7 @@ class OrderController extends AppBaseController
         }else {
             $orders = [];
         }
-        $level = auth()->user()->level;
+        $level = $request->number;
         return view('template.print', ['orders' => $orders, 'level' => $level])->render();
     }
 

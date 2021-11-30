@@ -22,11 +22,13 @@ class User extends Authenticatable
     const LEVEL_USER    = 1;
     const LEVEL_POSTMAN = 3;
     const LEVEL_ADMIN   = 2;
+    const LEVEL_STAFF = 4;
 
     const LEVEL_MAP = [
         self::LEVEL_USER    => 'Khách hàng',
         self::LEVEL_ADMIN   => 'Quản lý',
-        self::LEVEL_POSTMAN => 'Bưu tá'
+        self::LEVEL_POSTMAN => 'Bưu tá',
+        self::LEVEL_STAFF => 'Nhân viên',
     ];
 
     /**

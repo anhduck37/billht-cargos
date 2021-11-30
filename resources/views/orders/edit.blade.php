@@ -24,7 +24,7 @@
                         <div class="card-footer text-center">
                             {!! Form::submit( 'Cập nhật vận đơn' , ['class' => 'btn btn-primary']) !!}
                             <button id="print" type="button" data-id="{{$order->id}}" class="btn btn-primary">In đơn</button>
-                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button>
                             @endif
                             <a class='btn btn-light' href="{{route('orders.index')}}">Thoát</a>

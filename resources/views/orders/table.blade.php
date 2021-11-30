@@ -22,12 +22,12 @@
             <td>STT</td>
             <td>Ngày gửi</td>
             <td>Mã vận đơn</td>
-            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                 <td>Mã khác</td>
             @endif
             <td>Người gửi</td>
             <td>Người nhận</td>
-            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
             <td>Người phụ trách</td>
             @endif
 {{--            <th>Phòng ban</th>--}}
@@ -40,7 +40,7 @@
             <!-- <th>Trọng lượng</th>
             <th>Chiều cao</th>
             <th>Chiều dài</th> -->
-            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
             <td>Người tạo</td>
             @endif
             <td class="text-center" colspan="2">Hành động</td>
@@ -61,7 +61,7 @@
                     </div>
                     </a>
                 </th>
-                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                     <th>{{$order->invoice_code}}</th>
                 @endif
                 <td>
@@ -93,7 +93,7 @@
                             @endif
                         </label></div>
                 </td>
-                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                 <td>{{isset($order->getPersonCharge) ? $order->getPersonCharge->name : ''}}</td>
                 @endif
 {{--                <td>{{$order->department}}</td>--}}
@@ -106,7 +106,7 @@
                 <!-- <td>{{$order->weight}}</td>
                 <td>{{$order->height}}</td>
                 <td>{{$order->width}}</td> -->
-                @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                 <td>{{isset($order->user) ? $order->user->email : ''}}</td>
                 @endif
                 <td class="text-center">
@@ -115,10 +115,10 @@
 {{--                            <i class="fas fa-ellipsis-v"></i>--}}
 {{--                        </a>--}}
 {{--                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">--}}
-                    <a class="printIcon" data-id="{{$order->id}}" ><i style="color: #0ca362;" class="fa fa-print fa-2x"></i></a>
+                    <a class="printIcon" data-toggle="modal" data-target="#openModalPrint" data-id="{{$order->id}}" ><i style="color: #0ca362;" class="fa fa-print fa-2x"></i></a>
 
                             <a href="{{ route('orders.edit', [$order->id]) }}"><i style="color: blue;" class="far fa-edit fa-2x"></i></a>
-                    @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                    @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <a class="delete" data-id="{{$order->id}}"><i style="color: red;" class="far fa-trash-alt fa-2x"></i>
                             </a>
                             {!! Form::open(['route' => ['orders.destroy', $order->id], 'method' => 'delete', 'class' => ['removeOrder'.$order->id],'style' => 'display: none']) !!}
@@ -173,10 +173,11 @@
                 }
             })
             $('#print').on('click', function () {
+                let number = $('input[name="number"]:checked').val()
                 $.ajax({
                     type: "POST",
                     url: '/template/render',
-                    data: {'order': dataPrint},
+                    data: {'order': dataPrint, number: number},
                     success: function (res) {
                         print(res)
                     },
@@ -185,14 +186,15 @@
 
             $('.printIcon').on('click', function (e) {
                 let orderId = $(this).attr('data-id');
-                $.ajax({
-                    type: "POST",
-                    url: '/template/render',
-                    data: {'order': [orderId]},
-                    success: function (res) {
-                        print(res)
-                    },
-                });
+                dataPrint = [orderId]
+                // $.ajax({
+                //     type: "POST",
+                //     url: '/template/render',
+                //     data: {'order': [orderId]},
+                //     success: function (res) {
+                //         print(res)
+                //     },
+                // });
             })
 
             $('#deleteMany').on('click', function () {

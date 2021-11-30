@@ -20,16 +20,16 @@
 
                     <div class="card-body">
                         <div class="form-row">
-                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
+                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Tên cá nhân / Công ty</label>
                                 <input type="text" value="{{request('name', '')}}" class="form-control" name="name" placeholder="Tên cá nhân / Công ty">
                             </div>
-                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
+                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Số điện thoại</label>
                                 <input type="number" value="{{request('phone', '')}}" class="form-control" name="phone" placeholder="Số điện thoại">
                             </div>
-                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
-                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Đơn vị vận chuyển</label>
                                 <select name="partner" class="form-control">
                                     <option value=""></option>
@@ -41,16 +41,16 @@
                             @endif
                         </div>
                         <div class="form-row">
-                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
+                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Mã vận đơn</label>
                                 <input type="text" class="form-control" value="{{request('order_code', '')}}" name="order_code" placeholder="Mã vận đơn">
                             </div>
-                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
+                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Ngày gửi</label>
                                 <input type="text" class="form-control" value="{{request('order_date', '')}}" name="order_date" id="order_date" placeholder="Ngày gửi">
                             </div>
-                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
-                            <div class="@if(auth()->user()->level == \App\User::LEVEL_ADMIN) col-md-4 @else col-md-6 @endif mb-3">
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Trạng thái vận đơn</label>
                                 <select name="delivery_status" class="form-control">
                                     <option value=""></option>
@@ -70,7 +70,7 @@
                             <div class="col mb-1">
                                 <a style="width: 100%" href="{{route('orders.showFormImport')}}" class="btn btn-primary">Nhập file excel</a>
                             </div>
-                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <div class="col mb-1">
                                 <a href="#" id="export" style="width: 100%" class="btn btn-primary float-right"
                                 >
@@ -79,10 +79,10 @@
                             </div>
                             @endif
                             <div class="col mb-1">
-                                <button style="width: 100%" id="print" type="button" class="btn btn-primary">In đơn</button>
+                                <button style="width: 100%" data-toggle="modal" data-target="#openModalPrint" type="button" class="btn btn-primary">In đơn</button>
                             </div>
 
-                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <div class="col mb-1">
                                 <button style="width: 100%" type="button" id="deleteMany" class="btn btn-primary">Xóa vận đơn</button>
                             </div>
@@ -104,7 +104,7 @@
                     {!! $orders->links() !!}
                 </div>
 
-                <!-- Modal -->
+                <!-- Modal Email -->
                 <div class="modal fade" id="openModalEmail" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
@@ -133,6 +133,72 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
                                 <button type="button" id="sendEmail" class="btn btn-primary">Gửi email</button>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- Modal Email -->
+                <div class="modal fade" id="openModalEmail" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title" id="exampleModalLongTitle">Bạn vui lòng template email</h3>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="loading">
+                                <div id="isLoading" style="display: none" class="text-center"><img width="70px" src="{{asset('/image/loading.jpg')}}" ></div>
+
+                                <div class="form-check isShow">
+                                    <input class="form-check-input" type="radio" name="type_email" id="exampleRadios1" value="1">
+                                    <label class="form-check-label" for="exampleRadios1">
+                                        Đã tiếp nhận bưu phẩm
+                                    </label>
+                                </div>
+                                <div class="form-check isShow">
+                                    <input class="form-check-input" type="radio" name="type_email" id="exampleRadios2" value="2">
+                                    <label class="form-check-label" for="exampleRadios2">
+                                        Đã giao
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                <button type="button" id="sendEmail" class="btn btn-primary">Gửi email</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Print -->
+                <div class="modal fade" id="openModalPrint" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h3 class="modal-title" id="exampleModalLongTitle">Bạn vui lòng chọn liên</h3>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body" id="loading">
+                                <div id="isLoading" style="display: none" class="text-center"><img width="70px" src="{{asset('/image/loading.jpg')}}" ></div>
+
+                                <div class="form-check isShow">
+                                    <input class="form-check-input" type="radio" name="number" id="number1" value="1">
+                                    <label class="form-check-label" for="number1">
+                                        1 liên
+                                    </label>
+                                </div>
+                                <div class="form-check isShow">
+                                    <input class="form-check-input" type="radio" name="number" id="number2" value="2">
+                                    <label class="form-check-label" for="number2">
+                                        2 liên
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
+                                <button type="button" id="print" class="btn btn-primary">In đơn</button>
                             </div>
                         </div>
                     </div>
