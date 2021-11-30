@@ -21,6 +21,7 @@
     <link type="text/css" href="{{ asset('argon/css/argon.css?v=1.0.0') }}" rel="stylesheet">
     <style>
         .card-body {
+            font-family: arial;
             padding: 0;
         }
         .col {
