@@ -87,7 +87,7 @@ class OrderController extends AppBaseController
         if(array_key_exists('delivery_status', $formFilter) && $formFilter['delivery_status']) {
             $orders->where('delivery_status', $formFilter['delivery_status']);
         }
-        if(auth()->user()->level != User::LEVEL_ADMIN) {
+        if(!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
             if(auth()->user()->level == User::LEVEL_POSTMAN){
                 $orders->where('orders.person_charge', auth()->user()->id);
             }else {
