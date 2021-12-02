@@ -64,6 +64,20 @@
         @media print {
             .page {page-break-after: always;}
         }
+        .custom-border {
+            border-right: 3px solid black;
+        }
+        .custom-div {
+            width: 50px;
+            height: 50px;
+            border: 1px solid black;
+            border-radius: 18px;
+            margin-left: 11%;
+        }
+        .custom-height {
+            height: 120px;
+        }
+
     </style>
     <script type="text/javascript" src="{{asset('/js/renderCode.js')}}"></script>
 </head>
@@ -186,8 +200,9 @@
                                     <div class="col-md-6">
                                         <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-6 custom-border">
                                         <p class="card-text size-text">Dấu ngày gửi</p>
+                                        <div class="mt-5 custom-div"></div>
                                     </div>
                                 </div>
                             </div>
@@ -217,8 +232,8 @@
                                 <div class="row">
                                     <div class="col">
                                         <h4 class="card-title">Thông tin hàng hóa</h4>
-                                        <div class="row" style="margin-bottom: 70px">
-                                            <div class="col-md-4 size-text">Số kiện</div>
+                                        <div class="row">
+                                            <div class="col-md-4 size-text custom-height custom-border">Số kiện</div>
                                             <div class="col-md-8 size-text">Trọng lượng thực tế <p class="col-5 text-center"> {{($order->weight ? $order->weight : 0) . ' g'}}</p></div>
 
                                         </div>
@@ -367,8 +382,9 @@
                                             <div class="col-md-6">
                                                 <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="col-md-6 custom-border">
                                                 <p class="card-text size-text">Dấu ngày gửi</p>
+                                                <div class="mt-5 custom-div"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -398,8 +414,8 @@
                                         <div class="row">
                                             <div class="col">
                                                 <h4 class="card-title">Thông tin hàng hóa</h4>
-                                                <div class="row" style="margin-bottom: 70px">
-                                                    <div class="col-md-4 size-text">Số kiện</div>
+                                                <div class="row">
+                                                    <div class="col-md-4 pb-4 size-text custom-height custom-border">Số kiện</div>
                                                     <div class="col-md-8 size-text">Trọng lượng thức tế <p class="col-5 text-center"> {{($order->weight ? $order->weight : 0) . ' g'}}</p></div>
 
                                                 </div>

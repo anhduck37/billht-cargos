@@ -37,8 +37,8 @@ class OrderService
 
     public function getKeyService($service) {
         $data = null;
+        $value = ucfirst(strtolower(trim($service)));
         foreach (Service::SERVICE_MAP as $key => $item) {
-            $value = ucfirst(trim($service));
             if(in_array($value, $item['value'])){
                 $service_key = array_search($value, $item['value']);
                 $service_type = $key;
@@ -49,7 +49,7 @@ class OrderService
     }
 
     public function getKeyPaymentMethod($name) {
-        $convertName = ucfirst(trim($name));
+        $convertName = ucfirst(strtolower(trim($name)));
         $key = array_search($convertName, Order::PAYMENT_METHOD_MAP);
         if($key) {
             return $key;
