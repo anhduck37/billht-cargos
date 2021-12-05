@@ -405,7 +405,11 @@ class OrderController extends AppBaseController
 
     public function renderTemplate(Request $request) {
         $orders = $request->order;
-        if(!empty($orders)) {
+        $start = $request->start;
+        $end = $request->end;
+        if($start && $end) {
+            $orders = Order::where('id', '>=', $start)->where('id', '<=', $end)->get();
+        }else if(!empty($orders)) {
             $orders = Order::whereIn('id', $orders)->get();
         }else {
             $orders = [];

@@ -47,10 +47,11 @@
         </tr>
         </thead>
         <tbody>
+
         @foreach($orders as $key => $order)
             <tr>
                 <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->serviceArray($order->id))}}" value="{{$order->id}}" type="checkbox" /></th>
-                <th>{{$key + 1}}</th>
+                <th>{{ ((int)$orders->perPage() * ($orders->currentPage() - 1)) + ($key + 1)}}</th>
                 <td>{{$order->converDate($order->order_date)}}</td>
                 <th scope="row">
                     <a href="{{ route('orders.edit', [$order->id]) }}">
@@ -174,10 +175,12 @@
             })
             $('#print').on('click', function () {
                 let number = $('input[name="number"]:checked').val()
+                let start_stt = $('input[name="start_stt"]').val()
+                let end_stt = $('input[name="end_stt"]').val()
                 $.ajax({
                     type: "POST",
                     url: '/template/render',
-                    data: {'order': dataPrint, number: number},
+                    data: {'order': dataPrint, number: number, start: start_stt, end: end_stt},
                     success: function (res) {
                         print(res)
                     },

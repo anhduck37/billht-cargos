@@ -190,10 +190,31 @@
                                     </label>
                                 </div>
                                 <div class="form-check isShow">
-                                    <input class="form-check-input" type="radio" name="number" id="number2" value="2">
+                                    <input class="form-check-input" type="radio" name="number" checked id="number2" value="2">
                                     <label class="form-check-label" for="number2">
                                         2 liên
                                     </label>
+                                </div>
+                                <div class="form-check isShow">
+{{--                                    <input class="form-check-input" type="radio" name="number" id="number3" value="3">--}}
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <div class="col-5"><label class="form-check-label" for="number3">
+                                                        Từ số
+                                                    </label></div>
+                                                <div class="col-6"><input type="number" name="start_stt" class="form-control form-control-sm"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="row">
+                                                <div class="col-5"><label class="form-check-label" for="number3">
+                                                        Đến số
+                                                    </label></div>
+                                                <div class="col-6"><input type="number" name="end_stt" class="form-control form-control-sm"></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
