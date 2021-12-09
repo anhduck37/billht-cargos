@@ -53,6 +53,7 @@
             margin: 0;
             font-weight: bold;
             color: black;
+            font-size: 18px;
         }
         p {
             margin-bottom: 0;
