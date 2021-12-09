@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
+use PHPMailer\PHPMailer\SMTP;
 use Response;
 use Illuminate\Support\Facades\Http;
 use App\Models\Order;
@@ -34,6 +35,8 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Exception as ExceptionExcel;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception as ExceptionMail;
 
 class OrderController extends AppBaseController
 {
@@ -462,26 +465,52 @@ class OrderController extends AppBaseController
         }
         $errors = [];
         $success = [];
+        $mail = new PHPMailer(true); // notice the \  you have to use root namespace here
         try {
-            if($type_email && !empty($orderIds)) {
-                foreach ($orderIds as $id) {
-                    $order = Order::where('id', $id)->first();
-                    if($order && isset($order->sender) && $order->sender->sender_email){
-                        Mail::to($order->sender->sender_email)->send(new SendMail($order, $type_email));
-                        array_push($success, $order->order_code);
+            foreach ($orderIds as $id){
+                $order = Order::where('id', $id)->first();
+                if($order && isset($order->sender) && $order->sender->sender_email){
+                    $template = '';
+                    if($type_email == 2) {
+                        $template = view('template.email_confirm', ['order' => $order])->render();
                     }else {
-                        array_push($errors, $order->order_code);
+                        $template = view('template.email_success', ['order' => $order])->render();
                     }
+
+                    $mail->SMTPOptions = array(
+                        'ssl' => array(
+                            'verify_peer' => false,
+                            'verify_peer_name' => false,
+                            'allow_self_signed' => true
+                        ));
+                    $mail->isSMTP();
+                    $mail->CharSet = "utf-8";
+                    $mail->SMTPAuth = true;
+                    $mail->SMTPSecure = env('MAIL_ENCRYPTION', 'tls');
+                    $mail->Host = env("MAIL_HOST", 'mailer-0104.inet.vn');
+                    $mail->Port = env('MAIL_PORT', 587);
+                    $mail->Username = env('MAIL_USERNAME', 'bill@ht-cargos.com');
+                    $mail->Password = env('MAIL_PASSWORD', 'dlorhxxlmqzzjvmv');
+                    $mail->setFrom(env('MAIL_FROM_ADDRESS', 'bill@ht-cargos.com'), 'HTEXPRESS - Hệ thống quản lý vận đơn');
+                    $mail->Subject = "HTEXPRESS - Hệ thống quản lý vận đơn";
+                    $mail->MsgHTML($template);
+                    $mail->addAddress($order->sender->sender_email, $order->sender->sender_name);
+                    $mail->send();
+
+                    array_push($success, $order->order_code);
+                }else {
+                    array_push($errors, $order->order_code);
                 }
             }
             if(!empty($errors)) {
-                Flash::error('Xảy ra lỗi gửi email với các vận đơn: '. implode($errors));
+                Flash::error('Xảy ra lỗi gửi email với các vận đơn: '. implode(', ', $errors));
             }
             if(!empty($success)){
-                Flash::success('Gửi email thành công với các vận đơn: ' . implode($success));
+                Flash::success('Gửi email thành công với các vận đơn: ' . implode(', ', $success));
             }
-        }catch (Exception $e) {
-            Flash::error('Xảy ra lỗi gửi email với tất cả vận đơn');
+
+        } catch (ExceptionMail $e) {
+            Flash::error($e->getMessage());
         }
         return route('orders.index');
     }

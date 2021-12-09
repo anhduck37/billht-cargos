@@ -46,5 +46,7 @@
 
         </tr>
     </table>
-    
+    <div class="text-center mt-3">
+        <a href="{{route('tracking').'?order_code='.$order->order_code}}" class="btn btn-primary" role="button" aria-pressed="true">Theo dõi đơn hàng</a>
+    </div>
 @endsection

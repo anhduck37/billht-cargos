@@ -20,10 +20,10 @@ Route::get('/test', function () {
    $level = 2;
    return view('template.print', ['orders' => $order, 'level' => $level])->render();
 });
-//Route::get('email', function () {
-//    $order = \App\Models\Order::first();
-//    return view('template.email_success', ['order' => $order]);
-//});
+Route::get('email', function () {
+    $order = \App\Models\Order::first();
+    return view('template.email_confirm', ['order' => $order]);
+});
 
 Auth::routes();
 Route::post('/register', 'Auth\RegisterController@create');
