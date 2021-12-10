@@ -491,8 +491,8 @@ class OrderController extends AppBaseController
                     $mail->Port = env('MAIL_PORT', 587);
                     $mail->Username = env('MAIL_USERNAME', 'bill@ht-cargos.com');
                     $mail->Password = env('MAIL_PASSWORD', 'dlorhxxlmqzzjvmv');
-                    $mail->setFrom(env('MAIL_FROM_ADDRESS', 'bill@ht-cargos.com'), 'HTEXPRESS - Hệ thống quản lý vận đơn');
-                    $mail->Subject = "HTEXPRESS - Hệ thống quản lý vận đơn";
+                    $mail->setFrom(env('MAIL_FROM_ADDRESS', 'bill@ht-cargos.com'), env('MAIL_FROM_NAME', 'HT EXPRESS'));
+                    $mail->Subject = env('MAIL_FROM_NAME', 'HT EXPRESS');
                     $mail->MsgHTML($template);
                     $mail->addAddress($order->sender->sender_email, $order->sender->sender_name);
                     $mail->send();

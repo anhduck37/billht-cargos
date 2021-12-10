@@ -32,15 +32,15 @@
         </tr>
         <tr>
             <td style="background-color: #d9e0e7;">
-                <p>Thời gian giao hàng:</p>
-                <label>
-                    {{$order->updated_at}}
-                </label>
-            </td>
-            <td style="background-color: #d9e0e7;">
                 <p>Người kí nhận:</p>
                 <label>
                     {{$order->signator}}
+                </label>
+            </td>
+            <td style="background-color: #d9e0e7;">
+                <p>Thời gian giao hàng:</p>
+                <label>
+                    {{$order->updated_at}}
                 </label>
             </td>
 

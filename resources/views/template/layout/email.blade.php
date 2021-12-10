@@ -56,9 +56,10 @@
             width: 100%;
             margin-right: auto;
             margin-left: auto;
-            padding-right: 15px;
-            padding-left: 15px;
+            /*padding-right: 15px;*/
+            /*padding-left: 15px;*/
             background-color: white;
+            border: 1px solid #333537;
         }
         .container
         {
@@ -142,15 +143,22 @@
                 transition: none;
             }
         }
+        .custom-padding {
+            padding-right: 15px;
+            padding-left: 15px;
+        }
+
 
     </style>
     <script type="text/javascript" src="{{asset('/js/renderCode.js')}}"></script>
 </head>
 <body>
 <div class="container">
+
     <div class="text-center header-custom">
         <img width="400" src="{{asset('/image/order_manager.png')}}">
     </div>
+    <div class="custom-padding">
     <div class="text-center row mt-4"><div class="col"><h1 style="color: #f6821f">@yield('title')</h1></div></div>
     <div class="mt-4">
         <label>Xin chào {{isset($order->sender) ? $order->sender->sender_name : '' }}</label>
@@ -164,6 +172,7 @@
         <p>Hà Nội: Số 27, ngõ 71 Hoàng Văn Thái, Khương Trung, Thanh Xuân,Hà Nội</p>
         <p>HCM: A51A Bạch Đằng, Phường 2, Q.Tân Bình, HCM</p>
         <p>Hotline: 1900.633.656 | Email: info@ht-cargo.com</p>
+    </div>
     </div>
 </div>
 </body>
