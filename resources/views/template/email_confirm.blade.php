@@ -4,7 +4,7 @@
 @endsection
 @section('table')
     <div>
-    <table class="table table-bordered mt-4" style="width: 100%">
+    <table class="sm-w-full" style="width: 100%">
         <tr style="background-color: #f6821f">
             <td><p style="color: white">Thông tin giao hàng chi tiết</p></td>
         </tr>
@@ -29,7 +29,7 @@
         </tr>
     </table>
     </div>
-    <div class="text-center mt-3">
-        <a href="{{route('tracking').'?order_code='.$order->order_code}}" class="btn btn-primary" role="button" aria-pressed="true">Theo dõi đơn hàng</a>
+    <div class="text-center" style="margin-top: 10px">
+        <a href="{{route('tracking').'?order_code='.$order->order_code}}" style="color: white;" class="btn btn-primary" role="button" aria-pressed="true">Theo dõi đơn hàng</a>
     </div>
 @endsection

@@ -22,7 +22,7 @@ Route::get('/test', function () {
 });
 Route::get('email', function () {
     $order = \App\Models\Order::first();
-    return view('template.email_confirm', ['order' => $order]);
+    return view('template.email_success', ['order' => $order]);
 });
 
 Auth::routes();

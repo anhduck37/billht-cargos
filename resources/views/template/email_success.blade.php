@@ -3,7 +3,7 @@
     Đơn hàng của bạn đã giao thành công!
 @endsection
 @section('table')
-    <table class="table mt-4" style="width: 100%; border-spacing:0">
+    <table class="table" style="width: 100%; border-spacing:0; margin-top: 10px">
         <tr style="background-color: #f6821f">
             <td><p style="color: white">Thông tin giao hàng chi tiết</p></td>
             <td></td>
@@ -38,15 +38,15 @@
                 </label>
             </td>
             <td style="background-color: #d9e0e7;">
-                <p>Thời gian giao hàng:</p>
-                <label>
-                    {{$order->updated_at}}
-                </label>
+{{--                <p>Thời gian giao hàng:</p>--}}
+{{--                <label>--}}
+{{--                    {{$order->updated_at}}--}}
+{{--                </label>--}}
             </td>
 
         </tr>
     </table>
-    <div class="text-center mt-3">
-        <a href="{{route('tracking').'?order_code='.$order->order_code}}" class="btn btn-primary" role="button" aria-pressed="true">Theo dõi đơn hàng</a>
+    <div class="text-center" style="margin-top: 10px">
+        <a style="color: white;" href="{{route('tracking').'?order_code='.$order->order_code}}" class="btn btn-primary" role="button" aria-pressed="true">Theo dõi đơn hàng</a>
     </div>
 @endsection

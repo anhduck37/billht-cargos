@@ -466,8 +466,10 @@ class OrderController extends AppBaseController
         $errors = [];
         $success = [];
         $mail = new PHPMailer(true); // notice the \  you have to use root namespace here
+        $orderId = null;
         try {
             foreach ($orderIds as $id){
+                $orderId = $id;
                 $order = Order::where('id', $id)->first();
                 if($order && isset($order->sender) && $order->sender->sender_email){
                     $template = '';
@@ -511,6 +513,9 @@ class OrderController extends AppBaseController
 
         } catch (ExceptionMail $e) {
             Flash::error($e->getMessage());
+        }
+        if($request->isUpdate && $orderId) {
+            route('orders.edit', [$orderId]);
         }
         return route('orders.index');
     }
