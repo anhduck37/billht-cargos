@@ -87,9 +87,12 @@
 >
 
 <div class="main-content">
-    @foreach($orders as $order)
+
+    @foreach($orders as $key => $order)
+        {{-- @if(($key % 2) === 0)
         <div class="page">
-    <div class="card">
+        @endif --}}
+    <div class="card {{$key % 2 > 0 && $level != \App\User::LEVEL_ADMIN ? 'page' : ''}}" style="{{$key % 2 > 0 && $level != \App\User::LEVEL_ADMIN ? 'margin-top: 23px;' : ''}}">
         <div class="card-body">
             <div class="row custom-row">
                 <div class="col-5 mt-4" >
@@ -272,7 +275,7 @@
         </div>
     </div>
         @if($level == \App\User::LEVEL_ADMIN)
-            <div class="card" style="margin-top: 70px;margin-bottom: 20px;">
+            <div class="card" style="margin-top: 23px;">
                 <div class="card-body">
                     <div class="row custom-row">
                         <div class="col-5 mt-4" >
@@ -454,8 +457,11 @@
                 </div>
             </div>
         @endif
-            </div>
+        {{-- @if(($key % 2) > 0)
+    </div>
+        @endif --}}
     @endforeach
+
 </div>
 <script type="text/javascript">
     let orders = {!! json_encode($orders) !!};

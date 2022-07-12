@@ -15,11 +15,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return redirect('/orders');
 });
-Route::get('/test', function () {
-   $order = \App\Models\Order::limit(10)->get();
-   $level = 2;
-   return view('template.print', ['orders' => $order, 'level' => $level])->render();
-});
+// Route::get('/test', function () {
+//    $order = \App\Models\Order::limit(10)->get();
+//    $level = 1;
+//    return view('template.print', ['orders' => $order, 'level' => $level])->render();
+// });
 Route::get('email', function () {
     $order = \App\Models\Order::first();
     return view('template.email_success', ['order' => $order]);
