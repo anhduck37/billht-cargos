@@ -294,6 +294,9 @@
             image_fromat: 'jpeg',
             jpeg_quality: 90
         })
+        Webcam.set('constraints', {
+            facingMode: 'environment'
+        })
         $(function() {
             $('#openCamera').click(function() {
                 Webcam.attach('#camera')
