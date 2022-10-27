@@ -282,10 +282,24 @@
             <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
+        <div id="camera"></div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 @section('javascript')
     <script type="text/javascript">
+        Webcam.set({
+            width: 350,
+            height: 350,
+            image_fromat: 'jpeg',
+            jpeg_quality: 90
+        })
+        $(function() {
+            $('#openCamera').click(function() {
+                Webcam.attach('#camera')
+            })
+        })
+
         $(function() {
             @if(isset($update))
                 let order = {!! json_encode($order) !!}

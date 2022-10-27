@@ -22,12 +22,13 @@
                         @include('orders.fields')
 
                         <div class="card-footer text-center">
-                            {!! Form::submit( 'Cập nhật vận đơn' , ['class' => 'btn btn-primary']) !!}
-                            <button id="print" type="button" data-id="{{$order->id}}" class="btn btn-primary">In đơn</button>
+                            {!! Form::submit( 'Cập nhật vận đơn' , ['class' => 'btn btn-primary mb-2']) !!}
+                            <button id="print" type="button" data-id="{{$order->id}}" class="btn btn-primary mb-2">In đơn</button>
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                            <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button>
+                            <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary mb-2">Gửi email</button>
                             @endif
-                            <a class='btn btn-light' href="{{route('orders.index')}}">Thoát</a>
+                            <button type="button" id="openCamera" class="btn btn-primary mb-2">Upload image</button>
+                            <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a>
                         </div>
 
                         {!! Form::close() !!}

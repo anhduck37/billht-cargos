@@ -520,4 +520,7 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
+    public function upload(Request $request) {
+
+    }
 }
