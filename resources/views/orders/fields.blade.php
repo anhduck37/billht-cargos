@@ -312,11 +312,11 @@
             force_flash: false,
             image_fromat: 'jpeg',
             jpeg_quality: 90,
-            border: '1px solid black'
+            constraints: {
+                facingMode: 'environment'
+            }
         })
-        Webcam.set('constraints', {
-            facingMode: 'environment'
-        })
+
         $(function() {
             $('#openCamera').click(function() {
                 $('#cardCamera').css({"display": ""})
@@ -327,7 +327,9 @@
                 console.log('hahah')
             })
             $('#changeCamera').click(function() {
-                Webcam.set('constraints', {})
+                Webcam.set('constraints', {
+                    exact: "environment"
+                })
             })
         })
 
