@@ -308,21 +308,20 @@
 @section('javascript')
     <script type="text/javascript">
 
-        var shutter = new Audio();
-        shutter.autoplay = false;
-        shutter.src = "{{asset('file/camera-focus-beep-01.mp3')}}"
-        Webcam.set({
-            width: '100%',
-            height: '100%',
-            force_flash: false,
-            image_fromat: 'jpeg',
-            jpeg_quality: 90,
-            constraints: {
-                facingMode: 'environment'
-            }
-        })
-
         $(function() {
+            var shutter = new Audio();
+            shutter.autoplay = false;
+            shutter.src = "{{asset('file/camera-focus-beep-01.mp3')}}"
+            Webcam.set({
+                width: '100%',
+                height: '100%',
+                force_flash: false,
+                image_fromat: 'jpeg',
+                jpeg_quality: 90,
+                constraints: {
+                    facingMode: 'environment'
+                }
+            })
             $('#openCamera').click(function() {
                 $('#cardCamera').css({"display": ""})
                 Webcam.attach('#camera')
