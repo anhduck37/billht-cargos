@@ -328,7 +328,7 @@
             })
             $('#changeCamera').click(function() {
                 Webcam.set('constraints', {
-                    exact: "environment"
+                    facingMode: { exact: "environment" }
                 })
             })
         })
