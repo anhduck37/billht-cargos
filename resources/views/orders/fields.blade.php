@@ -331,7 +331,7 @@
             $('#snapshot').click(function() {
                 shutter.play();
                 Webcam.snap(function(data_uri) {
-                    connsole.log('data_uri', data_uri)
+                    console.log('data_uri', data_uri)
                     document.getElementById('results').innerHTML = '<img src="'+ data_uri +'"/>';
                 })
                 Webcam.reset();
