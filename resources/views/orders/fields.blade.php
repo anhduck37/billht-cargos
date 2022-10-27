@@ -289,10 +289,12 @@
 @section('javascript')
     <script type="text/javascript">
         Webcam.set({
-            width: 350,
-            height: 350,
+            dest_width: 160,
+            dest_height: 120,
+            force_flash: false
             image_fromat: 'jpeg',
-            jpeg_quality: 90
+            jpeg_quality: 90,
+            border: '1px solid black'
         })
         Webcam.set('constraints', {
             facingMode: 'environment'
