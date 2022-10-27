@@ -310,7 +310,7 @@
 
         var shutter = new Audio();
         shutter.autoplay = false;
-        shutter.src = navigator.userAgent.match(/Firefox/) ? 'shutter.ogg' : 'shutter.mp3'
+        shutter.src = "{{asset('file/camera-focus-beep-01.mp3')}}"
         Webcam.set({
             width: '100%',
             height: '100%',
@@ -331,7 +331,7 @@
             $('#snapshot').click(function() {
                 shutter.play();
                 Webcam.snap(function(data_uri) {
-                    document.getElementById('results').innerHTML = '<img id="imageprev" src="'+data_uri+'"/>';
+                    document.getElementById('results').innerHTML = '<img src="'+ data_uri +'"/>';
                 })
                 Webcam.reset();
             })
