@@ -282,16 +282,16 @@
             <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
-        <div id="camera"></div>
+        <div id="camera" style="border: 1px solid #cad1d7; display: none"></div>
     </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 @section('javascript')
     <script type="text/javascript">
         Webcam.set({
-            dest_width: 160,
-            dest_height: 120,
-            force_flash: false
+            width: '100%',
+            height: '100%',
+            force_flash: false,
             image_fromat: 'jpeg',
             jpeg_quality: 90,
             border: '1px solid black'
@@ -301,6 +301,7 @@
         })
         $(function() {
             $('#openCamera').click(function() {
+                $('#camera').css({"display": ""})
                 Webcam.attach('#camera')
             })
         })
