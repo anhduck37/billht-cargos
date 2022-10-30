@@ -112,7 +112,7 @@
                         </table>
                         <div class="text-center mt-4">
                             @if (isset($order->image))
-                                <img src="{{asset('uploads/'.$order->image->image)}}" />
+                                <img style="max-width: 400px" src="{{asset('uploads/'.$order->image->image)}}" />
                             @endif
                         </div>
                     </div>

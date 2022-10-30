@@ -285,7 +285,7 @@
         <input id="image_data" type="hidden" name="image_data" />
         <div id="results" style="text-align: center">
             @if (isset($order->image))
-                <img src="{{asset('uploads/'.$order->image->image)}}" />
+                <img style="width: 250px" src="{{asset('uploads/'.$order->image->image)}}" />
             @endif
         </div>
         <div id="cardCamera" style="display: none">
@@ -339,7 +339,7 @@
             $('#snapshot').click(function() {
                 shutter.play();
                 Webcam.snap(function(data_uri) {
-                    document.getElementById('results').innerHTML = '<img src="'+ data_uri +'"/>';
+                    document.getElementById('results').innerHTML = '<img style="width: 250px" src="'+ data_uri +'"/>';
                     $('#cardCamera').css({"display": "none"})
                     $('#results').css({"display": ""})
                     $('#image_data').val(data_uri);
