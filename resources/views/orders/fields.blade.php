@@ -284,8 +284,8 @@
         </div>
         <input id="image_data" type="hidden" name="image_data" />
         <div id="results" style="text-align: center">
-            @if ($order->image)
-                <img src="{{asset('uploads/'.$order->image)}}" />
+            @if (isset($order->image))
+                <img src="{{asset('uploads/'.$order->image->image)}}" />
             @endif
         </div>
         <div id="cardCamera" style="display: none">
