@@ -21,8 +21,7 @@ class OrderTrackingController extends Controller
                 $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
             }
 
-            $order = Order::where('invoice_code', $order_code)->first();
-            dd($order);
+            $order = Order::where('order_code', $order_code)->first();
         }
         return view('tracking', ['order_trackings' => $order_trackings, 'delivery_status' => $delivery_status, 'order' => $order]);
     }
