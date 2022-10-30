@@ -319,6 +319,8 @@
                 Webcam.set({
                     width: 250,
                     height: 200,
+                    dest_width: 250,
+                    dest_height: 200,
                     force_flash: false,
                     image_fromat: 'jpeg',
                     jpeg_quality: 90,
@@ -335,7 +337,7 @@
                     document.getElementById('results').innerHTML = '<img src="'+ data_uri +'"/>';
                     $('#cardCamera').css({"display": "none"})
                     let image_data = data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
-                    $('#image_data').val(raw_image_data);
+                    $('#image_data').val(image_data);
                 })
                 Webcam.reset();
             })
