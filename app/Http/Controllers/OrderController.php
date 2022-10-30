@@ -527,6 +527,7 @@ class OrderController extends AppBaseController
         $image_base64 = base64_decode($image_data);
         $fileName = uniqid().'.jpeg';
         $file = $folderPath . $fileName;
+        dd($image_data, $image_base64, $fileName, $file);
         Storage::put($file, $image_base64);
         return $fileName;
     }
