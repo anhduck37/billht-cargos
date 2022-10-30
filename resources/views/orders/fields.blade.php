@@ -324,8 +324,8 @@
                 Webcam.set({
                     width: 250,
                     height: 200,
-                    dest_width: 250,
-                    dest_height: 200,
+                    dest_width: 500,
+                    dest_height: 400,
                     force_flash: false,
                     image_fromat: 'jpeg',
                     jpeg_quality: 90,
@@ -341,6 +341,7 @@
                 Webcam.snap(function(data_uri) {
                     document.getElementById('results').innerHTML = '<img src="'+ data_uri +'"/>';
                     $('#cardCamera').css({"display": "none"})
+                    $('#results').css({"display": ""})
                     $('#image_data').val(data_uri);
                 })
                 Webcam.reset();
