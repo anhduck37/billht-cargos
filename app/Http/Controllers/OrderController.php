@@ -211,7 +211,7 @@ class OrderController extends AppBaseController
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
         if(isset($request->image_data)) {
-            $fileName = $this->upload($$request->image_data);
+            $fileName = $this->upload($request->image_data);
         }
         DB::beginTransaction();
         try {
