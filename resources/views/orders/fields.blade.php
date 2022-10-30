@@ -283,7 +283,11 @@
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
         <input id="image_data" type="hidden" name="image_data" />
-        <div id="results" style="text-align: center"></div>
+        <div id="results" style="text-align: center">
+            @if ($order->image)
+                <img src="{{asset('uploads/'.$order->image)}}" />
+            @endif
+        </div>
         <div id="cardCamera" style="display: none">
             <div id="camera" style="border: 1px solid #cad1d7;min-height: 120px"></div>
             <div class="row mt-2">

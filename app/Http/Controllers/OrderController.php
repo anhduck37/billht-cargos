@@ -29,6 +29,7 @@ use PHPMailer\PHPMailer\SMTP;
 use Response;
 use Illuminate\Support\Facades\Http;
 use App\Models\Order;
+use App\OrderImage;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Exception as ExceptionExcel;
@@ -210,6 +211,7 @@ class OrderController extends AppBaseController
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
+        $fileName = null;
         if(isset($request->image_data)) {
             $fileName = $this->upload($request->image_data);
         }
@@ -217,6 +219,17 @@ class OrderController extends AppBaseController
         try {
             $order = $this->orderRepository->find($id);
             if($order) {
+                if(isset($fileName)) {
+                    $order_image = OrderImage::where('order_id', $id)->first();
+                    if(!isset($order_image))  {
+                        $order_image = new OrderImage();
+                    }
+                    $order_image->fill([
+                        'order_id' => $id,
+                        'image' => $fileName
+                    ]);
+                    $order_image->save();
+                }
                 if(auth()->user()->level !== User::LEVEL_POSTMAN) {
                     if($senderForm) {
                         $sender = Sender::where('id', $order->sender_id)->update($senderForm);
