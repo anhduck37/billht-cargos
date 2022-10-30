@@ -336,8 +336,7 @@
                 Webcam.snap(function(data_uri) {
                     document.getElementById('results').innerHTML = '<img src="'+ data_uri +'"/>';
                     $('#cardCamera').css({"display": "none"})
-                    let image_data = data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
-                    $('#image_data').val(image_data);
+                    $('#image_data').val(data_uri);
                 })
                 Webcam.reset();
             })

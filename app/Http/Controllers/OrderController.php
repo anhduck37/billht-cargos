@@ -524,11 +524,17 @@ class OrderController extends AppBaseController
 
     public function upload($image_data) {
         $folderPath = "uploads/";
-        $image_base64 = base64_decode($image_data);
-        $fileName = uniqid().'.jpeg';
+
+        $image_parts = explode(";base64,", $image_data);
+        $image_type_aux = explode("image/", $image_parts[0]);
+        $image_type = $image_type_aux[1];
+
+        $image_base64 = base64_decode($image_parts[1]);
+        $fileName = uniqid() . '.png';
+
         $file = $folderPath . $fileName;
-        dd($image_data, $image_base64, $fileName, $file);
         Storage::put($file, $image_base64);
+        dd($fileName);
         return $fileName;
     }
 }
