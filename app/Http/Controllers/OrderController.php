@@ -526,7 +526,6 @@ class OrderController extends AppBaseController
         $folderPath = "uploads/";
 
         $image_parts = explode(";base64,", $image_data);
-        dd($image_parts);
         $image_type_aux = explode("image/", $image_parts[0]);
         $image_type = $image_type_aux[1];
 
