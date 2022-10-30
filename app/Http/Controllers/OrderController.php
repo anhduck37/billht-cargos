@@ -29,8 +29,7 @@ use PHPMailer\PHPMailer\SMTP;
 use Response;
 use Illuminate\Support\Facades\Http;
 use App\Models\Order;
-
-
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Exception as ExceptionExcel;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
@@ -211,6 +210,9 @@ class OrderController extends AppBaseController
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
+        if(isset($request->image_data)) {
+            $fileName = $this->upload($$request->image_data);
+        }
         DB::beginTransaction();
         try {
             $order = $this->orderRepository->find($id);
@@ -520,7 +522,12 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
-    public function upload(Request $request) {
-
+    public function upload($image_data) {
+        $folderPath = "uploads/";
+        $image_base64 = base64_decode($image_data);
+        $fileName = uniqid().'.jpeg';
+        $file = $folderPath . $fileName;
+        Storage::put($file, $image_base64);
+        return $fileName;
     }
 }

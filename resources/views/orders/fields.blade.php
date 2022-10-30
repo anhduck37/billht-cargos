@@ -282,7 +282,8 @@
             <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
-        <div id="results"></div>
+        <input id="image_data" type="hidden" name="image_data" />
+        <div id="results" style="text-align: center"></div>
         <div id="cardCamera" style="display: none">
             <div id="camera" style="border: 1px solid #cad1d7;min-height: 120px"></div>
             <div class="row mt-2">
@@ -316,7 +317,7 @@
             $('#openCamera').click(function() {
                 $('#cardCamera').css({"display": ""})
                 Webcam.set({
-                    width: 200,
+                    width: 250,
                     height: 200,
                     force_flash: false,
                     image_fromat: 'jpeg',
@@ -331,12 +332,13 @@
             $('#snapshot').click(function() {
                 shutter.play();
                 Webcam.snap(function(data_uri) {
-                    console.log('data_uri', data_uri)
                     document.getElementById('results').innerHTML = '<img src="'+ data_uri +'"/>';
+                    $('#cardCamera').css({"display": "none"})
+                    let image_data = data_uri.replace(/^data\:image\/\w+\;base64\,/, '');
+                    $('#image_data').val(raw_image_data);
                 })
                 Webcam.reset();
             })
-
         })
 
         $(function() {
