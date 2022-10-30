@@ -30,6 +30,7 @@ use Response;
 use Illuminate\Support\Facades\Http;
 use App\Models\Order;
 use App\OrderImage;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Exception as ExceptionExcel;
@@ -223,6 +224,11 @@ class OrderController extends AppBaseController
                     $order_image = OrderImage::where('order_id', $id)->first();
                     if(!isset($order_image))  {
                         $order_image = new OrderImage();
+                    } else {
+                        $path = public_path(). "/uploads/".$order_image->image;
+                        if (File::exists($path)) {
+                            unlink($path);
+                        }
                     }
                     $order_image->fill([
                         'order_id' => $id,
