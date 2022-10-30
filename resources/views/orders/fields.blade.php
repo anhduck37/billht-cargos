@@ -316,8 +316,8 @@
             $('#openCamera').click(function() {
                 $('#cardCamera').css({"display": ""})
                 Webcam.set({
-                    width: '100%',
-                    height: '100%',
+                    width: 200,
+                    height: 200,
                     force_flash: false,
                     image_fromat: 'jpeg',
                     jpeg_quality: 90,
