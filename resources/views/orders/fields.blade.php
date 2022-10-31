@@ -393,6 +393,7 @@
             $("#inputImage").css({"display": "none"})
             Webcam.set({
                 width: 250,
+                height: 720,
                 dest_width: 720,
                 dest_height: 1280,
                 crop_width: 720,
