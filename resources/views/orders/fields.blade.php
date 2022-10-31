@@ -284,13 +284,13 @@
         </div>
         <div id="selectTypeImage" class="mt-2 mb-2" style="display: none">
             <div class="form-check form-check-inline">
-                <input checked class="form-check-input" id="typeImage1" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_FILE}}" name="type_image">
+                <input class="form-check-input" id="typeImage1" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_FILE}}" name="type_image">
                 <label class="form-check-label" for="typeImage1">
                 Chọn ảnh
                 </label>
             </div>
             <div class="form-check form-check-inline">
-                <input class="form-check-input" id="typeImage2" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_WEBCAM}}" name="type_image">
+                <input checked class="form-check-input" id="typeImage2" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_WEBCAM}}" name="type_image">
                 <label class="form-check-label" for="typeImage2">
                 Chụp ảnh
                 </label>
@@ -343,7 +343,7 @@
 
             $('#image').click(function() {
                 $('#selectTypeImage').css({"display": ""})
-                $('#inputImage').css({"display": ""})
+                showWebcam()
             })
             $('input[type=file][name=image_data]').change(function() {
                 let reader = new FileReader();
@@ -369,23 +369,7 @@
                     $("#inputImage").css({"display": ""})
                     Webcam.reset();
                 } else if(this.value == type_webcam) {
-                    $('#inputImage').css({"display": "none"})
-                    $('#cardCamera').css({"display": ""})
-                    $('#results').css({"display": "none"})
-                    $("#image_data").attr('type', 'hidden');
-                    $("#inputImage").css({"display": "none"})
-                    Webcam.set({
-                        width: 240,
-                        dest_width: 1280,
-                        dest_height: 720,
-                        force_flash: false,
-                        image_fromat: 'jpeg',
-                        jpeg_quality: 90,
-                        constraints: {
-                            facingMode: 'environment'
-                        }
-                    })
-                    Webcam.attach('#camera')
+                    showWebcam()
                 }
             });
 
@@ -400,6 +384,26 @@
                 Webcam.reset();
             })
         })
+
+        function showWebcam() {
+            $('#inputImage').css({"display": "none"})
+            $('#cardCamera').css({"display": ""})
+            $('#results').css({"display": "none"})
+            $("#image_data").attr('type', 'hidden');
+            $("#inputImage").css({"display": "none"})
+            Webcam.set({
+                height: 720,
+                dest_width: 1280,
+                dest_height: 720,
+                force_flash: false,
+                image_fromat: 'jpeg',
+                jpeg_quality: 90,
+                constraints: {
+                    facingMode: 'environment'
+                }
+            })
+            Webcam.attach('#camera')
+        }
 
         $(function() {
             @if(isset($update))
