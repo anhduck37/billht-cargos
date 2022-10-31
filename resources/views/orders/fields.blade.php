@@ -375,8 +375,8 @@
                     $("#image_data").attr('type', 'hidden');
                     $("#inputImage").css({"display": "none"})
                     Webcam.set({
-                        width: 250,
-                        height: 200,
+                        width: 240,
+                        height: 380,
                         dest_width: 1280,
                         dest_height: 720,
                         force_flash: false,
