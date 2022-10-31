@@ -10,4 +10,7 @@ class OrderImage extends Model
         'order_id',
         'image'
     ];
+
+    const TYPE_IMAGE_FILE = 1;
+    const TYPE_IMAGE_WEBCAM = 2;
 }

@@ -282,12 +282,33 @@
             <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
-        <input id="image_data" type="hidden" name="image_data" />
+        <div id="selectTypeImage" class="mt-2 mb-2" style="display: none">
+            <div class="form-check form-check-inline">
+                <input checked class="form-check-input" id="typeImage1" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_FILE}}" name="type_image">
+                <label class="form-check-label" for="typeImage1">
+                Chọn ảnh
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" id="typeImage2" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_WEBCAM}}" name="type_image">
+                <label class="form-check-label" for="typeImage2">
+                Chụp ảnh
+                </label>
+            </div>
+        </div>
+        <div id='inputImage' style="display: none" class="form-group">
+            <label>Chọn ảnh</label>
+            <input class="form-control" id="image_data" type="file" name="image_data" accept='image/png, image/gif, image/jpeg' />
+        </div>
         <div id="results" style="text-align: center">
             @if (isset($order->image))
                 <img style="width: 250px" src="{{asset('uploads/'.$order->image->image)}}" />
+                <div class="mt-2">
+                    <button id="removeImage" type="button" class="btn btn-danger">Xóa</button>
+                </div>
             @endif
         </div>
+        <input class="form-control" id="image_remove" type="hidden" name="image_remove" value="0" />
         <div id="cardCamera" style="display: none">
             <div id="camera" style="border: 1px solid #cad1d7;min-height: 120px"></div>
             <div class="row mt-2">
@@ -317,24 +338,57 @@
             var shutter = new Audio();
             shutter.autoplay = false;
             shutter.src = "{{asset('file/camera-focus-beep-01.mp3')}}"
+            let type_file = {!! \App\OrderImage::TYPE_IMAGE_FILE !!};
+            let type_webcam = {!! \App\OrderImage::TYPE_IMAGE_WEBCAM !!}
 
-            $('#openCamera').click(function() {
-                $('#cardCamera').css({"display": ""})
-                $('#results').css({"display": "none"})
-                Webcam.set({
-                    width: 250,
-                    height: 200,
-                    dest_width: 500,
-                    dest_height: 400,
-                    force_flash: false,
-                    image_fromat: 'jpeg',
-                    jpeg_quality: 90,
-                    constraints: {
-                        facingMode: 'environment'
-                    }
-                })
-                Webcam.attach('#camera')
+            $('#image').click(function() {
+                $('#selectTypeImage').css({"display": ""})
+                $('#inputImage').css({"display": ""})
             })
+            $('input[type=file][name=image_data]').change(function() {
+                let reader = new FileReader();
+
+                reader.onload = function (e) {
+                    document.getElementById('results').innerHTML = '<img style="width: 250px" src="'+ e.target.result +'"/>';
+                }
+
+                reader.readAsDataURL(this.files[0]);
+
+            })
+
+            $('#removeImage').click(function() {
+                $('#results').css({"display": "none"})
+                $('#image_remove').val(1)
+            })
+
+            $('input[type=radio][name=type_image]').change(function() {
+                if (this.value == type_file) {
+                    $("#image_data").attr('type', 'file');
+                    $("#image_data").attr('accept', 'image/png, image/gif, image/jpeg')
+                    $('#cardCamera').css({"display": "none"})
+                    $("#inputImage").css({"display": ""})
+                    Webcam.reset();
+                } else if(this.value == type_webcam) {
+                    $('#inputImage').css({"display": "none"})
+                    $('#cardCamera').css({"display": ""})
+                    $('#results').css({"display": "none"})
+                    $("#image_data").attr('type', 'hidden');
+                    $("#inputImage").css({"display": "none"})
+                    Webcam.set({
+                        width: 250,
+                        height: 200,
+                        dest_width: 1280,
+                        dest_height: 720,
+                        force_flash: false,
+                        image_fromat: 'jpeg',
+                        jpeg_quality: 90,
+                        constraints: {
+                            facingMode: 'environment'
+                        }
+                    })
+                    Webcam.attach('#camera')
+                }
+            });
 
             $('#snapshot').click(function() {
                 shutter.play();

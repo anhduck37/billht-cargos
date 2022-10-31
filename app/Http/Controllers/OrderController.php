@@ -214,18 +214,21 @@ class OrderController extends AppBaseController
         $order_service = isset($request->order_service) ? $request->order_service : [];
         $fileName = null;
         if(isset($request->image_data)) {
-            $fileName = $this->upload($request->image_data);
+            $fileName = $this->upload($request->image_data, $request->type_image);
         }
         DB::beginTransaction();
         try {
             $order = $this->orderRepository->find($id);
             if($order) {
+                if($request->image_remove) {
+                    $order->image->delete();
+                }
                 if(isset($fileName)) {
                     $order_image = OrderImage::where('order_id', $id)->first();
                     if(!isset($order_image))  {
                         $order_image = new OrderImage();
                     } else {
-                        $path = public_path(). "/uploads/".$order_image->image;
+                        $path = public_path(). "/uploads/". $order_image->image;
                         if (File::exists($path)) {
                             unlink($path);
                         }
@@ -541,17 +544,24 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
-    public function upload($image_data) {
+    public function upload($image_data, $type_image) {
         $folderPath = public_path()."/uploads/";
-        $image_parts = explode(";base64,", $image_data);
-        $image_type_aux = explode("image/", $image_parts[0]);
-        $image_type = $image_type_aux[1];
-
-        $image_base64 = base64_decode($image_parts[1]);
         $fileName = uniqid() . '.jpeg';
+        if($type_image == OrderImage::TYPE_IMAGE_FILE) {
+            $fileName = uniqid(). '.' .$image_data->getClientOriginalExtension();
+            $image_data->move($folderPath, $fileName);
+        }else {
+            $image_parts = explode(";base64,", $image_data);
+            $image_type_aux = explode("image/", $image_parts[0]);
+            $image_type = $image_type_aux[1];
 
-        $file = $folderPath . $fileName;
-        file_put_contents($file, $image_base64);
+            $image_base64 = base64_decode($image_parts[1]);
+
+
+            $file = $folderPath . $fileName;
+            file_put_contents($file, $image_base64);
+        }
+
         return $fileName;
     }
 }
