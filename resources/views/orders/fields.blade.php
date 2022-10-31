@@ -394,7 +394,7 @@
             let height = $(window).height()
             Webcam.set({
                 width: 250,
-                height: height,
+                height: 500,
                 dest_width: 720,
                 dest_height: 1280,
                 crop_width: 720,
