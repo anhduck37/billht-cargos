@@ -391,8 +391,8 @@
             $('#results').css({"display": "none"})
             $("#image_data").attr('type', 'hidden');
             $("#inputImage").css({"display": "none"})
-            let width = $(window).width();
-            let height = $(window).height();
+            let height = $(window).width();
+            let width = $(window).height();
             Webcam.set({
                 width: width,
                 height: height,
