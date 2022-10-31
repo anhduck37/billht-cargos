@@ -391,10 +391,13 @@
             $('#results').css({"display": "none"})
             $("#image_data").attr('type', 'hidden');
             $("#inputImage").css({"display": "none"})
+            let width = $(window).width();
+            let height = $(window).height();
             Webcam.set({
-                height: 720,
-                dest_width: 1280,
-                dest_height: 720,
+                width: width,
+                height: height,
+                dest_width: width,
+                dest_height: height,
                 force_flash: false,
                 image_fromat: 'jpeg',
                 jpeg_quality: 90,
