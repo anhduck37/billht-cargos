@@ -343,11 +343,12 @@
 
             $('#image').click(function() {
                 $('#selectTypeImage').css({"display": ""})
+                $('input[type=radio][id=typeImage2]').prop('checked', true)
                 showWebcam()
             })
             $('input[type=file][name=image_data]').change(function() {
+                $('#results').css({"display": ""})
                 let reader = new FileReader();
-
                 reader.onload = function (e) {
                     document.getElementById('results').innerHTML = '<img style="width: 250px" src="'+ e.target.result +'"/>';
                 }

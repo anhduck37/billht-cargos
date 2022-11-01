@@ -130,6 +130,10 @@ class OrderController extends AppBaseController
         $orderForm = $request->order;
         $orderForm['order_status'] = 0;
         $order_service = isset($request->order_service) ? $request->order_service : [];
+        $fileName = null;
+        if(isset($request->image_data)) {
+            $fileName = $this->upload($request->image_data, $request->type_image);
+        }
         DB::beginTransaction();
         try {
             $sender = Sender::create($senderForm);
@@ -156,6 +160,14 @@ class OrderController extends AppBaseController
             $order = $this->orderRepository->create($orderForm);
             if($order){
                 app(OrderTrackingService::class)->create($order, $request->all());
+                if(isset($fileName)) {
+                    $order_image = new OrderImage();
+                    $order_image->fill([
+                        'order_id' => $order->id,
+                        'image' => $fileName
+                    ]);
+                    $order_image->save();
+                }
             }
             if (!empty($order_service) && $order) {
                 $data = [];
