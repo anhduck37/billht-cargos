@@ -282,10 +282,133 @@
             <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
+        <div id="selectTypeImage" class="mt-2 mb-2" style="display: none">
+            <div class="form-check form-check-inline">
+                <input class="form-check-input" id="typeImage1" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_FILE}}" name="type_image">
+                <label class="form-check-label" for="typeImage1">
+                Chọn ảnh
+                </label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input checked class="form-check-input" id="typeImage2" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_WEBCAM}}" name="type_image">
+                <label class="form-check-label" for="typeImage2">
+                Chụp ảnh
+                </label>
+            </div>
+        </div>
+        <div id='inputImage' style="display: none" class="form-group">
+            <label>Chọn ảnh</label>
+            <input class="form-control" id="image_data" type="file" name="image_data" accept='image/png, image/gif, image/jpeg' />
+        </div>
+        <div id="results" style="text-align: center">
+            @if (isset($order->image))
+                <img style="width: 250px" src="{{asset('uploads/'.$order->image->image)}}" />
+                <div class="mt-2">
+                    <button id="removeImage" type="button" class="btn btn-danger">Xóa</button>
+                </div>
+            @endif
+        </div>
+        <input class="form-control" id="image_remove" type="hidden" name="image_remove" value="0" />
+        <div id="cardCamera" style="display: none">
+            <div id="camera" style="border: 1px solid #cad1d7;min-height: 120px"></div>
+            <div class="row mt-2">
+                <div class="col text-center">
+                    {{--  <button class="btn btn-primary" id="changeCamera" type="button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                            <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/>
+                            <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/>
+                        </svg>
+                    </button>  --}}
+                    <button class="btn btn-primary" type="button" id="snapshot">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera" viewBox="0 0 16 16">
+                            <path d="M15 12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h1.172a3 3 0 0 0 2.12-.879l.83-.828A1 1 0 0 1 6.827 3h2.344a1 1 0 0 1 .707.293l.828.828A3 3 0 0 0 12.828 5H14a1 1 0 0 1 1 1v6zM2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2z"/>
+                            <path d="M8 11a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5zm0 1a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM3 6.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 @section('javascript')
     <script type="text/javascript">
+
+        $(function() {
+            var shutter = new Audio();
+            shutter.autoplay = false;
+            shutter.src = "{{asset('file/camera-focus-beep-01.mp3')}}"
+            let type_file = {!! \App\OrderImage::TYPE_IMAGE_FILE !!};
+            let type_webcam = {!! \App\OrderImage::TYPE_IMAGE_WEBCAM !!}
+
+            $('#image').click(function() {
+                $('#selectTypeImage').css({"display": ""})
+                showWebcam()
+            })
+            $('input[type=file][name=image_data]').change(function() {
+                let reader = new FileReader();
+
+                reader.onload = function (e) {
+                    document.getElementById('results').innerHTML = '<img style="width: 250px" src="'+ e.target.result +'"/>';
+                }
+
+                reader.readAsDataURL(this.files[0]);
+
+            })
+
+            $('#removeImage').click(function() {
+                $('#results').css({"display": "none"})
+                $('#image_remove').val(1)
+            })
+
+            $('input[type=radio][name=type_image]').change(function() {
+                if (this.value == type_file) {
+                    $("#image_data").attr('type', 'file');
+                    $("#image_data").attr('accept', 'image/png, image/gif, image/jpeg')
+                    $('#cardCamera').css({"display": "none"})
+                    $("#inputImage").css({"display": ""})
+                    Webcam.reset();
+                } else if(this.value == type_webcam) {
+                    showWebcam()
+                }
+            });
+
+            $('#snapshot').click(function() {
+                shutter.play();
+                Webcam.snap(function(data_uri) {
+                    document.getElementById('results').innerHTML = '<img style="width: 250px" src="'+ data_uri +'"/>';
+                    $('#cardCamera').css({"display": "none"})
+                    $('#results').css({"display": ""})
+                    $('#image_data').val(data_uri);
+                })
+                Webcam.reset();
+            })
+        })
+
+        function showWebcam() {
+            $('#inputImage').css({"display": "none"})
+            $('#cardCamera').css({"display": ""})
+            $('#results').css({"display": "none"})
+            $("#image_data").attr('type', 'hidden');
+            $("#inputImage").css({"display": "none"})
+            let height = $(window).height()
+            Webcam.set({
+                width: 250,
+                height: 500,
+                dest_width: 720,
+                dest_height: 1280,
+                crop_width: 720,
+                crop_height: 1280,
+                force_flash: false,
+                image_fromat: 'jpeg',
+                jpeg_quality: 90,
+                constraints: {
+                    facingMode: 'environment'
+                }
+            })
+            Webcam.attach('#camera')
+        }
+
         $(function() {
             @if(isset($update))
                 let order = {!! json_encode($order) !!}

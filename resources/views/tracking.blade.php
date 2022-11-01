@@ -110,7 +110,11 @@
                             @endforeach
                             </tbody>
                         </table>
-
+                        <div class="text-center mt-4">
+                            @if (isset($order->image))
+                                <img style="max-width: 400px" src="{{asset('uploads/'.$order->image->image)}}" />
+                            @endif
+                        </div>
                     </div>
                 </div>
 {{--                <div class="align-content-center" style="margin-top: 20px">--}}

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\OrderImage;
 use App\Partner;
 use App\Receiver;
 use App\Sender;
@@ -151,5 +152,9 @@ class Order extends Model
 
     public function serviceArray($order_id) {
         return $this->join('services', 'services.order_id', '=','orders.id')->where('services.order_id', $order_id)->select('services.service')->get()->pluck('service')->toArray();
+    }
+
+    public function image() {
+        return $this->hasOne(OrderImage::class, 'order_id', 'id');
     }
 }

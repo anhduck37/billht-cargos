@@ -12,6 +12,7 @@ class OrderTrackingController extends Controller
         $order_code = $request->order_code;
         $order_trackings = [];
         $delivery_status = 0;
+        $order = null;
         if($order_code) {
             $order_trackings = OrderTracking::join('orders', 'orders.id', '=', 'order_trackings.order_id');
             $order_trackings->where('orders.invoice_code', $order_code)->orWhere('order_trackings.order_code', $order_code);
@@ -19,7 +20,9 @@ class OrderTrackingController extends Controller
             if($order_trackings && count($order_trackings) > 0) {
                 $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
             }
+
+            $order = Order::where('order_code', $order_code)->first();
         }
-        return view('tracking', ['order_trackings' => $order_trackings, 'delivery_status' => $delivery_status]);
+        return view('tracking', ['order_trackings' => $order_trackings, 'delivery_status' => $delivery_status, 'order' => $order]);
     }
 }

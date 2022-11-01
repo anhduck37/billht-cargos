@@ -29,8 +29,9 @@ use PHPMailer\PHPMailer\SMTP;
 use Response;
 use Illuminate\Support\Facades\Http;
 use App\Models\Order;
-
-
+use App\OrderImage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Reader\Exception as ExceptionExcel;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
@@ -211,10 +212,33 @@ class OrderController extends AppBaseController
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
+        $fileName = null;
+        if(isset($request->image_data)) {
+            $fileName = $this->upload($request->image_data, $request->type_image);
+        }
         DB::beginTransaction();
         try {
             $order = $this->orderRepository->find($id);
             if($order) {
+                if($request->image_remove) {
+                    $order->image->delete();
+                }
+                if(isset($fileName)) {
+                    $order_image = OrderImage::where('order_id', $id)->first();
+                    if(!isset($order_image))  {
+                        $order_image = new OrderImage();
+                    } else {
+                        $path = public_path(). "/uploads/". $order_image->image;
+                        if (File::exists($path)) {
+                            unlink($path);
+                        }
+                    }
+                    $order_image->fill([
+                        'order_id' => $id,
+                        'image' => $fileName
+                    ]);
+                    $order_image->save();
+                }
                 if(auth()->user()->level !== User::LEVEL_POSTMAN) {
                     if($senderForm) {
                         $sender = Sender::where('id', $order->sender_id)->update($senderForm);
@@ -520,4 +544,24 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
+    public function upload($image_data, $type_image) {
+        $folderPath = public_path()."/uploads/";
+        $fileName = uniqid() . '.jpeg';
+        if($type_image == OrderImage::TYPE_IMAGE_FILE) {
+            $fileName = uniqid(). '.' .$image_data->getClientOriginalExtension();
+            $image_data->move($folderPath, $fileName);
+        }else {
+            $image_parts = explode(";base64,", $image_data);
+            $image_type_aux = explode("image/", $image_parts[0]);
+            $image_type = $image_type_aux[1];
+
+            $image_base64 = base64_decode($image_parts[1]);
+
+
+            $file = $folderPath . $fileName;
+            file_put_contents($file, $image_base64);
+        }
+
+        return $fileName;
+    }
 }
