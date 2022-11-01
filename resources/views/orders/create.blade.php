@@ -17,13 +17,14 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        {!! Form::open(['route' => 'orders.store', 'method' => 'POST']) !!}
+                        {!! Form::open(['route' => 'orders.store', 'method' => 'POST', 'enctype' => 'multipart/form-data']) !!}
                             @csrf
                             @include('orders.fields')
 
                         <div class="card-footer text-center">
-                            {!! Form::submit( 'Tạo vận đơn' , ['class' => 'btn btn-primary']) !!}
-                            <a class='btn btn-light' href="{{route('orders.index')}}">Thoát</a>
+                            {!! Form::submit( 'Tạo vận đơn' , ['class' => 'btn btn-primary mb-2']) !!}
+                            <button type="button" id="image" class="btn btn-primary mb-2">Image</button>
+                            <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a>
                         </div>
 
                         {!! Form::close() !!}
