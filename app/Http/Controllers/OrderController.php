@@ -445,7 +445,7 @@ class OrderController extends AppBaseController
         $orders = $request->order;
         $start = $request->start;
         $end = $request->end;
-        $orders = Order::with([
+        $orderData = Order::with([
             'services',
             'sender.ward',
             'sender.district',
@@ -455,15 +455,15 @@ class OrderController extends AppBaseController
             'receiver.city'
         ]);
         if($start && $end) {
-            $orders = $orders->where('id', '>=', $start)->where('id', '<=', $end)->get();
-        }else if(!empty($orders)) {
-            $orders = $orders->whereIn('id', $orders)->get();
+            $orderData = $orderData->where('id', '>=', $start)->where('id', '<=', $end)->get();
+        }else if(!empty($orderData)) {
+            $orderData = $orderData->whereIn('id', $orders)->get();
         }else {
-            $orders = [];
+            $orderData = [];
         }
         $level = $request->number;
         return response()->json([
-            'orders' => $orders,
+            'orders' => $orderData,
             'level' => $level,
             'level_admin' => User::LEVEL_ADMIN,
             'service_domestic' => Service::SERVICE_MAP[Service::SERVICE_DOMESTIC],
