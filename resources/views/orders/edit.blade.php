@@ -88,7 +88,8 @@
                     url: '/template/render',
                     data: {'order': [orderId]},
                     success: function (res) {
-                        print(res)
+                        let html = renderHtml(res)
+                        print(html)
                     },
                 });
             })
