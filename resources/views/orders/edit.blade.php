@@ -71,6 +71,7 @@
     </div>
 @endsection
 @section('js')
+    <script type="text/javascript" src="{{ asset('js/render-print.js') }}"></script>
     <script type="text/javascript">
         $(function() {
             $.ajaxSetup({

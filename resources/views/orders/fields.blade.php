@@ -1,3 +1,4 @@
+@if(auth()->user()->level !== \App\User::LEVEL_POSTMAN)
 <div class="row">
     <div class="col-sm-6">
         <div class="card">
@@ -144,17 +145,24 @@
         </div>
     </div>
 </div>
+@endif
 <div class="card mt-4">
     <div class="card-body">
         <h3 class="card-title">Thông tin vận đơn</h3>
         <div class="form-group">
             <div class="form-row">
                 @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
-                    <label>Mã khác</label>
-                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
+                <div class="col-md-3 mb-3">
+                    <label> Người phụ trách </label>
+                    <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[person_charge]" id="receiver_city" class="form-control">
+                        <option value=""></option>
+                        @foreach($users as $user)
+                            <option value="{{$user->id}}" @if(isset($order->person_charge) && $order->person_charge == $user->id) selected @endif>{{$user->name}}</option>
+                        @endforeach
+                    </select>
                 </div>
-
+                @endif
+                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                 <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Đối tác vận chuyển</label>
                     <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[partner]" class="form-control">
@@ -164,7 +172,7 @@
                         @endforeach
                     </select>
                 </div>
-                @endif
+
                 <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-6 @endif mb-3">
                     <label> Ngày gửi </label>
 {{--                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[order_date]" value="10/24/1984" id="order_date">--}}
@@ -179,6 +187,7 @@
                             @endforeach
                         </select>
                     </div>
+                @endif
 {{--                <div class="col-md-4 mb-3">--}}
 {{--                    <label>Ngày vận chuyển</label>--}}
 {{--                    <input type="text" class="form-control" name="order[delivery_date]" id="delivery_date">--}}
@@ -187,15 +196,16 @@
         </div>
         <div class="form-group">
             <div class="form-row">
-                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                <div class="col-md-3 mb-3">
-                    <label> Người phụ trách </label>
-                    <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[person_charge]" id="receiver_city" class="form-control">
-                        <option value=""></option>
-                        @foreach($users as $user)
-                            <option value="{{$user->id}}" @if(isset($order->person_charge) && $order->person_charge == $user->id) selected @endif>{{$user->name}}</option>
-                        @endforeach
-                    </select>
+                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN]))
+                <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
+                    <label>Mã khác</label>
+                    {{--  <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">  --}}
+                    <input type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
+                    @if ($errors->has('order.invoice_code'))
+                        <span class="invalid-feedback" style="display: block;" role="alert">
+                            <strong>{{ $errors->first('order.invoice_code') }}</strong>
+                        </span>
+                    @endif
                 </div>
                 @endif
 {{--                <div class="col-md-4 mb-3">--}}
@@ -207,18 +217,24 @@
 {{--                        @endforeach--}}
 {{--                    </select>--}}
 {{--                </div>--}}
-                @if(auth()->user()->level != \App\User::LEVEL_USER)
+
+                @if(!in_array(auth()->user()->level, [\App\User::LEVEL_USER]))
                 <div class=" @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
                     <label for="validationDefault01">Tình trạng vận chuyển</label>
                     <select name="order[delivery_status]" class="form-control">
-                        <option value="{{\App\Models\Order::DELIVERY_STATUS_PROCESSING}}" @if(!isset($order->delivery_status)) selected @endif></option>
+                        <option value="{{ in_array(auth()->user()->level, [\App\User::LEVEL_POSTMAN]) ? '' : \App\Models\Order::DELIVERY_STATUS_PROCESSING}}" @if(!isset($order->delivery_status)) selected @endif></option>
                         @foreach(\App\Models\Order::DELIVERY_MAP as $key => $delivery)
                             <option value="{{$key}}" @if($order->delivery_status == $key) selected @endif >{{$delivery}}</option>
                         @endforeach
                     </select>
+                    @if ($errors->has('order.delivery_status'))
+                        <span class="invalid-feedback" style="display: block;" role="alert">
+                            <strong>{{ $errors->first('order.delivery_status') }}</strong>
+                        </span>
+                    @endif
                 </div>
                 @endif
-                @if(auth()->user()->level != \App\User::LEVEL_USER)
+                @if(!in_array(auth()->user()->level, [\App\User::LEVEL_USER, \App\User::LEVEL_POSTMAN]))
                 <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Tỉnh / Thành phố </label>
                     <select name="order[location_id]" class="form-control">
@@ -228,13 +244,21 @@
                         @endforeach
                     </select>
                 </div>
+                @endif
+                @if(!in_array(auth()->user()->level, [\App\User::LEVEL_USER]))
                 <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Người ký nhận</label>
                     <input type="text" class="form-control" value="{{old('order.signator') ? old('order.signator') : $order->signator }}" name="order[signator]">
+                    @if ($errors->has('order.signator'))
+                        <span class="invalid-feedback" style="display: block;" role="alert">
+                            <strong>{{ $errors->first('order.signator') }}</strong>
+                        </span>
+                    @endif
                 </div>
                 @endif
             </div>
         </div>
+        @if(!in_array(auth()->user()->level, [\App\User::LEVEL_POSTMAN]))
         <div class="form-group">
             <div class="form-row">
                 <div class="col-md-3 mb-3">
@@ -282,23 +306,29 @@
             <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
         </div>
-        <div id="selectTypeImage" class="mt-2 mb-2" style="display: none">
+        @endif
+        <div id="selectTypeImage" class="mt-2 mb-2" @if(!$errors->has('image_data')) style="display: none" @endif>
             <div class="form-check form-check-inline">
-                <input class="form-check-input" id="typeImage1" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_FILE}}" name="type_image">
+                <input @if($errors->has('image_data')) checked @endif class="form-check-input" id="typeImage1" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_FILE}}" name="type_image">
                 <label class="form-check-label" for="typeImage1">
                 Chọn ảnh
                 </label>
             </div>
             <div class="form-check form-check-inline">
-                <input checked class="form-check-input" id="typeImage2" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_WEBCAM}}" name="type_image">
+                <input @if(!$errors->has('image_data')) checked @endif class="form-check-input" id="typeImage2" type="radio" value="{{\App\OrderImage::TYPE_IMAGE_WEBCAM}}" name="type_image">
                 <label class="form-check-label" for="typeImage2">
                 Chụp ảnh
                 </label>
             </div>
         </div>
-        <div id='inputImage' style="display: none" class="form-group">
+        <div id='inputImage' @if(!$errors->has('image_data')) style="display: none" @endif class="form-group">
             <label>Chọn ảnh</label>
             <input class="form-control" id="image_data" type="file" name="image_data" accept='image/png, image/gif, image/jpeg' />
+            @if ($errors->has('image_data'))
+                <span class="invalid-feedback" style="display: block;" role="alert">
+                    <strong>{{ $errors->first('image_data') }}</strong>
+                </span>
+            @endif
         </div>
         <div id="results" style="text-align: center">
             @if (isset($order->image))

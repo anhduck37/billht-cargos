@@ -12,6 +12,7 @@ use App\Partner;
 use App\Receiver;
 use App\Repositories\OrderRepository;
 use App\Http\Controllers\AppBaseController;
+use App\Http\Requests\OrderFormRequestLevelPosman;
 use App\Sender;
 use App\Service;
 use App\Services\OrderService;
@@ -66,12 +67,10 @@ class OrderController extends AppBaseController
         $orders = Order::join('senders', 'senders.id', '=', 'orders.sender_id')
                         ->join('receivers', 'receivers.id', '=', 'orders.receiver_id');
         if(array_key_exists('name', $formFilter) && $formFilter['name']){
-            $orders->where('senders.sender_name', 'LIKE','%' . $formFilter['name'] . '%')
-                    ->orWhere('receivers.receiver_name', 'LIKE','%' . $formFilter['name'] . '%');
+            $orders->where('senders.sender_name', 'LIKE','%' . $formFilter['name'] . '%');
         }
         if (array_key_exists('phone', $formFilter) && $formFilter['phone']) {
-            $orders->where('senders.sender_phone', $formFilter['phone'])
-                ->orWhere('receivers.receiver_phone', $formFilter['phone']);
+            $orders->where('senders.sender_phone', $formFilter['phone']);
         }
         if(array_key_exists('partner', $formFilter) && $formFilter['partner']) {
             $orders->where('orders.partner', $formFilter['partner']);
@@ -98,7 +97,7 @@ class OrderController extends AppBaseController
                 $orders->where('orders.user_id', auth()->user()->id);
             }
         }
-        $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->paginate($pageSize);
+        $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->groupBy('orders.id')->paginate($pageSize);
         $partners = Partner::get();
         return view('orders.index', ['orders' => $orders, 'partners' => $partners]);
     }
@@ -123,10 +122,10 @@ class OrderController extends AppBaseController
         return view('orders.create', ['citys' => $citys, 'partners' => $partners, 'order' => new Order(), 'users' => $users]);
     }
 
-    public function store(Request $request)
+    public function store(OrderFormRequestLevelPosman $request)
     {
-        $senderForm = $request->sender;
-        $receiverForm = $request->receiver;
+        $senderForm = $request->sender ? $request->sender : [];
+        $receiverForm = $request->receiver ? $request->receiver : [];
         $orderForm = $request->order;
         $orderForm['order_status'] = 0;
         $order_service = isset($request->order_service) ? $request->order_service : [];
@@ -219,7 +218,7 @@ class OrderController extends AppBaseController
         return back();
     }
 
-    public function update(Request $request, $id) {
+    public function update(OrderFormRequestLevelPosman $request, $id) {
         $senderForm = $request->sender;
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
@@ -446,15 +445,41 @@ class OrderController extends AppBaseController
         $orders = $request->order;
         $start = $request->start;
         $end = $request->end;
+        $orders = Order::with([
+            'services',
+            'sender.ward',
+            'sender.district',
+            'sender.city',
+            'receiver.ward',
+            'receiver.district',
+            'receiver.city'
+        ]);
         if($start && $end) {
-            $orders = Order::where('id', '>=', $start)->where('id', '<=', $end)->get();
+            $orders = $orders->where('id', '>=', $start)->where('id', '<=', $end)->get();
         }else if(!empty($orders)) {
-            $orders = Order::whereIn('id', $orders)->get();
+            $orders = $orders->whereIn('id', $orders)->get();
         }else {
             $orders = [];
         }
         $level = $request->number;
-        return view('template.print', ['orders' => $orders, 'level' => $level])->render();
+        return response()->json([
+            'orders' => $orders,
+            'level' => $level,
+            'level_admin' => User::LEVEL_ADMIN,
+            'service_domestic' => Service::SERVICE_MAP[Service::SERVICE_DOMESTIC],
+            'service_international' => Service::SERVICE_MAP[Service::SERVICE_INTERNATIONAL],
+            'service_extra' => Service::SERVICE_MAP[Service::SERVICE_EXTRA],
+            'favicon' => asset('argon/img/brand/favicon.png'),
+            'nucleo' => asset('argon/vendor/nucleo/css/nucleo.css'),
+            'css_min' => asset('argon/vendor/@fortawesome/fontawesome-free/css/all.min.css'),
+            'css_argon' => asset('argon/css/argon.css?v=1.0.0'),
+            'renderCode' => asset('/js/renderCode.js'),
+            'logo_print' => asset('image/logo_print.png'),
+            'csrf_token' => csrf_token(),
+            'locale' => str_replace('_', '-', app()->getLocale()),
+            'payment_method' => Order::PAYMENT_METHOD_MAP
+        ]);
+        // return view('template.print', ['orders' => $orders, 'level' => $level])->render();
     }
 
     public function fileDownload()

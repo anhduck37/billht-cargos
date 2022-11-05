@@ -135,6 +135,7 @@
 {{--        </div>--}}
 </div>
 @section('javascript')
+    <script type="text/javascript" src="{{ asset('js/render-print.js') }}"></script>
     <script type="text/javascript">
         $(function() {
             $.ajaxSetup({
@@ -182,8 +183,9 @@
                     url: '/template/render',
                     data: {'order': dataPrint, number: number, start: start_stt, end: end_stt},
                     success: function (res) {
-                        print(res)
-                    },
+                        let html = renderHtml(res)
+                        print(html)
+                    }
                 });
             });
 
@@ -266,9 +268,9 @@
 
         });
         function print(html) {
-            var a = window.open();
-            a.document.write(html);
-            a.document.close();
+            let printDocument = window.open();
+            printDocument.document.write(html);
+            printDocument.document.close();
         }
     </script>
 @endsection
