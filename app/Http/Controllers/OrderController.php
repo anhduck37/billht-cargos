@@ -456,7 +456,7 @@ class OrderController extends AppBaseController
         ]);
         if($start && $end) {
             $orderData = $orderData->where('id', '>=', $start)->where('id', '<=', $end)->get();
-        }else if(!empty($orderData)) {
+        }else if(!empty($orders)) {
             $orderData = $orderData->whereIn('id', $orders)->get();
         }else {
             $orderData = [];
