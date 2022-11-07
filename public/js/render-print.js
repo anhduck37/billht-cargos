@@ -44,7 +44,7 @@ function renderHtml (data) {
                 color: black !important;
             }
             body {
-                font-size: 0.702rem;
+                font-size: 0.71rem;
                 color: black;
                 font-weight: normal;
             }
@@ -294,7 +294,7 @@ function renderHtml (data) {
             </div>
         </div>`
         if(data.level == data.level_admin) {
-            html += `<div class="card page" style="margin-top: 23px;margin-bottom: 23px">
+            html += `<div class="card page" style="margin-top: 23px">
                     <div class="card-body">
                         <div class="row custom-row">
                             <div class="col-5 mt-4" >
