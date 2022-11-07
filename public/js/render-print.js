@@ -44,7 +44,7 @@ function renderHtml (data) {
                 color: black !important;
             }
             body {
-                font-size: 0.8rem;
+                font-size: 0.702rem;
                 color: black;
                 font-weight: normal;
             }
@@ -55,7 +55,7 @@ function renderHtml (data) {
                 margin: 0;
                 font-weight: bold;
                 color: black;
-                font-size: 18px;
+                font-size: 16px;
             }
             p {
                 margin-bottom: 0;
@@ -65,7 +65,9 @@ function renderHtml (data) {
                 margin-right: 10px;
             }
             @media print {
-                .page {page-break-after: always;}
+                .page {
+                    page-break-after: always;
+                }
             }
             .custom-border {
                 border-right: 3px solid black;
@@ -292,12 +294,12 @@ function renderHtml (data) {
             </div>
         </div>`
         if(data.level == data.level_admin) {
-            html += `<div class="card" style="margin-top: 23px;">
+            html += `<div class="card page" style="margin-top: 23px;margin-bottom: 23px">
                     <div class="card-body">
                         <div class="row custom-row">
                             <div class="col-5 mt-4" >
                                 <div class="card-body">
-                                    <img width="350" src="${data.logo_print}">
+                                    <img width="300" src="${data.logo_print}">
                                 </div>
                             </div>
                             <div class="col-3 mt-4">
