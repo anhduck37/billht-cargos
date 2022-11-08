@@ -8,7 +8,8 @@ class OrderImage extends Model
 {
     protected $fillable = [
         'order_id',
-        'image'
+        'image',
+        'type_upload'
     ];
 
     const TYPE_IMAGE_FILE = 1;

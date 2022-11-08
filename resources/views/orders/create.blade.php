@@ -22,8 +22,8 @@
                             @include('orders.fields')
 
                         <div class="card-footer text-center">
+                            <button type="button" id="image" class="btn btn-primary mb-2">Chụp ảnh</button>
                             {!! Form::submit( 'Tạo vận đơn' , ['class' => 'btn btn-primary mb-2']) !!}
-                            <button type="button" id="image" class="btn btn-primary mb-2">Image</button>
                             <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a>
                         </div>
 

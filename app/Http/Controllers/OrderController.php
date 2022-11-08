@@ -163,9 +163,12 @@ class OrderController extends AppBaseController
                     $order_image = new OrderImage();
                     $order_image->fill([
                         'order_id' => $order->id,
-                        'image' => $fileName
+                        'image' => $fileName,
+                        'type_upload' => $request->type_image
                     ]);
                     $order_image->save();
+                    $order->delivery_status = Order::DELIVERY_STATUS_OK;
+                    $order->save();
                 }
             }
             if (!empty($order_service) && $order) {
@@ -232,6 +235,10 @@ class OrderController extends AppBaseController
             $order = $this->orderRepository->find($id);
             if($order) {
                 if($request->image_remove) {
+                    $path = public_path(). "/uploads/". $order->image->image;
+                    if (File::exists($path)) {
+                        unlink($path);
+                    }
                     $order->image->delete();
                 }
                 if(isset($fileName)) {
@@ -246,9 +253,11 @@ class OrderController extends AppBaseController
                     }
                     $order_image->fill([
                         'order_id' => $id,
-                        'image' => $fileName
+                        'image' => $fileName,
+                        'type_upload' => $request->type_image
                     ]);
                     $order_image->save();
+                    $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
                 }
                 if(auth()->user()->level !== User::LEVEL_POSTMAN) {
                     if($senderForm) {
