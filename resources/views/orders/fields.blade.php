@@ -332,7 +332,7 @@
         </div>
         <div id="results" style="text-align: center">
             @if (isset($order->image))
-                <img style="{{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM  ? 'height: 250px;transform: rotate(90deg);': 'width: 250px;'}}" src="{{asset('uploads/'.$order->image->image)}}" />
+                <img class="imageShow" style="{{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM  ? 'transform: rotate(270deg);': ''}}" src="{{asset('uploads/'.$order->image->image)}}" />
                 <div class="mt-2">
                     <button id="removeImage" type="button" class="btn btn-danger">Xóa</button>
                 </div>
@@ -380,7 +380,7 @@
                 $('#results').css({"display": ""})
                 let reader = new FileReader();
                 reader.onload = function (e) {
-                    document.getElementById('results').innerHTML = '<img style="width: 250px;" src="'+ e.target.result +'"/>';
+                    document.getElementById('results').innerHTML = '<img class="imageShow" src="'+ e.target.result +'"/>';
                 }
                 reader.readAsDataURL(this.files[0]);
 
@@ -406,7 +406,7 @@
             $('#snapshot').click(function() {
                 shutter.play();
                 Webcam.snap(function(data_uri) {
-                    document.getElementById('results').innerHTML = '<img style="height: 250px; transform: rotate(90deg);" src="'+ data_uri +'"/>';
+                    document.getElementById('results').innerHTML = '<img class="imageShow" style="transform: rotate(270deg);" src="'+ data_uri +'"/>';
                     $('#cardCamera').css({"display": "none"})
                     $('#results').css({"display": ""})
                     $('#image_data').val(data_uri);
