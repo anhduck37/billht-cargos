@@ -71,6 +71,7 @@
     </div>
 @endsection
 @section('js')
+    <script type="text/javascript" src="{{ asset('js/render-print.js') }}"></script>
     <script type="text/javascript">
         $(function() {
             $.ajaxSetup({
@@ -87,7 +88,8 @@
                     url: '/template/render',
                     data: {'order': [orderId]},
                     success: function (res) {
-                        print(res)
+                        let html = renderHtml(res)
+                        print(html)
                     },
                 });
             })
