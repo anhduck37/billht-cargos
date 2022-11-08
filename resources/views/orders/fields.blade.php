@@ -332,7 +332,7 @@
         </div>
         <div id="results" style="text-align: center">
             @if (isset($order->image))
-                <img style="width: 250px; {{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM  ? 'transform: rotate(90deg);': ''}}" src="{{asset('uploads/'.$order->image->image)}}" />
+                <img style="{{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM  ? 'height: 250px;transform: rotate(90deg);': 'width: 250px;'}}" src="{{asset('uploads/'.$order->image->image)}}" />
                 <div class="mt-2">
                     <button id="removeImage" type="button" class="btn btn-danger">Xóa</button>
                 </div>
@@ -406,7 +406,7 @@
             $('#snapshot').click(function() {
                 shutter.play();
                 Webcam.snap(function(data_uri) {
-                    document.getElementById('results').innerHTML = '<img style="width: 250px; transform: rotate(90deg);" src="'+ data_uri +'"/>';
+                    document.getElementById('results').innerHTML = '<img style="height: 250px; transform: rotate(90deg);" src="'+ data_uri +'"/>';
                     $('#cardCamera').css({"display": "none"})
                     $('#results').css({"display": ""})
                     $('#image_data').val(data_uri);
