@@ -23,7 +23,7 @@
             <td>Ngày gửi</td>
             <td>Mã vận đơn</td>
             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                <td>Mã khác</td>
+                <td>Mã vận đơn</td>
             @endif
             <td>Người gửi</td>
             <td>Người nhận</td>
