@@ -170,6 +170,7 @@ class OrderController extends AppBaseController
                 $orderForm['order_code'] = $orderForm['invoice_code'];
             } else {
                 $orderForm['order_code'] = app(OrderService::class)->getOrderCode($prefix_code);
+                $orderForm['invoice_code'] = $orderForm['order_code'];
             }
             $order = $this->orderRepository->create($orderForm);
             if($order){
@@ -298,7 +299,9 @@ class OrderController extends AppBaseController
                 Order::where('id', $id)->update($orderForm);
                 if($order &&  array_key_exists('delivery_status', $orderForm) && $orderForm['delivery_status'] != $order->delivery_status){
                     $order->delivery_status = $orderForm['delivery_status'];
-                    $order->city_id = $orderForm['location_id'];
+                    if(isset($orderForm['location_id'])) {
+                        $order->city_id = $orderForm['location_id'];
+                    }
                     if(array_key_exists('person_charge', $orderForm)){
                         $order->person_charge = $orderForm['person_charge'];
                     }
