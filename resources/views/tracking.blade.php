@@ -72,7 +72,7 @@
                             <thead style="background-color: #f6821f; color: white" class="thead-light">
                             <tr>
                                 <td>Mã vận đơn</td>
-                                <td>Mã khác</td>
+                                <td>Mã vận đơn</td>
                                 <td>Trạng thái vận đơn</td>
                                 <td>Người gửi</td>
                                 <td>Người nhận</td>

@@ -68,7 +68,6 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
         return [
             'Ngày gửi',
             'Mã vận đơn',
-            'Mã khác',
             'Tên người gửi',
             'SĐT người gửi',
             'Phòng ban',

@@ -198,7 +198,7 @@
             <div class="form-row">
                 @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN]))
                 <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
-                    <label>Mã khác</label>
+                    <label>Mã vận đơn</label>
                     {{--  <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">  --}}
                     <input type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
                     @if ($errors->has('order.invoice_code'))
