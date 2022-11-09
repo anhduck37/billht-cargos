@@ -12,7 +12,7 @@
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
-                                <h1 class="text-center">Tạo vận đơn</h1>
+                                <h1 class="text-center">Tạo vận đơn mới</h1>
                             </div>
                         </div>
                     </div>
@@ -23,8 +23,9 @@
 
                         <div class="card-footer text-center">
                             <button type="button" id="image" class="btn btn-primary mb-2">Chụp ảnh</button>
-                            {!! Form::submit( 'Tạo vận đơn' , ['class' => 'btn btn-primary mb-2']) !!}
-                            <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a>
+                            {!! Form::submit( 'Cập nhật' , ['class' => 'btn btn-primary mb-2']) !!}
+                            <!-- <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a> -->
+                            <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn mới</a>
                         </div>
 
                         {!! Form::close() !!}

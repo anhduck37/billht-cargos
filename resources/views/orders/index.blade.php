@@ -20,15 +20,15 @@
 
                     <div class="card-body">
                         <div class="form-row">
-                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
+                            {{--  <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Tên cá nhân / Công ty</label>
                                 <input type="text" value="{{request('name', '')}}" class="form-control" name="name" placeholder="Tên cá nhân / Công ty">
                             </div>
                             <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Số điện thoại</label>
                                 <input type="number" value="{{request('phone', '')}}" class="form-control" name="phone" placeholder="Số điện thoại">
-                            </div>
-                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                            </div>  --}}
+                            {{--  @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Đơn vị vận chuyển</label>
                                 <select name="partner" class="form-control">
@@ -38,13 +38,17 @@
                                     @endforeach
                                 </select>
                             </div>
-                            @endif
+                            @endif  --}}
                         </div>
                         <div class="form-row">
                             <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
+                                <label>Từ khóa tìm kiếm</label>
+                                <input type="text" value="{{request('search', '')}}" class="form-control" name="search" placeholder="Tên cá nhân / Công ty / Mã vận đơn / Số điện thoại">
+                            </div>
+                            {{--  <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Mã vận đơn</label>
                                 <input type="text" class="form-control" value="{{request('order_code', '')}}" name="order_code" placeholder="Mã vận đơn">
-                            </div>
+                            </div>  --}}
                             <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-4 @else col-md-6 @endif mb-3">
                                 <label>Ngày gửi</label>
                                 <input type="text" class="form-control" value="{{request('order_date', '')}}" name="order_date" id="order_date" placeholder="Ngày gửi">

@@ -72,7 +72,7 @@
                             <thead style="background-color: #f6821f; color: white" class="thead-light">
                             <tr>
                                 <td>Mã vận đơn</td>
-                                <td>Mã khác</td>
+                                <td>Mã vận đơn</td>
                                 <td>Trạng thái vận đơn</td>
                                 <td>Người gửi</td>
                                 <td>Người nhận</td>
@@ -112,7 +112,7 @@
                         </table>
                         <div class="text-center mt-4">
                             @if (isset($order->image))
-                                <img style="max-width: 400px" src="{{asset('uploads/'.$order->image->image)}}" />
+                                <img style="max-width: 400px; {{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM ? 'transform: rotate(270deg);' : ''}}" src="{{asset('uploads/'.$order->image->image)}}" />
                             @endif
                         </div>
                     </div>

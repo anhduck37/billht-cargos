@@ -66,18 +66,29 @@ class OrderController extends AppBaseController
         $pageSize = config('order_manager.page_size');
         $orders = Order::join('senders', 'senders.id', '=', 'orders.sender_id')
                         ->join('receivers', 'receivers.id', '=', 'orders.receiver_id');
-        if(array_key_exists('name', $formFilter) && $formFilter['name']){
-            $orders->where('senders.sender_name', 'LIKE','%' . $formFilter['name'] . '%');
+        if(isset($formFilter['search'])) {
+            $orders->where(function($q) use ($formFilter) {
+                $q->orWhere('senders.sender_name', 'LIKE','%' . $formFilter['search'] . '%')
+                  ->orWhere('senders.sender_phone', 'LIKE','%' . $formFilter['search'] . '%')
+                  ->orWhere('senders.address', 'LIKE','%' . $formFilter['search'] . '%')
+                  ->orWhere('receivers.receiver_name', 'LIKE','%' . $formFilter['search'] . '%')
+                  ->orWhere('receivers.receiver_phone', 'LIKE','%' . $formFilter['search'] . '%')
+                  ->orWhere('receivers.address', 'LIKE','%' . $formFilter['search'] . '%')
+                  ->orWhere('orders.order_code', 'LIKE','%' . $formFilter['search'] . '%');
+            });
         }
-        if (array_key_exists('phone', $formFilter) && $formFilter['phone']) {
-            $orders->where('senders.sender_phone', $formFilter['phone']);
-        }
-        if(array_key_exists('partner', $formFilter) && $formFilter['partner']) {
-            $orders->where('orders.partner', $formFilter['partner']);
-        }
-        if(array_key_exists('order_code', $formFilter) && $formFilter['order_code']) {
-            $orders->where('orders.order_code', $formFilter['order_code']);
-        }
+        // if(array_key_exists('name', $formFilter) && $formFilter['name']){
+        //     $orders->where('senders.sender_name', 'LIKE','%' . $formFilter['name'] . '%');
+        // }
+        // if (array_key_exists('phone', $formFilter) && $formFilter['phone']) {
+        //     $orders->where('senders.sender_phone', $formFilter['phone']);
+        // }
+        // if(array_key_exists('partner', $formFilter) && $formFilter['partner']) {
+        //     $orders->where('orders.partner', $formFilter['partner']);
+        // }
+        // if(array_key_exists('order_code', $formFilter) && $formFilter['order_code']) {
+        //     $orders->where('orders.order_code', $formFilter['order_code']);
+        // }
         if(array_key_exists('order_date', $formFilter) && $formFilter['order_date']) {
             $dates = explode(' - ', $formFilter['order_date']);
             $startDate = app(OrderService::class)->explodeDate($dates[0]);
@@ -92,7 +103,7 @@ class OrderController extends AppBaseController
         }
         if(!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
             if(auth()->user()->level == User::LEVEL_POSTMAN){
-                $orders->where('orders.person_charge', auth()->user()->id);
+                // $orders->where('orders.person_charge', auth()->user()->id);
             }else {
                 $orders->where('orders.user_id', auth()->user()->id);
             }
@@ -155,7 +166,11 @@ class OrderController extends AppBaseController
             } else {
                 $prefix_code = config('order_manager.prefix_code');
             }
-            $orderForm['order_code'] = app(OrderService::class)->getOrderCode($prefix_code);
+            if($orderForm['invoice_code']) {
+                $orderForm['order_code'] = $orderForm['invoice_code'];
+            } else {
+                $orderForm['order_code'] = app(OrderService::class)->getOrderCode($prefix_code);
+            }
             $order = $this->orderRepository->create($orderForm);
             if($order){
                 app(OrderTrackingService::class)->create($order, $request->all());
@@ -167,7 +182,7 @@ class OrderController extends AppBaseController
                         'type_upload' => $request->type_image
                     ]);
                     $order_image->save();
-                    $order->delivery_status = Order::DELIVERY_STATUS_OK;
+                    // $order->delivery_status = Order::DELIVERY_STATUS_OK;
                     $order->save();
                 }
             }
@@ -257,7 +272,7 @@ class OrderController extends AppBaseController
                         'type_upload' => $request->type_image
                     ]);
                     $order_image->save();
-                    $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
+                    // $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
                 }
                 if(auth()->user()->level !== User::LEVEL_POSTMAN) {
                     if($senderForm) {
@@ -276,6 +291,9 @@ class OrderController extends AppBaseController
                 }
                 if($orderForm['signator']) {
                     $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
+                }
+                if($orderForm['invoice_code']) {
+                    $orderForm['order_code'] = $orderForm['invoice_code'];
                 }
                 Order::where('id', $id)->update($orderForm);
                 if($order &&  array_key_exists('delivery_status', $orderForm) && $orderForm['delivery_status'] != $order->delivery_status){

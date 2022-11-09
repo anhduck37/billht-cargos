@@ -22,9 +22,9 @@
             <td>STT</td>
             <td>Ngày gửi</td>
             <td>Mã vận đơn</td>
-            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                <td>Mã khác</td>
-            @endif
+            {{--  @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                <td>Mã vận đơn</td>
+            @endif  --}}
             <td>Người gửi</td>
             <td>Người nhận</td>
             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
@@ -62,9 +62,9 @@
                     </div>
                     </a>
                 </th>
-                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                {{--  @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                     <th>{{$order->invoice_code}}</th>
-                @endif
+                @endif  --}}
                 <td>
                     <div><label>Tên người gửi: <b>{{isset($order->sender) ? $order->sender->sender_name : ''}}</b> </label></div>
                     <div><label>Số điện thoại: <b>{{isset($order->sender) ? $order->sender->sender_phone : ''}}</b></label></div>

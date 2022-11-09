@@ -93,7 +93,7 @@ function renderHtml (data) {
     <div class="main-content">`
     data.orders && data.orders.forEach((order, key) => {
         html += `
-        <div class="card ${key % 2 > 0 && data.level != data.level_admin ? 'page' : ''}" style="${key % 2 > 0 && data.level != data.level_admin ? 'margin-top: 23px;' : ''}">
+        <div class="card ${key % 2 > 0 && data.level != data.level_admin ? 'page' : ''}" style="${key % 2 > 0 && data.level != data.level_admin ? 'margin-top: 23px;margin-bottom: 50px;' : 'margin-bottom: 50px;'}">
             <div class="card-body">
                 <div class="row custom-row">
                     <div class="col-5 mt-4" >
@@ -120,10 +120,10 @@ function renderHtml (data) {
                     <div class="col custom-col">
                         <div class="card-body">
                             <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
-                            <p class="size-text">${order.sender ? order.sender.sender_name : '.....' }</p>
+                            <p class="size-text">${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....' }</p>
                             <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '' ) : '.....'}</p>
-                            <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department}</p>
-                            <p class="size-text"><h4 class="card-title">Điện thoại:</h4> ${order.sender ? order.sender.sender_phone : '.....'}</p>
+                            <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department ? order.department : ''}</p>
+                            <p class="size-text"><h4 class="card-title">Điện thoại:</h4> ${order.sender && order.sender.sender_phone ? order.sender.sender_phone : '.....'}</p>
                         </div>
                     </div>
                     <div class="col">
@@ -171,11 +171,11 @@ function renderHtml (data) {
                     <div class="col custom-col">
                         <div class="card-body">
                             <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
-                            <p class="card-text size-text">${order.receiver ? order.receiver.receiver_name : '.....'}</p>
+                            <p class="card-text size-text">${order.receiver && order.receiver.receiver_name ? order.receiver.receiver_name : '.....'}</p>
 
                             <p class="card-text size-text"><small class="text-muted">${order.receiver ? (order.receiver.address ? order.receiver.address + ', ' : '' ) + (order.receiver.ward ? order.receiver.ward.ward_name + ', ' : '')  + (order.receiver.district ? order.receiver.district.district_name + ', ' : '') + (order.receiver.city ? order.receiver.city.city_name : '') : '.....'}</small></p>
 
-                            <p class="card-text size-text"><h4 class="card-title">Điện thoại:</h4> ${order.receiver ? order.receiver.receiver_phone : '.....'}</p>
+                            <p class="card-text size-text"><h4 class="card-title">Điện thoại:</h4> ${order.receiver && order.receiver.receiver_phone ? order.receiver.receiver_phone : '.....'}</p>
                         </div>
                     </div>
                     <div class="col">
@@ -201,10 +201,10 @@ function renderHtml (data) {
                             <div class="row">
                                 <div class="col">
                                     <h4 class="card-title">Khai báo nội dung và số lượng gửi:</h4>
-                                    <p class="size-text">${order.note}</p>
+                                    <p class="size-text">${order.note ? order.note : ''}</p>
                                 </div>
                             </div>
-                            <p style="margin-top: 20px" class="size-text">Giá trị hàng hóa: ${order.total}</p>
+                            <p style="margin-top: 20px" class="size-text">Giá trị hàng hóa: ${order.total ? order.total : ''}</p>
                         </div>
                     </div>
                 </div>
@@ -321,10 +321,10 @@ function renderHtml (data) {
                             <div class="col custom-col">
                                 <div class="card-body">
                                     <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
-                                    <p class="size-text" >${order.sender ? order.sender.sender_name : '.....' }</p>
+                                    <p class="size-text" >${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....' }</p>
                                     <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '' ) : '.....'}</p>
-                                    <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department}</p>
-                                    <p class="size-text"><h4 class="card-title">Điện thoại:</h4> ${order.sender ? order.sender.sender_phone : '.....'}</p>
+                                    <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department ? order.department : ''}</p>
+                                    <p class="size-text"><h4 class="card-title">Điện thoại:</h4> ${order.sender && order.sender.sender_phone ? order.sender.sender_phone : '.....'}</p>
                                 </div>
                             </div>
                             <div class="col">
@@ -372,10 +372,10 @@ function renderHtml (data) {
                             <div class="col custom-col">
                                 <div class="card-body">
                                     <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
-                                    <p class="card-text size-text">${order.receiver ? order.receiver.receiver_name : '.....'}</p>
+                                    <p class="card-text size-text">${order.receiver && order.receiver.receiver_name ? order.receiver.receiver_name : '.....'}</p>
                                     <p class="card-text"><small class="text-muted size-text">${order.receiver ? (order.receiver.address ? order.receiver.address + ', ' : '' ) + (order.receiver.ward ? order.receiver.ward.ward_name + ', ' : '')  + (order.receiver.district ? order.receiver.district.district_name + ', ' : '') + (order.receiver.city ? order.receiver.city.city_name : '') : '.....'}</small></p>
 
-                                    <p class="card-text"><h4 class="card-title">Điện thoại:</h4> ${order.receiver ? order.receiver.receiver_phone : '.....'}</p>
+                                    <p class="card-text"><h4 class="card-title">Điện thoại:</h4> ${order.receiver && order.receiver.receiver_phone ? order.receiver.receiver_phone : '.....'}</p>
                                 </div>
                             </div>
                             <div class="col">
@@ -401,10 +401,10 @@ function renderHtml (data) {
                                     <div class="row">
                                         <div class="col">
                                             <h4 class="card-title">Khai báo nội dung và số lượng gửi:</h4>
-                                            <p class="size-text">${order.note}</p>
+                                            <p class="size-text">${order.note ? order.note : ''}</p>
                                         </div>
                                     </div>
-                                    <p class="size-text" style="margin-top: 20px">Giá trị hàng hóa: ${order.total}</p>
+                                    <p class="size-text" style="margin-top: 20px">Giá trị hàng hóa: ${order.total ? order.total : ''}</p>
                                 </div>
                             </div>
                         </div>
