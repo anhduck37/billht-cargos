@@ -24,7 +24,7 @@ class OrderTrackingController extends Controller
 
             $order = Order::where('order_code', $order_code)->first();
         }
-        if(!$order) {
+        if(!$order && $order_code) {
             Flash::warning('Mã vận đơn không tồn tại hoặc chưa chính xác, vui lòng kiểm tra lại.');
         }
         return view('tracking', ['order_trackings' => $order_trackings, 'delivery_status' => $delivery_status, 'order' => $order]);

@@ -111,7 +111,7 @@ class OrderController extends AppBaseController
         $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->groupBy('orders.id')->paginate($pageSize);
         $partners = Partner::get();
 
-        if(count($orders) == 0) {
+        if(count($orders) == 0 && !empty($formFilter)) {
             Flash::warning('Không có kết quả trùng khớp');
         }
         return view('orders.index', ['orders' => $orders, 'partners' => $partners]);
