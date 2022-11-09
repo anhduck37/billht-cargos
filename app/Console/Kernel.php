@@ -6,6 +6,7 @@ use App\Console\Commands\MapAddress;
 use App\Console\Commands\MapCity;
 use App\Console\Commands\MapDistrict;
 use App\Console\Commands\MapWard;
+use App\Console\Commands\UpdateOrderCodeCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -20,6 +21,7 @@ class Kernel extends ConsoleKernel
         MapCity::class,
         MapDistrict::class,
         MapWard::class,
+        UpdateOrderCodeCommand::class
     ];
 
     /**
