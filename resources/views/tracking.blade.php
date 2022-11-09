@@ -21,7 +21,7 @@
                             <div class="form-group col-md-5">
                                 <label>Vui lòng nhập mã vận đơn, ví dụ: HE000001</label>
                                 <!-- {!! Form::label( 'Vui lòng nhập mã vận đơn. Ví dụ: HE000001' ) !!} -->
-                                {!! Form::text('order_code', request('order_code', ''), ['class' => 'form-control']) !!}
+                                {!! Form::text('order_code', request('order_code', ''), ['class' => 'form-control', 'id' => 'order_code']) !!}
                             </div>
                             <div class="form-group col-md-3">
                                 {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'margin-bottom: -83px;']) !!}
@@ -72,7 +72,7 @@
                             <thead style="background-color: #f6821f; color: white" class="thead-light">
                             <tr>
                                 <td>Mã vận đơn</td>
-                                <td>Mã vận đơn</td>
+                                {{--  <td>Mã vận đơn</td>  --}}
                                 <td>Trạng thái vận đơn</td>
                                 <td>Người gửi</td>
                                 <td>Người nhận</td>
@@ -92,13 +92,13 @@
                                             </div>
                                         </div>
                                     </th>
-                                    <th scope="row">
+                                    {{--  <th scope="row">
                                         <div class="media align-items-center">
                                             <div class="media-body">
                                                 <span class="mb-0 text-sm">{{$item->invoice_code}}</span>
                                             </div>
                                         </div>
-                                    </th>
+                                    </th>  --}}
                                     <td>{{$item->getDeliveryStatusName($item->delivery_status)}}</td>
                                     <td>{{isset($item->order) && isset($item->order->sender) ? $item->order->sender->sender_name : ''}}</td>
                                     <td>{{isset($item->order) && isset($item->order->receiver) ? $item->order->receiver->receiver_name : ''}}</td>
@@ -125,3 +125,13 @@
     </div>
 @endsection
 
+@section('javascript')
+    <script type="text/javascript">
+
+        $(function() {
+            $('#order_code').on('change', function() {
+                $('#order_code').val(this.value.toUpperCase())
+            });
+        })
+    </script>
+@endsection

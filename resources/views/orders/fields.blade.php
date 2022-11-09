@@ -200,7 +200,7 @@
                 <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Mã vận đơn</label>
                     {{--  <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">  --}}
-                    <input type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
+                    <input type="text" class="form-control" id="invoice_code" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
                     @if ($errors->has('order.invoice_code'))
                         <span class="invalid-feedback" style="display: block;" role="alert">
                             <strong>{{ $errors->first('order.invoice_code') }}</strong>
@@ -370,6 +370,11 @@
             shutter.src = "{{asset('file/camera-focus-beep-01.mp3')}}"
             let type_file = {!! \App\OrderImage::TYPE_IMAGE_FILE !!};
             let type_webcam = {!! \App\OrderImage::TYPE_IMAGE_WEBCAM !!}
+
+            $('#invoice_code').on('change', function() {
+                $('#invoice_code').val(this.value.toUpperCase())
+            });
+
 
             $('#image').click(function() {
                 $('#selectTypeImage').css({"display": ""})
