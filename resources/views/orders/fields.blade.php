@@ -196,11 +196,12 @@
         </div>
         <div class="form-group">
             <div class="form-row">
+                <input type="hidden" name='order_id' value="{{$order->id}}">
                 @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN]))
                 <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-4 @endif mb-3">
                     <label>Mã vận đơn</label>
                     {{--  <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">  --}}
-                    <input type="text" class="form-control" value="{{old('order.invoice_code') ? old('order.invoice_code') : $order->invoice_code }}" name="order[invoice_code]">
+                    <input type="text" class="form-control" id="invoice_code" value="{{old('order.invoice_code') ? old('order.invoice_code') : ($order->invoice_code ? $order->invoice_code : $order->order_code) }}" name="order[invoice_code]">
                     @if ($errors->has('order.invoice_code'))
                         <span class="invalid-feedback" style="display: block;" role="alert">
                             <strong>{{ $errors->first('order.invoice_code') }}</strong>
@@ -332,7 +333,7 @@
         </div>
         <div id="results" style="text-align: center">
             @if (isset($order->image))
-                <img style="width: 250px" src="{{asset('uploads/'.$order->image->image)}}" />
+                <img class="imageShow" style="{{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM  ? 'transform: rotate(270deg);': ''}}" src="{{asset('uploads/'.$order->image->image)}}" />
                 <div class="mt-2">
                     <button id="removeImage" type="button" class="btn btn-danger">Xóa</button>
                 </div>
@@ -371,6 +372,11 @@
             let type_file = {!! \App\OrderImage::TYPE_IMAGE_FILE !!};
             let type_webcam = {!! \App\OrderImage::TYPE_IMAGE_WEBCAM !!}
 
+            $('#invoice_code').on('change', function() {
+                $('#invoice_code').val(this.value.toUpperCase())
+            });
+
+
             $('#image').click(function() {
                 $('#selectTypeImage').css({"display": ""})
                 $('input[type=radio][id=typeImage2]').prop('checked', true)
@@ -380,9 +386,8 @@
                 $('#results').css({"display": ""})
                 let reader = new FileReader();
                 reader.onload = function (e) {
-                    document.getElementById('results').innerHTML = '<img style="width: 250px" src="'+ e.target.result +'"/>';
+                    document.getElementById('results').innerHTML = '<img class="imageShow" src="'+ e.target.result +'"/>';
                 }
-
                 reader.readAsDataURL(this.files[0]);
 
             })
@@ -407,7 +412,7 @@
             $('#snapshot').click(function() {
                 shutter.play();
                 Webcam.snap(function(data_uri) {
-                    document.getElementById('results').innerHTML = '<img style="width: 250px" src="'+ data_uri +'"/>';
+                    document.getElementById('results').innerHTML = '<img class="imageShow" style="transform: rotate(270deg);" src="'+ data_uri +'"/>';
                     $('#cardCamera').css({"display": "none"})
                     $('#results').css({"display": ""})
                     $('#image_data').val(data_uri);
@@ -432,7 +437,7 @@
                 crop_height: 1280,
                 force_flash: false,
                 image_fromat: 'jpeg',
-                jpeg_quality: 90,
+                jpeg_quality: 100,
                 constraints: {
                     facingMode: 'environment'
                 }

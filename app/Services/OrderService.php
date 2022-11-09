@@ -8,16 +8,28 @@ use App\Service;
 
 class OrderService
 {
+    public $order_id_current = 1;
+
     public function getOrderCode($prefix) {
         $order = Order::orderBy('id', 'DESC')->first();
-        $order_id = 1;
         if($order){
-            $order_id = (int)$order->id + 1;
+            $this->order_id_current = (int)$order->id + 1;
         }
-        for ($i = 0; $i < 6 - strlen($order_id); $i++){
+        $order_code = $this->genCode($prefix);
+        $checkOrder = Order::where('order_code', $order_code)->first();
+        do {
+            $order_code = $this->genCode($prefix);
+            $checkOrder = Order::where('order_code', $order_code)->first();
+            $this->order_id_current += 1;
+        } while(isset($checkOrder));
+        return $order_code;
+    }
+
+    public function genCode($prefix) {
+        for ($i = 0; $i < 6 - strlen($this->order_id_current); $i++){
             $prefix .= '0';
         }
-        return $prefix.($order_id);
+        return $prefix.($this->order_id_current);
     }
 
     public function explodeDate($date) {

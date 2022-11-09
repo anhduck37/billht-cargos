@@ -21,6 +21,18 @@
     <link type="text/css" href="{{ asset('argon/css/argon.css?v=1.0.0') }}" rel="stylesheet">
 
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <style>
+        @media screen and (min-width: 500px) {
+            .imageShow {
+                width: 30%
+            }
+        }
+        @media screen and (max-width: 500px) {
+            .imageShow {
+                width: 65%
+            }
+        }
+    </style>
 </head>
 <body class="{{ $class ?? '' }}">
 @auth()
