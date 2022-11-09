@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Order;
 use App\User;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -24,9 +25,16 @@ class OrderFormRequestLevelPosman extends FormRequest
      */
     public function rules()
     {
-        $rule = [
-            'order.invoice_code' => 'unique:orders,order_code'
-        ];
+        $formData = request()->all();
+        $rule = [];
+        if(!empty($formData['order_id'])) {
+            $order = Order::find($formData['order_id']);
+            if($order && isset($formData['order']) && $order->order_code != $formData['order']['invoice_code']) {
+                $rule['order.invoice_code'] = 'unique:orders,order_code';
+            }
+        } else {
+            $rule['order.invoice_code'] = 'unique:orders,order_code';
+        }
         if(auth()->user()->level == User::LEVEL_POSTMAN) {
             $rule['image_data'] = 'required';
             $rule['order.invoice_code'] = 'required';
