@@ -29,14 +29,17 @@ class OrderFormRequestLevelPosman extends FormRequest
         $rule = [];
         if(!empty($formData['order_id'])) {
             $order = Order::find($formData['order_id']);
+            if(auth()->user()->level == User::LEVEL_POSTMAN && !isset($order->image)) {
+                $rule['image_data'] = 'required';
+            }
             if($order && isset($formData['order']) && $order->order_code != $formData['order']['invoice_code']) {
                 $rule['order.invoice_code'] = 'unique:orders,order_code';
+                $rule['image_data'] = 'required';
             }
         } else {
             $rule['order.invoice_code'] = 'unique:orders,order_code';
         }
         if(auth()->user()->level == User::LEVEL_POSTMAN) {
-            $rule['image_data'] = 'required';
             $rule['order.invoice_code'] = 'required';
             $rule['order.delivery_status'] = 'required';
             $rule['order.signator'] = 'required';
