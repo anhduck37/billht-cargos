@@ -43,6 +43,9 @@ class UpdateOrderCodeCommand extends Command
         $orders = Order::whereNotNull('invoice_code')->Where('invoice_code', '!=', '')->orderBy('id', 'DESC');
         $orders->chunkById(1000, function($items) use(&$order_duplicate) {
             foreach($items as $item) {
+                echo 'Mã vận đơn: ' . $item->order_code . "\n";
+                echo 'Mã khác: ' . $item->invoice_code . "\n";
+                echo '.............................' . "\n";
                 $checkOrder = Order::where('order_code', $item->invoice_code)->first();
                 if($checkOrder) {
                     $order_duplicate[] = [
