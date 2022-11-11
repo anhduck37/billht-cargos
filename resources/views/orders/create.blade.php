@@ -22,7 +22,9 @@
                             @include('orders.fields')
 
                         <div class="card-footer text-center">
+                            @if(auth()->user()->level != \App\User::LEVEL_USER)
                             <button type="button" id="image" class="btn btn-primary mb-2">Chụp ảnh</button>
+                            @endif
                             {!! Form::submit( 'Cập nhật' , ['class' => 'btn btn-primary mb-2']) !!}
                             <!-- <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a> -->
                             <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn mới</a>
