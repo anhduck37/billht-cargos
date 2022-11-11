@@ -1,4 +1,4 @@
-@if(auth()->user()->level !== \App\User::LEVEL_POSTMAN)
+@if(auth()->user()->level != \App\User::LEVEL_POSTMAN)
 <div class="row">
     <div class="col-sm-6">
         <div class="card">

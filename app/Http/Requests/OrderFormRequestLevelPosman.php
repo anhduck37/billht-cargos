@@ -37,10 +37,16 @@ class OrderFormRequestLevelPosman extends FormRequest
             }
         } else {
             $rule['order.invoice_code'] = 'unique:orders,order_code';
-            $rule['image_data'] = 'required';
+            if(auth()->user()->level == User::LEVEL_POSTMAN) {
+                $rule['image_data'] = 'required';
+            }
         }
         if(auth()->user()->level == User::LEVEL_POSTMAN) {
-            $rule['order.invoice_code'] = 'required';
+            if(isset($rule['order.invoice_code'])) {
+                $rule['order.invoice_code'] .= '|required';
+            } else {
+                $rule['order.invoice_code'] = 'required';
+            }
             $rule['order.delivery_status'] = 'required';
             $rule['order.signator'] = 'required';
         }
