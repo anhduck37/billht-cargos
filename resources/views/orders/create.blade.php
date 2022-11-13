@@ -27,7 +27,8 @@
                             @endif
                             {!! Form::submit( 'Cập nhật' , ['class' => 'btn btn-primary mb-2']) !!}
                             <!-- <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a> -->
-                            <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn mới</a>
+                            <a class='btn btn-primary mb-2' href="{{route('orders.index')}}">Tìm vận đơn</a>
+                            <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn khác</a>
                         </div>
 
                         {!! Form::close() !!}

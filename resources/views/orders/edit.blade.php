@@ -22,15 +22,18 @@
                         @include('orders.fields')
 
                         <div class="card-footer text-center">
-                            {!! Form::submit( 'Cập nhật vận đơn' , ['class' => 'btn btn-primary mb-2']) !!}
-                            <button id="print" type="button" data-id="{{$order->id}}" class="btn btn-primary mb-2">In đơn</button>
-                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                            <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary mb-2">Gửi email</button>
-                            @endif
-                            @if(auth()->user()->level != \App\User::LEVEL_USER)
+                        	@if(auth()->user()->level != \App\User::LEVEL_USER)
                             <button type="button" id="image" class="btn btn-primary mb-2">Chụp ảnh</button>
                             @endif
-                            <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a>
+                            {!! Form::submit( 'Cập nhật vận đơn' , ['class' => 'btn btn-primary mb-2']) !!}
+                            
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                            <button id="print" type="button" data-id="{{$order->id}}" class="btn btn-primary mb-2">In đơn</button>
+                            <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary mb-2">Gửi email</button>
+                            @endif
+                            <a class='btn btn-primary mb-2' href="{{route('orders.index')}}">Tìm vận đơn</a>
+                            <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn khác</a>
+                            <!-- <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a> -->
                         </div>
 
                         {!! Form::close() !!}
