@@ -89,7 +89,7 @@
                                     <th scope="row">
                                         <div class="media align-items-center">
                                             <div class="media-body">
-                                                <span class="mb-0 text-sm">{{$item->order_code}}</span>
+                                                <span class="mb-0 text-sm">{{$order->order_code}}</span>
                                             </div>
                                         </div>
                                     </th>
