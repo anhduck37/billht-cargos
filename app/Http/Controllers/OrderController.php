@@ -489,7 +489,8 @@ class OrderController extends AppBaseController
             'receiver.city'
         ]);
         if($start && $end) {
-            $orderData = $orderData->where('id', '>=', $start)->where('id', '<=', $end)->get();
+            $prefix_code = config('order_manager.prefix_code');
+            $orderData = $orderData->where('id', '>=', $start)->where('id', '<=', $end)->where('order_code', 'LIKE', $prefix_code.'%')->get();
         }else if(!empty($orders)) {
             $orderData = $orderData->whereIn('id', $orders)->get();
         }else {
