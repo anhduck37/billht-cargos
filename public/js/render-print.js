@@ -122,7 +122,7 @@ function renderHtml (data) {
                             <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
                             <p class="size-text">${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....' }</p>
                             <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '' ) : '.....'}</p>
-                            <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department ? order.department : ''}</p>
+                            <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department != null ? order.department : ''}</p>
                             <p class="size-text"><h4 class="card-title">Điện thoại:</h4> ${order.sender && order.sender.sender_phone ? order.sender.sender_phone : '.....'}</p>
                         </div>
                     </div>
@@ -323,7 +323,7 @@ function renderHtml (data) {
                                     <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
                                     <p class="size-text" >${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....' }</p>
                                     <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '' ) : '.....'}</p>
-                                    <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department ? order.department : ''}</p>
+                                    <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department != null ? order.department : ''}</p>
                                     <p class="size-text"><h4 class="card-title">Điện thoại:</h4> ${order.sender && order.sender.sender_phone ? order.sender.sender_phone : '.....'}</p>
                                 </div>
                             </div>

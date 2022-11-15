@@ -170,7 +170,7 @@ class OrderController extends AppBaseController
             } else {
                 $prefix_code = config('order_manager.prefix_code');
             }
-            if($orderForm['invoice_code']) {
+            if(isset($orderForm['invoice_code'])) {
                 $orderForm['order_code'] = $orderForm['invoice_code'];
             } else {
                 $orderForm['order_code'] = app(OrderService::class)->getOrderCode($prefix_code);
