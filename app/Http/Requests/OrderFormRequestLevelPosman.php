@@ -36,7 +36,7 @@ class OrderFormRequestLevelPosman extends FormRequest
                 $rule['order.invoice_code'] = 'unique:orders,order_code';
             }
         } else {
-            $rule['order.invoice_code'] = 'unique:orders,order_code';
+            // $rule['order.invoice_code'] = 'unique:orders,order_code';
             if(auth()->user()->level == User::LEVEL_POSTMAN) {
                 $rule['image_data'] = 'required';
             }

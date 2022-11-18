@@ -108,6 +108,12 @@ class OrderController extends AppBaseController
                 $orders->where('orders.user_id', auth()->user()->id);
             }
         }
+        if(isset($formFilter['order_code_from']) && isset($formFilter['order_code_to'])) {
+            $prefix_code = config('order_manager.prefix_code');
+            $order_id_from = (int)str_replace($prefix_code,'', $formFilter['order_code_from']);
+            $order_id_to = (int)str_replace($prefix_code,'',$formFilter['order_code_to']);
+            $orders->where('orders.id', '>=', $order_id_from)->where('orders.id', '<=',  $order_id_to)->where('order_code', 'LIKE', $prefix_code.'%');
+        }
         $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->groupBy('orders.id')->paginate($pageSize);
         $partners = Partner::get();
 
@@ -148,48 +154,58 @@ class OrderController extends AppBaseController
         if(isset($request->image_data)) {
             $fileName = $this->upload($request->image_data, $request->type_image);
         }
+        $order = null;
+        $is_update = false;
         DB::beginTransaction();
         try {
-            $sender = Sender::create($senderForm);
-            $receiver = Receiver::create($receiverForm);
-            $orderForm['sender_id'] = $sender->id;
-            $orderForm['receiver_id'] = $receiver->id;
-            if(array_key_exists('order_date', $orderForm) && !empty($orderForm['order_date'])){
-                $orderForm['order_date'] = app(OrderService::class)->explodeDate($orderForm['order_date']);
-                if(empty($orderForm['order_date'])) {
-                    unset($orderForm['order_date']);
-                }
-            }else {
-                $orderForm['order_date'] = date('Y-m-d');
-            }
-            $orderForm['user_id'] = auth()->user()->id;
-            $prefix_code = '';
-            if(array_key_exists('partner', $orderForm)){
-                $partner = Partner::where('id', $orderForm['partner'])->first();
-                $prefix_code = $partner ? $partner->prefix_code : config('order_manager.prefix_code');
-            } else {
-                $prefix_code = config('order_manager.prefix_code');
-            }
             if(isset($orderForm['invoice_code'])) {
-                $orderForm['order_code'] = $orderForm['invoice_code'];
-            } else {
-                $orderForm['order_code'] = app(OrderService::class)->getOrderCode($prefix_code);
-                $orderForm['invoice_code'] = $orderForm['order_code'];
+                $order = Order::where('order_code', $orderForm['invoice_code'])->first();
             }
-            $order = $this->orderRepository->create($orderForm);
-            if($order){
-                app(OrderTrackingService::class)->create($order, $request->all());
-                if(isset($fileName)) {
-                    $order_image = new OrderImage();
-                    $order_image->fill([
-                        'order_id' => $order->id,
-                        'image' => $fileName,
-                        'type_upload' => $request->type_image
-                    ]);
-                    $order_image->save();
-                    // $order->delivery_status = Order::DELIVERY_STATUS_OK;
-                    $order->save();
+            if($order) {
+                $order->fill($orderForm);
+                $order->save();
+                $is_update = true;
+            }else {
+                $sender = Sender::create($senderForm);
+                $receiver = Receiver::create($receiverForm);
+                $orderForm['sender_id'] = $sender->id;
+                $orderForm['receiver_id'] = $receiver->id;
+                if(array_key_exists('order_date', $orderForm) && !empty($orderForm['order_date'])){
+                    $orderForm['order_date'] = app(OrderService::class)->explodeDate($orderForm['order_date']);
+                    if(empty($orderForm['order_date'])) {
+                        unset($orderForm['order_date']);
+                    }
+                }else {
+                    $orderForm['order_date'] = date('Y-m-d');
                 }
+                $orderForm['user_id'] = auth()->user()->id;
+                $prefix_code = '';
+                if(array_key_exists('partner', $orderForm)){
+                    $partner = Partner::where('id', $orderForm['partner'])->first();
+                    $prefix_code = $partner ? $partner->prefix_code : config('order_manager.prefix_code');
+                } else {
+                    $prefix_code = config('order_manager.prefix_code');
+                }
+                if(isset($orderForm['invoice_code'])) {
+                    $orderForm['order_code'] = $orderForm['invoice_code'];
+                } else {
+                    $orderForm['order_code'] = app(OrderService::class)->getOrderCode($prefix_code);
+                    $orderForm['invoice_code'] = $orderForm['order_code'];
+                }
+                $order = $this->orderRepository->create($orderForm);
+            }
+            app(OrderTrackingService::class)->create($order, $request->all());
+            if(isset($fileName)) {
+                $order_image = OrderImage::where('order_id', $order->id)->first();
+                if(!$order_image) $order_image = new OrderImage();
+                $order_image->fill([
+                    'order_id' => $order->id,
+                    'image' => $fileName,
+                    'type_upload' => $request->type_image
+                ]);
+                $order_image->save();
+                    // $order->delivery_status = Order::DELIVERY_STATUS_OK;
+                // $order->save();
             }
             if (!empty($order_service) && $order) {
                 $data = [];
@@ -208,11 +224,17 @@ class OrderController extends AppBaseController
                 }
             }
             DB::commit();
-            Flash::success('Tạo vận đơn thành công.');
+            Flash::success( ($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thành công.');
             return redirect()->route('orders.edit', [$order->id]);
         }catch (Exception $e) {
-            Flash::error('Tạo vận đơn thất bại.');
+            Flash::error(($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thất bại.');
             DB::rollback();
+        }
+        if($is_update) {
+            $citys = City::get();
+            $partners = Partner::get();
+            $users = User::where('level', User::LEVEL_POSTMAN)->get();
+            return view('orders.edit', ['citys' => $citys, 'partners' => $partners,'order' => $order, 'update' => true, 'users' => $users]);
         }
         return redirect()->route('orders.index');
 
@@ -294,9 +316,9 @@ class OrderController extends AppBaseController
                         }
                     }
                 }
-                if($orderForm['signator']) {
-                    $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
-                }
+                // if($orderForm['signator']) {
+                //     $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
+                // }
                 if($orderForm['invoice_code']) {
                     $orderForm['order_code'] = $orderForm['invoice_code'];
                 }
@@ -356,6 +378,8 @@ class OrderController extends AppBaseController
     public function import(Request $request) {
         $file = $request->file('file');
         if($file) {
+            $partners = Partner::get();
+            $orders = [];
             $mimes = array('application/vnd.ms-excel','text/xls','text/xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             if(in_array($_FILES["file"]["type"], $mimes)) {
                 $spreadsheet = IOFactory::load($file->getRealPath());
@@ -426,6 +450,7 @@ class OrderController extends AppBaseController
                             $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
                             $order = Order::create($orderData);
                             if($order ){
+                                $orders[] = $order;
                                 app(OrderTrackingService::class)->create($order, $request->all());
                             }
                             $dataService = [];
@@ -459,7 +484,7 @@ class OrderController extends AppBaseController
                     $startcount++;
                 }
 
-                return redirect()->route('orders.index');
+                return view('orders.import', ['orders' => $orders, 'partners' => $partners]);
             } else {
                 Flash::error('File đã chọn phải là excel');
                 return back();
@@ -472,7 +497,8 @@ class OrderController extends AppBaseController
     }
 
     public function showFormImport() {
-        return view('orders.import');
+        $partners = Partner::get();
+        return view('orders.import', ['orders' => [], 'partners' => $partners]);
     }
 
     public function renderTemplate(Request $request) {
