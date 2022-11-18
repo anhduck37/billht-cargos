@@ -38,9 +38,10 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            <button data-toggle="modal" data-target="#openModalPrint" type="button" class="btn btn-primary">In đơn</button>
-                            {!! Form::submit( 'Nhập' , ['class' => 'btn btn-primary']) !!}
-                            <a class='btn btn-light' href="{{route('orders.index')}}">Thoát</a>
+                            
+                            {!! Form::submit( 'Nhập Excel' , ['class' => 'btn btn-primary']) !!}
+                            <button data-toggle="modal" data-target="#openModalPrint" type="button" class="btn btn-primary">In tất cả</button>
+                            <a class='btn btn-light' href="{{route('orders.index')}}">Quản lý vận đơn</a>
                         </div>
 
                         {!! Form::close() !!}
