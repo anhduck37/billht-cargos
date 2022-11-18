@@ -316,9 +316,9 @@ class OrderController extends AppBaseController
                         }
                     }
                 }
-                if($orderForm['signator']) {
-                    $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
-                }
+                // if($orderForm['signator']) {
+                //     $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
+                // }
                 if($orderForm['invoice_code']) {
                     $orderForm['order_code'] = $orderForm['invoice_code'];
                 }
