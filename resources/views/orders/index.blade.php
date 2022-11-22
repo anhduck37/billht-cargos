@@ -107,7 +107,7 @@
 
                 </div>
                 <div class="align-content-center" style="margin-top: 20px">
-                    {!! $orders->links() !!}
+                    {!! $orders->appends(request()->query())->links() !!}
                 </div>
 
                 <!-- Modal Email -->
