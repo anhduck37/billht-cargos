@@ -32,7 +32,7 @@ class OrderFormRequestLevelPosman extends FormRequest
             if(auth()->user()->level == User::LEVEL_POSTMAN && !isset($order->image)) {
                 $rule['image_data'] = 'required';
             }
-            if($order && isset($formData['order']) && $order->order_code != $formData['order']['invoice_code']) {
+            if($order && isset($formData['order']) && isset($formData['order']['invoice_code']) && $order->order_code != $formData['order']['invoice_code']) {
                 $rule['order.invoice_code'] = 'unique:orders,order_code';
             }
         } else {

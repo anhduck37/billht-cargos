@@ -373,7 +373,7 @@
             let type_webcam = {!! \App\OrderImage::TYPE_IMAGE_WEBCAM !!}
 
             $('#invoice_code').on('change', function() {
-                $('#invoice_code').val(this.value.toUpperCase())
+                $('#invoice_code').val(this.value.toUpperCase().replace(/\s/g, ""))
             });
 
 
