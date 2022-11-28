@@ -76,7 +76,7 @@
                             <div class="col mb-1">
                                 <a style="width: 100%" href="{{route('orders.showFormImport')}}" class="btn btn-primary">Nhập file excel</a>
                             </div>
-                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_USER, \App\User::LEVEL_STAFF]))
                             <div class="col mb-1">
                                 <a href="#" id="export" style="width: 100%" class="btn btn-primary float-right"
                                 >
