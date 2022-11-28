@@ -248,8 +248,6 @@
             });
             $('#order_date').on('apply.daterangepicker', function(ev, picker) {
                 $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
-                let url = {!! json_encode(route('orders.export')) !!};
-                $('#export').attr('href', url + `?start_date=${picker.startDate.format('DD/MM/YYYY')}&end_date=${picker.endDate.format('DD/MM/YYYY')}`)
             });
             $('#order_date').on('cancel.daterangepicker', function(ev, picker) {
                 $(this).val('');
