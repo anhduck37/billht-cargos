@@ -119,11 +119,19 @@ function renderHtml (data) {
                 <div class="row custom-row">
                     <div class="col custom-col">
                         <div class="card-body">
-                            <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
-                            <p class="size-text">${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....' }</p>
-                            <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '' ) : '.....'}</p>
+                            <div class="row">
+                                <div class="col-6">
+                                    <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
+                                    <p class="size-text" >${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....' }</p>
+                                    <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '' ) : '.....'}</p>
+                                </div>
+                                <div class="col-6">
+                                    <h4 class="card-title">Mã KH </h4>
+                                    <p class="size-text" >${order && order.get_person_charge && order && order.get_person_charge.name ? order.get_person_charge.name : ''}</p>
+                                </div>
+                            </div>
                             <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department != null ? order.department : ''}</p>
-                            <p class="size-text"><h4 class="card-title">Điện thoại:</h4> ${order.sender && order.sender.sender_phone ? order.sender.sender_phone : '.....'}</p>
+                            <p class="size-text"><h4 class="card-title">Điện thoại: ${order.sender && order.sender.sender_phone ? order.sender.sender_phone : '.....'}</h4></p>
                         </div>
                     </div>
                     <div class="col">
@@ -175,7 +183,7 @@ function renderHtml (data) {
 
                             <p class="card-text size-text"><small class="text-muted">${order.receiver ? (order.receiver.address ? order.receiver.address + ', ' : '' ) + (order.receiver.ward ? order.receiver.ward.ward_name + ', ' : '')  + (order.receiver.district ? order.receiver.district.district_name + ', ' : '') + (order.receiver.city ? order.receiver.city.city_name : '') : '.....'}</small></p>
 
-                            <p class="card-text size-text"><h4 class="card-title">Điện thoại:</h4> ${order.receiver && order.receiver.receiver_phone ? order.receiver.receiver_phone : '.....'}</p>
+                            <p class="card-text size-text"><h4 class="card-title">Điện thoại: ${order.receiver && order.receiver.receiver_phone ? order.receiver.receiver_phone : '.....'}</h4></p>
                         </div>
                     </div>
                     <div class="col">
@@ -320,11 +328,20 @@ function renderHtml (data) {
                         <div class="row custom-row">
                             <div class="col custom-col">
                                 <div class="card-body">
-                                    <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
-                                    <p class="size-text" >${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....' }</p>
-                                    <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '' ) : '.....'}</p>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
+                                            <p class="size-text" >${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....' }</p>
+                                            <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '' ) : '.....'}</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <h4 class="card-title">Mã KH </h4>
+                                            <p class="size-text" >${order && order.get_person_charge && order && order.get_person_charge.name ? order.get_person_charge.name : ''}</p>
+                                        </div>
+                                    </div>
+
                                     <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department != null ? order.department : ''}</p>
-                                    <p class="size-text"><h4 class="card-title">Điện thoại:</h4> ${order.sender && order.sender.sender_phone ? order.sender.sender_phone : '.....'}</p>
+                                    <p class="size-text"><h4 class="card-title">Điện thoại: ${order.sender && order.sender.sender_phone ? order.sender.sender_phone : '.....'}</h4></p>
                                 </div>
                             </div>
                             <div class="col">
@@ -375,7 +392,7 @@ function renderHtml (data) {
                                     <p class="card-text size-text">${order.receiver && order.receiver.receiver_name ? order.receiver.receiver_name : '.....'}</p>
                                     <p class="card-text"><small class="text-muted size-text">${order.receiver ? (order.receiver.address ? order.receiver.address + ', ' : '' ) + (order.receiver.ward ? order.receiver.ward.ward_name + ', ' : '')  + (order.receiver.district ? order.receiver.district.district_name + ', ' : '') + (order.receiver.city ? order.receiver.city.city_name : '') : '.....'}</small></p>
 
-                                    <p class="card-text"><h4 class="card-title">Điện thoại:</h4> ${order.receiver && order.receiver.receiver_phone ? order.receiver.receiver_phone : '.....'}</p>
+                                    <p class="card-text"><h4 class="card-title">Điện thoại: ${order.receiver && order.receiver.receiver_phone ? order.receiver.receiver_phone : '.....'}</h4></p>
                                 </div>
                             </div>
                             <div class="col">
