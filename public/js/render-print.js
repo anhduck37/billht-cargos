@@ -127,7 +127,7 @@ function renderHtml (data) {
                                 </div>
                                 <div class="col-6">
                                     <h4 class="card-title">Mã KH </h4>
-                                    <p class="size-text" >${order && order.get_person_charge && order && order.get_person_charge.name ? order.get_person_charge.name : ''}</p>
+                                    <p class="size-text" >${order && order.user && order && order.user.name ? order.user.name : ''}</p>
                                 </div>
                             </div>
                             <p class="card-text"><h4 class="card-title">Phòng ban:</h4> ${order.department != null ? order.department : ''}</p>
@@ -138,7 +138,7 @@ function renderHtml (data) {
                         <div class="card-body">
 
                             <div class="row">
-                                <div class="col-8">
+                                <div class="col-8" style="margin-bottom: 5px">
                                     <h4 class="card-title">${data.service_domestic && data.service_domestic.name}</h4>
                                     <div class="row">`
                                     for (const key in (data.service_domestic && data.service_domestic.value)) {
@@ -336,7 +336,7 @@ function renderHtml (data) {
                                         </div>
                                         <div class="col-6">
                                             <h4 class="card-title">Mã KH </h4>
-                                            <p class="size-text" >${order && order.get_person_charge && order && order.get_person_charge.name ? order.get_person_charge.name : ''}</p>
+                                            <p class="size-text" >${order && order.user && order && order.user.name ? order.user.name : ''}</p>
                                         </div>
                                     </div>
 
@@ -348,7 +348,7 @@ function renderHtml (data) {
                                 <div class="card-body">
 
                                     <div class="row">
-                                        <div class="col-8">
+                                        <div class="col-8" style="margin-bottom: 5px">
                                             <h4 class="card-title">${data.service_domestic && data.service_domestic.name}</h4>
                                             <div class="row">`
                                             for (const key in (data.service_domestic && data.service_domestic.value)) {
