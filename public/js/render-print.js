@@ -138,7 +138,7 @@ function renderHtml (data) {
                         <div class="card-body">
 
                             <div class="row">
-                                <div class="col-8">
+                                <div class="col-8" style="margin-bottom: 5px">
                                     <h4 class="card-title">${data.service_domestic && data.service_domestic.name}</h4>
                                     <div class="row">`
                                     for (const key in (data.service_domestic && data.service_domestic.value)) {
@@ -348,7 +348,7 @@ function renderHtml (data) {
                                 <div class="card-body">
 
                                     <div class="row">
-                                        <div class="col-8">
+                                        <div class="col-8" style="margin-bottom: 5px">
                                             <h4 class="card-title">${data.service_domestic && data.service_domestic.name}</h4>
                                             <div class="row">`
                                             for (const key in (data.service_domestic && data.service_domestic.value)) {
