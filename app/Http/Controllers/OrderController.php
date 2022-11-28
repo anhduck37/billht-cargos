@@ -512,7 +512,8 @@ class OrderController extends AppBaseController
             'sender.city',
             'receiver.ward',
             'receiver.district',
-            'receiver.city'
+            'receiver.city',
+            'getPersonCharge'
         ]);
         if($start && $end) {
             $prefix_code = config('order_manager.prefix_code');
