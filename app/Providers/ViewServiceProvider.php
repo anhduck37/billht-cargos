@@ -28,9 +28,12 @@ class ViewServiceProvider extends ServiceProvider
     public function boot(Guard $auth)
     {
         View::composer('*', function ($view) use ($auth) {
-            $start_time = date('Y-m-d');
-            $end_time = (new DateTime($start_time))->modify('+1 day')->format('Y-m-d');
-            $totalOrder = Order::where('user_id', $auth->user()->id)->where('created_at', '>=', date('Y-m-d'))->where('created_at', '<', $end_time)->count();
+            $totalOrder = 0;
+            if(isset($auth->user()->id)) {
+                $start_time = date('Y-m-d');
+                $end_time = (new DateTime($start_time))->modify('+1 day')->format('Y-m-d');
+                $totalOrder = Order::where('user_id', $auth->user()->id)->where('created_at', '>=', date('Y-m-d'))->where('created_at', '<', $end_time)->count();
+            }
             $view->with('totalOrder', $totalOrder);
         });
     }
