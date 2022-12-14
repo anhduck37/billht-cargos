@@ -30,7 +30,9 @@ use PHPMailer\PHPMailer\SMTP;
 use Response;
 use Illuminate\Support\Facades\Http;
 use App\Models\Order;
+use App\OrderHistory;
 use App\OrderImage;
+use App\Services\OrderHistoryService;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -223,6 +225,7 @@ class OrderController extends AppBaseController
                     Service::insert($data);
                 }
             }
+            app(OrderHistoryService::class)->createOrderHistory(null, $order, $request->all(), OrderHistory::IS_TOTAL_ORDER, OrderHistory::TYPE_ORDER_CREATE);
             DB::commit();
             Flash::success( ($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thành công.');
             return redirect()->route('orders.edit', [$order->id]);
@@ -264,6 +267,7 @@ class OrderController extends AppBaseController
     }
 
     public function update(OrderFormRequestLevelPosman $request, $id) {
+        $is_total_order = 0;
         $senderForm = $request->sender;
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
@@ -275,6 +279,7 @@ class OrderController extends AppBaseController
         DB::beginTransaction();
         try {
             $order = $this->orderRepository->find($id);
+            $order_old = $order;
             if($order) {
                 if($request->image_remove) {
                     $path = public_path(). "/uploads/". $order->image->image;
@@ -284,6 +289,7 @@ class OrderController extends AppBaseController
                     $order->image->delete();
                 }
                 if(isset($fileName)) {
+                    $is_total_order = OrderHistory::IS_TOTAL_ORDER;
                     $order_image = OrderImage::where('order_id', $id)->first();
                     if(!isset($order_image))  {
                         $order_image = new OrderImage();
@@ -321,9 +327,13 @@ class OrderController extends AppBaseController
                 // }
                 if(isset($orderForm['invoice_code'])) {
                     $orderForm['order_code'] = $orderForm['invoice_code'];
+                    if($orderForm['invoice_code'] != $order_old->order_code) {
+                        $is_total_order = OrderHistory::IS_TOTAL_ORDER;
+                    }
                 }
                 Order::where('id', $id)->update($orderForm);
                 if($order &&  array_key_exists('delivery_status', $orderForm) && $orderForm['delivery_status'] != $order->delivery_status){
+                    $is_total_order = OrderHistory::IS_TOTAL_ORDER;
                     $order->delivery_status = $orderForm['delivery_status'];
                     if(isset($orderForm['location_id'])) {
                         $order->city_id = $orderForm['location_id'];
@@ -333,6 +343,9 @@ class OrderController extends AppBaseController
                     }
                     $order->signator = $orderForm['signator'];
                     app(OrderTrackingService::class)->create($order, $request->all());
+                }
+                if(isset($orderForm['signator']) && $orderForm['signator'] != $order_old->signator) {
+                    $is_total_order = OrderHistory::IS_TOTAL_ORDER;
                 }
                 $serviceData = [];
                 foreach ($order_service as $key => $value) {
@@ -353,6 +366,7 @@ class OrderController extends AppBaseController
                     Service::where('order_id', $id)->whereNotIn('service', $serviceData)->delete();
                 }
             }
+            app(OrderHistoryService::class)->createOrderHistory($order_old, $order, $request->all(), $is_total_order, OrderHistory::TYPE_ORDER_UPDATE);
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
             return back();
