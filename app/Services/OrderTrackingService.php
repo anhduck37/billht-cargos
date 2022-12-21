@@ -49,4 +49,8 @@ class OrderTrackingService
         }
     }
 
+    public function update($order, $delivery_status) {
+        $orderTracking = OrderTracking::where('order_id', $order->id)->where('delivery_status', $delivery_status)->update(['signator' => $order->signator]);
+        return $orderTracking;
+    }
 }
