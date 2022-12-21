@@ -346,6 +346,8 @@ class OrderController extends AppBaseController
                 }
                 if(isset($orderForm['signator']) && $orderForm['signator'] != $order_old->signator) {
                     $is_total_order = OrderHistory::IS_TOTAL_ORDER;
+                    $order->signator = $orderForm['signator'];
+                    app(OrderTrackingService::class)->update($order, $orderForm['delivery_status']);
                 }
                 $serviceData = [];
                 foreach ($order_service as $key => $value) {
