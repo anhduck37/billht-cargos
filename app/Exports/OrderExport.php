@@ -30,10 +30,11 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
             $end_date = app(OrderService::class)->explodeDate($this->form_filter['end_date']);
             $orders->where('orders.order_date', '>=', $start_date)->where('orders.order_date', '<=', $end_date);
         }
-        if(isset($formFilter['order_code_from']) && isset($formFilter['order_code_to'])) {
+
+        if(isset($this->form_filter['order_code_from']) && isset($this->form_filter['order_code_to'])) {
             $prefix_code = config('order_manager.prefix_code');
-            $order_id_from = (int)str_replace($prefix_code,'', $formFilter['order_code_from']);
-            $order_id_to = (int)str_replace($prefix_code,'',$formFilter['order_code_to']);
+            $order_id_from = (int)str_replace($prefix_code,'', $this->form_filter['order_code_from']);
+            $order_id_to = (int)str_replace($prefix_code,'',$this->form_filter['order_code_to']);
             $orders->where('orders.id', '>=', $order_id_from)->where('orders.id', '<=',  $order_id_to)->where('order_code', 'LIKE', $prefix_code.'%');
         }
 
