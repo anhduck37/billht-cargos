@@ -101,12 +101,12 @@
                                         </div>
                                     </th>  --}}
                                     <td>{{$item->getDeliveryStatusName($item->delivery_status)}}</td>
-                                    <td>{{isset($order->sender) ? $order->sender->sender_name : ''}}</td>
-                                    <td>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</td>
-                                    <td>{{isset($order->receiver) && isset($order->receiver) ? $order->receiver->address : ''}}</td>
+                                    <td>{{isset($item->order) && isset($item->order->sender) ? $item->order->sender->sender_name : ''}}</td>
+                                    <td>{{isset($item->order) && isset($item->order->receiver) ? $item->order->receiver->receiver_name : ''}}</td>
+                                    <td>{{isset($item->order->receiver) && isset($item->order->receiver) ? $item->order->receiver->address : ''}}</td>
                                     <td>{{$item->signator}}</td>
                                     <!-- <td>{{$item->updated_at}}</td> -->
-                                    <td>{{isset($order) ? $order->note : ''}}</td>
+                                    <td>{{isset($item->order) ? $item->order->note : ''}}</td>
                                 </tr>
                             @endforeach
                             </tbody>
