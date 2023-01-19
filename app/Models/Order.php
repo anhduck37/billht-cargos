@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\OrderImage;
+use App\OrderTracking;
 use App\Partner;
 use App\Receiver;
 use App\Sender;
@@ -156,5 +157,9 @@ class Order extends Model
 
     public function image() {
         return $this->hasOne(OrderImage::class, 'order_id', 'id');
+    }
+
+    public function order_trackings() {
+        return $this->hasMany(OrderTracking::class, 'order_id');
     }
 }
