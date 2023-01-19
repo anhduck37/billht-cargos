@@ -15,17 +15,22 @@ class OrderTrackingController extends Controller
         $delivery_status = 0;
         $order = null;
         if($order_code) {
-            $order_trackings = OrderTracking::join('orders', 'orders.id', '=', 'order_trackings.order_id');
-            $order_trackings->where('orders.invoice_code', $order_code)->orWhere('order_trackings.order_code', $order_code);
-            $order_trackings = $order_trackings->select('order_trackings.*', 'orders.invoice_code')->get();
-            if($order_trackings && count($order_trackings) > 0) {
-                $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
-            }
+            // $order_trackings = OrderTracking::join('orders', 'orders.id', '=', 'order_trackings.order_id');
+            // $order_trackings->where('orders.invoice_code', $order_code)->orWhere('order_trackings.order_code', $order_code);
+            // $order_trackings = $order_trackings->select('order_trackings.*', 'orders.invoice_code')->get();
+            // if($order_trackings && count($order_trackings) > 0) {
+            //     $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
+            // }
 
-            $order = Order::where('order_code', $order_code)->first();
+            $order = Order::with(['order_trackings'])->where('order_code', $order_code)->first();
         }
         if(!$order && $order_code) {
             Flash::warning('Mã vận đơn không tồn tại hoặc chưa chính xác, vui lòng kiểm tra lại.');
+        } else if(isset($order->order_trackings)) {
+            $order_trackings = $order->order_trackings;
+            if($order_trackings && count($order_trackings) > 0) {
+                $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
+            }
         }
         return view('tracking', ['order_trackings' => $order_trackings, 'delivery_status' => $delivery_status, 'order' => $order]);
     }
