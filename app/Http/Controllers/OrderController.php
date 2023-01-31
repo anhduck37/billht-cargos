@@ -153,9 +153,6 @@ class OrderController extends AppBaseController
         $orderForm['order_status'] = 0;
         $order_service = isset($request->order_service) ? $request->order_service : [];
         $fileName = null;
-        if(isset($request->image_data)) {
-            $fileName = $this->upload($request->image_data, $request->type_image);
-        }
         $order = null;
         $is_update = false;
         DB::beginTransaction();
@@ -195,6 +192,9 @@ class OrderController extends AppBaseController
                     $orderForm['invoice_code'] = $orderForm['order_code'];
                 }
                 $order = $this->orderRepository->create($orderForm);
+            }
+            if(isset($request->image_data)) {
+                $fileName = $this->upload($request->image_data, $request->type_image, $order->order_code);
             }
             app(OrderTrackingService::class)->create($order, $request->all());
             if(isset($fileName)) {
@@ -273,14 +273,14 @@ class OrderController extends AppBaseController
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
         $fileName = null;
-        if(isset($request->image_data)) {
-            $fileName = $this->upload($request->image_data, $request->type_image);
-        }
         DB::beginTransaction();
         try {
             $order = $this->orderRepository->find($id);
             $order_old = $order;
             if($order) {
+                if(isset($request->image_data)) {
+                    $fileName = $this->upload($request->image_data, $request->type_image, isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code);
+                }
                 if($request->image_remove) {
                     $path = public_path(). "/uploads/". $order->image->image;
                     if (File::exists($path)) {
@@ -665,20 +665,20 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
-    public function upload($image_data, $type_image) {
+    public function upload($image_data, $type_image, $order_code) {
         $folderPath = public_path()."/uploads/";
-        $fileName = uniqid() . '.jpeg';
+        $fileName = $order_code . '.jpeg';
+        if (File::exists($folderPath . $fileName)) {
+            unlink($folderPath . $fileName);
+        }
         if($type_image == OrderImage::TYPE_IMAGE_FILE) {
-            $fileName = uniqid(). '.' .$image_data->getClientOriginalExtension();
+            $fileName = $order_code. '.' .$image_data->getClientOriginalExtension();
             $image_data->move($folderPath, $fileName);
         }else {
             $image_parts = explode(";base64,", $image_data);
             $image_type_aux = explode("image/", $image_parts[0]);
             $image_type = $image_type_aux[1];
-
             $image_base64 = base64_decode($image_parts[1]);
-
-
             $file = $folderPath . $fileName;
             file_put_contents($file, $image_base64);
         }
