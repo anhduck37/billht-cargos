@@ -49,6 +49,7 @@ class UpdateFileNameImage extends Command
                         $new_name = str_replace($name, $item->order->order_code, $item->image);
                         rename($path . $item->image, $path . $new_name);
                         $item->image = $new_name;
+                        echo 'order_code: '.$item->order->order_code.' --> '. $new_name."\n";
                         $item->save();
                     }
 
