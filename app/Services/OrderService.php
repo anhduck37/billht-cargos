@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Partner;
 use App\Service;
+use Illuminate\Support\Facades\File;
 
 class OrderService
 {
@@ -86,6 +87,18 @@ class OrderService
         }
         if(!empty($data)){
             Service::insert($data);
+        }
+    }
+
+    public function renameImage($orderImage) {
+        $regex = '/\.[a-z]*$/';
+        $path = public_path()."/uploads/";
+        if(File::exists($path . $orderImage->image)) {
+            $name = preg_replace($regex, '', $orderImage->image);
+            $new_name = str_replace($name, $orderImage->order->order_code, $orderImage->image);
+            rename($path . $orderImage->image, $path . $new_name);
+            $orderImage->image = $new_name;
+            $orderImage->save();
         }
     }
 }

@@ -329,6 +329,9 @@ class OrderController extends AppBaseController
                     $orderForm['order_code'] = $orderForm['invoice_code'];
                     if($orderForm['invoice_code'] != $order_old->order_code) {
                         $is_total_order = OrderHistory::IS_TOTAL_ORDER;
+                        if(isset($order->image)) {
+                            app(OrderService::class)->renameImage($order->image);
+                        }
                     }
                 }
                 Order::where('id', $id)->update($orderForm);
