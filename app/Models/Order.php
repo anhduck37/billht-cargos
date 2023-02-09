@@ -160,6 +160,17 @@ class Order extends Model
     }
 
     public function order_trackings() {
-        return $this->hasMany(OrderTracking::class, 'order_id', 'id');
+        return $this->hasMany(OrderTracking::class, 'order_id', 'id')
+        ->select([
+            'id',
+            'order_id',
+            'order_code',
+            'user_id',
+            'order_status',
+            'delivery_status',
+            'city_id',
+            'person_charge',
+            'signator'
+        ]);
     }
 }
