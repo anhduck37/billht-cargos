@@ -22,7 +22,7 @@ class OrderTrackingController extends Controller
             //     $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
             // }
 
-            $order = Order::where('order_code', $order_code)
+            $order = Order::with(['order_trackings'])->where('order_code', $order_code)
                 // ->orWhere('invoice_code', $order_code)
                 ->first();
         }
