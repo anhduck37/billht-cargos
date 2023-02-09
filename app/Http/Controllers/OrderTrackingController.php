@@ -31,8 +31,8 @@ class OrderTrackingController extends Controller
         } else if($order) {
             $order_trackings = $order->order_trackings;
             if($order_trackings && count($order_trackings) > 0) {
-                $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
-                dd($order);
+                // $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
+                $delivery_status = $order->delivery_status;
             }
         }
         return view('tracking', ['order_trackings' => $order_trackings, 'delivery_status' => $delivery_status, 'order' => $order]);
