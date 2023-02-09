@@ -25,7 +25,6 @@ class OrderTrackingController extends Controller
             $order = Order::with(['order_trackings'])->where('order_code', $order_code)
                 // ->orWhere('invoice_code', $order_code)
                 ->first();
-                dd($order);
         }
         if(!$order && $order_code) {
             Flash::warning('Mã vận đơn không tồn tại hoặc chưa chính xác, vui lòng kiểm tra lại.');
@@ -36,7 +35,6 @@ class OrderTrackingController extends Controller
                 // $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
             // }
         }
-        dd($order);
         return view('tracking', ['order_trackings' => $order_trackings, 'delivery_status' => $delivery_status, 'order' => $order]);
     }
 }
