@@ -35,6 +35,7 @@ class OrderTrackingController extends Controller
                 $delivery_status = $order->delivery_status;
             }
         }
+        dd($order);
         return view('tracking', ['order_trackings' => $order_trackings, 'delivery_status' => $delivery_status, 'order' => $order]);
     }
 }
