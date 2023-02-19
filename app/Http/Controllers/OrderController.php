@@ -4,10 +4,6 @@ namespace App\Http\Controllers;
 
 use App\City;
 use App\Exports\OrderExport;
-use App\Http\Requests\CreateOrderRequest;
-use App\Http\Requests\UpdateOrderRequest;
-use App\Mail\SendMail;
-use App\OrderTracking;
 use App\Partner;
 use App\Receiver;
 use App\Repositories\OrderRepository;
@@ -19,25 +15,18 @@ use App\Services\OrderService;
 use App\Services\OrderTrackingService;
 use Exception;
 use Illuminate\Http\Request;
-use Auth;
 use App\User;
 use Flash;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
-use PHPMailer\PHPMailer\SMTP;
 use Response;
-use Illuminate\Support\Facades\Http;
 use App\Models\Order;
 use App\OrderHistory;
 use App\OrderImage;
+use App\Services\GoogleDriveService;
 use App\Services\OrderHistoryService;
+use App\Services\OrderImageService;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Reader\Exception as ExceptionExcel;
-use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as ExceptionMail;
@@ -47,12 +36,16 @@ class OrderController extends AppBaseController
     /** @var  OrderRepository */
 
     private $orderRepository;
+    private $googleDriveService;
+    private $orderImageService;
 
     private $limit = 20;
 
-    public function __construct(OrderRepository $orderRepo)
+    public function __construct(OrderRepository $orderRepo, GoogleDriveService $googleDriveService, OrderImageService $orderImageService)
     {
         $this->orderRepository = $orderRepo;
+        $this->googleDriveService = $googleDriveService;
+        $this->orderImageService = $orderImageService;
     }
 
     /**
@@ -194,21 +187,9 @@ class OrderController extends AppBaseController
                 $order = $this->orderRepository->create($orderForm);
             }
             if(isset($request->image_data)) {
-                $fileName = $this->upload($request->image_data, $request->type_image, $order->order_code);
+                $fileName = $this->upload($request->image_data, $request->type_image, $order->order_code, OrderImage::SAVE_GOOGLE_DRIVE, $order);
             }
             app(OrderTrackingService::class)->create($order, $request->all());
-            if(isset($fileName)) {
-                $order_image = OrderImage::where('order_id', $order->id)->first();
-                if(!$order_image) $order_image = new OrderImage();
-                $order_image->fill([
-                    'order_id' => $order->id,
-                    'image' => $fileName,
-                    'type_upload' => $request->type_image
-                ]);
-                $order_image->save();
-                    // $order->delivery_status = Order::DELIVERY_STATUS_OK;
-                // $order->save();
-            }
             if (!empty($order_service) && $order) {
                 $data = [];
                 foreach ($order_service as $key => $value) {
@@ -273,13 +254,13 @@ class OrderController extends AppBaseController
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
         $fileName = null;
-        DB::beginTransaction();
-        try {
+        // DB::beginTransaction();
+        // try {
             $order = $this->orderRepository->find($id);
             $order_old = $order;
             if($order) {
                 if(isset($request->image_data)) {
-                    $fileName = $this->upload($request->image_data, $request->type_image, isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code);
+                    $fileName = $this->upload($request->image_data, $request->type_image, isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code, OrderImage::SAVE_GOOGLE_DRIVE, $order);
                 }
                 if($request->image_remove) {
                     $path = public_path(). "/uploads/". $order->image->image;
@@ -290,21 +271,6 @@ class OrderController extends AppBaseController
                 }
                 if(isset($fileName)) {
                     $is_total_order = OrderHistory::IS_TOTAL_ORDER;
-                    $order_image = OrderImage::where('order_id', $id)->first();
-                    if(!isset($order_image))  {
-                        $order_image = new OrderImage();
-                    } else {
-                        $path = public_path(). "/uploads/". $order_image->image;
-                        if (File::exists($path)) {
-                            unlink($path);
-                        }
-                    }
-                    $order_image->fill([
-                        'order_id' => $id,
-                        'image' => $fileName,
-                        'type_upload' => $request->type_image
-                    ]);
-                    $order_image->save();
                     // $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
                 }
                 if(auth()->user()->level !== User::LEVEL_POSTMAN) {
@@ -375,10 +341,10 @@ class OrderController extends AppBaseController
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
             return back();
-        }catch (Exception $e) {
-            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
-            DB::rollback();
-        }
+        // }catch (Exception $e) {
+        //     Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
+        //     DB::rollback();
+        // }
         return redirect()->route('orders.index');
     }
 
@@ -668,24 +634,38 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
-    public function upload($image_data, $type_image, $order_code) {
-        $folderPath = public_path()."/uploads/";
-        $fileName = $order_code . '.jpeg';
-        if (File::exists($folderPath . $fileName)) {
-            unlink($folderPath . $fileName);
+    public function upload($image_data, $type_image, $order_code, $type_save, $order) {
+        $dataOrderImage = [];
+        if($type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
+            $fileImage = $this->orderImageService->setUp($image_data, $type_image, $order_code);
+            $fileName = $fileImage->getFileName();
+            $data = $this->googleDriveService->createFile($fileName, $fileImage->getContentFile(), $fileImage->getMimeType());
+            $dataOrderImage['google_drive_id'] = $data->getFolder()->id;
+            $dataOrderImage['file_id'] = $data->getFile()->id;
+            $dataOrderImage['url'] = config('google_drive.url') . $data->getFile()->id;
+        } else {
+            $folderPath = public_path()."/uploads/";
+            $fileName = $order_code . '.jpeg';
+            if (File::exists($folderPath . $fileName)) {
+                unlink($folderPath . $fileName);
+            }
+            if($type_image == OrderImage::TYPE_IMAGE_FILE) {
+                $fileName = $order_code. '.' .$image_data->getClientOriginalExtension();
+                $image_data->move($folderPath, $fileName);
+            }else {
+                $image_parts = explode(";base64,", $image_data);
+                $image_type_aux = explode("image/", $image_parts[0]);
+                $image_type = $image_type_aux[1];
+                $image_base64 = base64_decode($image_parts[1]);
+                $file = $folderPath . $fileName;
+                file_put_contents($file, $image_base64);
+            }
         }
-        if($type_image == OrderImage::TYPE_IMAGE_FILE) {
-            $fileName = $order_code. '.' .$image_data->getClientOriginalExtension();
-            $image_data->move($folderPath, $fileName);
-        }else {
-            $image_parts = explode(";base64,", $image_data);
-            $image_type_aux = explode("image/", $image_parts[0]);
-            $image_type = $image_type_aux[1];
-            $image_base64 = base64_decode($image_parts[1]);
-            $file = $folderPath . $fileName;
-            file_put_contents($file, $image_base64);
-        }
-
+        $dataOrderImage['image'] = $fileName;
+        $dataOrderImage['order_id'] = $order->id;
+        $dataOrderImage['type_upload'] = $type_image;
+        $dataOrderImage['type_save'] = $type_save;
+        $this->orderImageService->createOrUpdate($order->id, $dataOrderImage);
         return $fileName;
     }
 }
