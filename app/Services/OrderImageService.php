@@ -45,7 +45,7 @@ class OrderImageService {
                 $this->setContentFile(base64_decode($image_parts[1]));
                 $this->setMimeType($image_type_aux[1]);
                 $this->setFileName($order_code . '.jpeg');
-                dd($image_type_aux[1]);
+                dd($image_type_aux[1], $image_parts[0]);
                 break;
         }
         return $this;
