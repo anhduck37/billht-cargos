@@ -27,9 +27,7 @@ Route::get('/', function () {
 
 Auth::routes();
 Route::post('/register', 'Auth\RegisterController@create');
-Route::get('/postman/csrf', function () {
-	return csrf_token();
-});
+
 Route::middleware(['checkLevel'])->group(function() {
     Route::resource('users', 'UserController');
 });

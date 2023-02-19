@@ -8,7 +8,6 @@ use App\User;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -48,13 +47,7 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $this->validateLogin($request);
-        $formData = $request->all();
-        $formData['password'] = Hash::make($request->password);
-        $user = new User();
-        $user->level = 2;
-        $user->status = 1;
-        $user->fill($formData);
-        $user->save();
+
         // If the class is using the ThrottlesLogins trait, we can automatically throttle
         // the login attempts for this application. We'll key this by the username and
         // the IP address of the client making these requests into this application.
