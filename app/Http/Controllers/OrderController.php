@@ -260,13 +260,9 @@ class OrderController extends AppBaseController
             $order_old = $order;
             if($order) {
                 if($request->image_remove) {
-                    if($order->image->type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
-                        $this->googleDriveService->deleteFile($order->image->file_id);
-                    } else {
-                        $path = public_path(). "/uploads/". $order->image->image;
-                        if (File::exists($path)) {
-                            unlink($path);
-                        }
+                    $path = public_path(). "/uploads/". $order->image->image;
+                    if (File::exists($path)) {
+                        unlink($path);
                     }
                 }
                 if(isset($request->image_data)) {
