@@ -4,9 +4,8 @@ namespace App\Services;
 
 use App\GoogleDrive;
 use Google_Client;
-use Hypweb\Flysystem\GoogleDrive\GoogleDriveAdapter;
-use League\Flysystem\Filesystem;
 use Google\Service\Drive;
+use Exception;
 
 class GoogleDriveService {
 
@@ -61,7 +60,11 @@ class GoogleDriveService {
     }
 
     public function deleteFile($fileId) {
-        $this->googleDrive->files->delete($fileId);
+        try{
+            $this->googleDrive->files->delete($fileId);
+        }catch(Exception $e) {
+
+        }
         return $this;
     }
 
