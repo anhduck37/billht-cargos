@@ -154,7 +154,7 @@ class OrderController extends AppBaseController
                 $order = Order::where('order_code', $orderForm['invoice_code'])->first();
             }
             if($order) {
-                $order->fill($orderForm);
+                $order->fill(array_filter($orderForm));
                 $order->save();
                 $is_update = true;
             }else {
