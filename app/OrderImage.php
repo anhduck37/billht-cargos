@@ -19,6 +19,7 @@ class OrderImage extends Model
 
     const TYPE_IMAGE_FILE = 1;
     const TYPE_IMAGE_WEBCAM = 2;
+    const TYPE_IMAGE_PATH = 3;
 
     const SAVE_SERVER = 1;
     const SAVE_GOOGLE_DRIVE = 2;

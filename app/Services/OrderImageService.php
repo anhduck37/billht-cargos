@@ -46,6 +46,12 @@ class OrderImageService {
                 $this->setMimeType('image/'.$image_type_aux[1]);
                 $this->setFileName($order_code . '.jpeg');
                 break;
+            case OrderImage::TYPE_IMAGE_PATH:
+                $this->setContentFile(file_get_contents($file));
+                $image_type_aux = explode("image/", mime_content_type($file));
+                $this->setMimeType(mime_content_type($file));
+                $this->setFileName($order_code. '.' .$image_type_aux[1]);
+                break;
         }
         return $this;
     }
