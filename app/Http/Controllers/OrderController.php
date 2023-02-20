@@ -254,8 +254,8 @@ class OrderController extends AppBaseController
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
         $fileName = null;
-        DB::beginTransaction();
-        try {
+        // DB::beginTransaction();
+        // try {
             $order = $this->orderRepository->find($id);
             $order_old = $order;
             if($order) {
@@ -344,10 +344,10 @@ class OrderController extends AppBaseController
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
             return back();
-        }catch (Exception $e) {
-            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
-            DB::rollback();
-        }
+        // }catch (Exception $e) {
+        //     Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
+        //     DB::rollback();
+        // }
         return redirect()->route('orders.index');
     }
 
