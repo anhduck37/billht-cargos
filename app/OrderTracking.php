@@ -12,7 +12,7 @@ class OrderTracking extends Model
         'order_code',
         'user_id',
         'order_status',
-        'request',
+        // 'request',
         'delivery_status',
         'city_id',
         'person_charge',
