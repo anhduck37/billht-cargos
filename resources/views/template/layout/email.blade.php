@@ -128,7 +128,7 @@
                                             <label>Xin chào <b>{{isset($order->sender) ? $order->sender->sender_name : '' }}</b></label>
                                         </div>
                                         <div style="margin-top: 10px;color: black;font-weight: 300">
-                                            <label >HTEXPRESS đã tiếp nhận đơn hàng của bạn. Chúng tôi đang sắp xếp để chuyển đơn hàng của bạn đi.</label>
+                                            <label >{{$type_email ==  2 ? 'HTEXPRESS Đã giao thành công đơn hàng của bạn cho người nhận. Theo dõi đơn hàng với thông tin dưới đây: ' . route('tracking', ['order_code' => $order->order_code]) :  'HTEXPRESS đã tiếp nhận đơn hàng của bạn. Chúng tôi đang sắp xếp để chuyển đơn hàng của bạn đi.'}}</label>
                                             <p style="margin-top: 10px"><b>Mã vận đơn của bạn là {{$order->order_code}}</b></p>
                                         </div>
                                         @yield('table')

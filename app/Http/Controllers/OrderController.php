@@ -597,9 +597,9 @@ class OrderController extends AppBaseController
                 if($order && isset($order->sender) && $order->sender->sender_email){
                     $template = '';
                     if($type_email == 2) {
-                        $template = view('template.email_success', ['order' => $order])->render();
+                        $template = view('template.email_success', ['order' => $order, 'type_email' => $type_email])->render();
                     }else {
-                        $template = view('template.email_confirm', ['order' => $order])->render();
+                        $template = view('template.email_confirm', ['order' => $order, 'type_email' => $type_email])->render();
                     }
 
                     $mail->SMTPOptions = array(
