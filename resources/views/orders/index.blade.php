@@ -98,6 +98,9 @@
                             <div class="col mb-1">
                                 <button style="width: 100%" type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button>
                             </div>
+                            <div class="col mb-1">
+                                <button style="width: 100%" id="sendSMS" type="button" class="btn btn-primary">Gửi SMS</button>
+                            </div>
                             @endif
                         </div>
                     </div>

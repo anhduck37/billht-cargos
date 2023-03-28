@@ -64,6 +64,8 @@ class Order extends Model
         self::ORDER_CANCEL => 'Cancel'
     ];
 
+    const DELIVERY_STATUS_BLANK = 0;
+
     const DELIVERY_STATUS_OK = 1;
 
 	const DELIVERY_STATUS_RETURN = 2;
