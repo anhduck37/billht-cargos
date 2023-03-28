@@ -33,6 +33,7 @@ use App\Models\Order;
 use App\OrderHistory;
 use App\OrderImage;
 use App\Services\OrderHistoryService;
+use App\Services\SendSMSService;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -475,6 +476,11 @@ class OrderController extends AppBaseController
                             $order = Order::create($orderData);
                             if($order ){
                                 $orders[] = $order;
+
+                                if(isset($order->receiver) && !empty($order->receiver->receiver_phone)) {
+                                    app(SendSMSService::class)->sendSMS($order->receiver->receiver_phone, null, $order);
+                                }
+
                                 app(OrderTrackingService::class)->create($order, $request->all());
                             }
                             $dataService = [];
@@ -616,9 +622,9 @@ class OrderController extends AppBaseController
         $mail = new PHPMailer(true); // notice the \  you have to use root namespace here
         $orderId = null;
         try {
-            foreach ($orderIds as $id){
-                $orderId = $id;
-                $order = Order::where('id', $id)->first();
+            $orders = Order::whereIn('id', $orderIds)->first();
+            foreach ($orders as $order){
+                $orderId = $order->id;
                 if($order && isset($order->sender) && $order->sender->sender_email){
                     $template = '';
                     if($type_email == 2) {
@@ -663,7 +669,7 @@ class OrderController extends AppBaseController
             Flash::error($e->getMessage());
         }
         if($request->isUpdate && $orderId) {
-            route('orders.edit', [$orderId]);
+            return route('orders.edit', [$orderId]);
         }
         return route('orders.index');
     }
@@ -687,5 +693,46 @@ class OrderController extends AppBaseController
         }
 
         return $fileName;
+    }
+
+    public function sendSMS(Request $request) {
+        $orderIds = $request->order_ids;
+        if(empty($orderIds)){
+            Flash::error('Bạn vui lòng chọn vận đơn');
+            return route('orders.index');
+        }
+        $errors = [];
+        $success = [];
+        $orderId = null;
+        try {
+            $orders = Order::whereIn('id', $orderIds)->get();
+            foreach ($orders as $order){
+                $orderId = $order->id;
+                if($order && isset($order->receiver) && !empty($order->receiver->receiver_phone)){
+                    $response = app(SendSMSService::class)->sendSMS($order->receiver->receiver_phone, null, $order, true);
+                    if($response->CodeResult == 100) {
+                        array_push($success, $order->order_code);
+                    } else {
+                        array_push($errors, $order->order_code . ': '.  $response->ErrorMessage);
+                    }
+                }else {
+                    array_push($errors, $order->order_code);
+                }
+            }
+            if(!empty($errors)) {
+                Flash::error('Xảy ra lỗi gửi SMS với các vận đơn: '. implode(', ', $errors));
+            }
+            if(!empty($success)){
+                Flash::success('Gửi SMS thành công với các vận đơn: ' . implode(', ', $success));
+            }
+
+        } catch (Exception $e) {
+            Flash::error($e->getMessage());
+        }
+
+        if($request->isUpdate && $orderId) {
+            return route('orders.edit', [$orderId]);
+        }
+        return route('orders.index');
     }
 }
