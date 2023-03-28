@@ -265,6 +265,10 @@ class OrderController extends AppBaseController
                     if (File::exists($path)) {
                         unlink($path);
                     }
+                    if(isset($order->image)  && $order->image->type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
+                        $this->googleDriveService->deleteFile($order->image->file_id);
+                        $order->image->delete();
+                    }
                 }
                 if(isset($request->image_data)) {
                     $fileName = $this->upload($request->image_data, $request->type_image, isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code, OrderImage::SAVE_GOOGLE_DRIVE, $order);
