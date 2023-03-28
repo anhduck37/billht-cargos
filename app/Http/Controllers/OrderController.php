@@ -591,7 +591,7 @@ class OrderController extends AppBaseController
         $mail = new PHPMailer(true); // notice the \  you have to use root namespace here
         $orderId = null;
         try {
-            $orders = Order::whereIn('id', $orderIds)->first();
+            $orders = Order::whereIn('id', $orderIds)->get();
             foreach ($orders as $order){
                 $orderId = $order->id;
                 if($order && isset($order->sender) && $order->sender->sender_email){
