@@ -45,6 +45,7 @@ class UpdateDeliveryStatusCommand extends Command
         $time = Carbon::now()->subDay($type);
         $startTime = $time->format('Y-m-d H:i');
         $endTime = $time->addMinutes(1)->format('Y-m-d H:i');
+        echo $startTime .' - '. $endTime ."\n";
         $delivery_status = [];
         $delivery_status_update = 0;
         switch ($type) {
