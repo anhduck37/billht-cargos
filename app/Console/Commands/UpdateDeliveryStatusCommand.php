@@ -49,7 +49,7 @@ class UpdateDeliveryStatusCommand extends Command
         $delivery_status_update = 0;
         switch ($type) {
             case $this->one_day:
-                $delivery_status = [Order::DELIVERY_STATUS_RETURN, Order::DELIVERY_STATUS_BLANK];
+                $delivery_status = [Order::DELIVERY_STATUS_RETURN, Order::DELIVERY_STATUS_BLANK, Order::DELIVERY_STATUS_PROCESSING];
                 $delivery_status_update = Order::DELIVERY_STATUS_PERSON_CHARGE;
                 break;
             case $this->seven_day:
