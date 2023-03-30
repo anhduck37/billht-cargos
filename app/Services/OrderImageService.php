@@ -10,16 +10,16 @@ class OrderImageService {
     private $mimeType;
     private $fileName;
 
-    public function createOrUpdate($orderId, $data) {
+    public function createOrUpdate($orderId, $data, $isRemove=false) {
         $order_image = new OrderImage();
         if($orderId) {
             $find_order_image = OrderImage::where('order_id', $orderId)->first();
             if(!empty($find_order_image)) {
                 $order_image = $find_order_image;
-                if($order_image->type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
+                if($order_image->type_save == OrderImage::SAVE_GOOGLE_DRIVE && $isRemove) {
                     $gooleDriveService = new GoogleDriveService();
                     $gooleDriveService->deleteFile($order_image->file_id);
-                } else {
+                } else if($isRemove) {
                     $path = public_path(). "/uploads/". $order_image->image;
                     if (File::exists($path)) {
                         unlink($path);

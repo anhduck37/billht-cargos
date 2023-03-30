@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\UploadGoogleDriveJob;
 use App\OrderImage;
 use App\Services\GoogleDriveService;
 use App\Services\OrderImageService;
@@ -41,24 +42,12 @@ class UploadFileGoogleDrive extends Command
      */
     public function handle()
     {
-        $googleDriveService = new GoogleDriveService();
-        $orderImageService = new OrderImageService();
         OrderImage::with(['order'])->where('type_save', OrderImage::SAVE_SERVER)->groupBy('order_id')
-        ->chunkById(1000, function($orderImages) use ($googleDriveService, $orderImageService) {
+        ->chunkById(1000, function($orderImages) {
             foreach($orderImages as $item) {
                 if(isset($item->order)) {
-                    $path = public_path()."/uploads/";
-                    if(File::exists($path . $item->image)) {
-                        $fileImage = $orderImageService->setUp($path . $item->image, OrderImage::TYPE_IMAGE_PATH, $item->order->order_code);
-                        $data = $googleDriveService->createFile($item->image, $fileImage->getContentFile(), $fileImage->getMimeType());
-                        $item->google_drive_id = $data->getFolder()->id;
-                        $item->file_id = $data->getFile()->id;
-                        $item->url = config('google_drive.url') . $data->getFile()->id;
-                        $item->type_save = OrderImage::SAVE_GOOGLE_DRIVE;
-                        $item->save();
-                        echo 'order_code: '.$item->order->order_code.' --> fileId: '. $item->file_id."\n";
-                    }
-
+                    dispatch(new UploadGoogleDriveJob($item->order));
+                    echo 'order_code: '.$item->order->order_code."\n";
                 }
             }
         });

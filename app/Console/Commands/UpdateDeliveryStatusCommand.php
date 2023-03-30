@@ -13,8 +13,8 @@ class UpdateDeliveryStatusCommand extends Command
      *
      * @var string
      */
-    private $one_day = 1;
-    private $seven_day = 7;
+    private $number_update_delivery_status = 1;
+    private $number_update_delivery_status_success = 7;
     protected $signature = 'update_delivery_status {--type=}';
 
     /**
@@ -42,22 +42,25 @@ class UpdateDeliveryStatusCommand extends Command
     public function handle()
     {
         $type = $this->option('type');
-        $time = Carbon::now()->subDay($type);
+        $delivery_status = [];
+        $delivery_status_update = 0;
+        $subDay = 0;
+        switch ($type) {
+            case $this->number_update_delivery_status:
+                $delivery_status = [Order::DELIVERY_STATUS_RETURN, Order::DELIVERY_STATUS_BLANK, Order::DELIVERY_STATUS_PROCESSING];
+                $delivery_status_update = Order::DELIVERY_STATUS_PERSON_CHARGE;
+                $subDay = config('update_delivery_status.number_update_delivery_status');
+                break;
+            case $this->number_update_delivery_status_success:
+                $delivery_status = [Order::DELIVERY_STATUS_PERSON_CHARGE];
+                $delivery_status_update = Order::DELIVERY_STATUS_OK;
+                $subDay = config('update_delivery_status.number_update_delivery_status_success');
+                break;
+        }
+        $time = Carbon::now()->subDay($subDay);
         $startTime = $time->format('Y-m-d H:i');
         $endTime = $time->addMinutes(1)->format('Y-m-d H:i');
         echo $startTime .' - '. $endTime ."\n";
-        $delivery_status = [];
-        $delivery_status_update = 0;
-        switch ($type) {
-            case $this->one_day:
-                $delivery_status = [Order::DELIVERY_STATUS_RETURN, Order::DELIVERY_STATUS_BLANK, Order::DELIVERY_STATUS_PROCESSING];
-                $delivery_status_update = Order::DELIVERY_STATUS_PERSON_CHARGE;
-                break;
-            case $this->seven_day:
-                $delivery_status = [Order::DELIVERY_STATUS_PERSON_CHARGE];
-                $delivery_status_update = Order::DELIVERY_STATUS_OK;
-                break;
-        }
         if(!empty($delivery_status)) {
             Order::whereIn('delivery_status', $delivery_status)
                     ->where('created_at', '>=' , $startTime)

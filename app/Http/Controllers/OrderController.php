@@ -9,6 +9,8 @@ use App\Receiver;
 use App\Repositories\OrderRepository;
 use App\Http\Controllers\AppBaseController;
 use App\Http\Requests\OrderFormRequestLevelPosman;
+use App\Jobs\SendSMSJob;
+use App\Jobs\UploadGoogleDriveJob;
 use App\Sender;
 use App\Service;
 use App\Services\OrderService;
@@ -188,7 +190,7 @@ class OrderController extends AppBaseController
                 $order = $this->orderRepository->create($orderForm);
             }
             if(isset($request->image_data)) {
-                $fileName = $this->upload($request->image_data, $request->type_image, $order->order_code, OrderImage::SAVE_GOOGLE_DRIVE, $order);
+                $fileName = $this->upload($request->image_data, $request->type_image, $order->order_code, OrderImage::SAVE_SERVER, $order);
             }
             app(OrderTrackingService::class)->create($order, $request->all());
             if (!empty($order_service) && $order) {
@@ -260,18 +262,19 @@ class OrderController extends AppBaseController
             $order = $this->orderRepository->find($id);
             $order_old = $order;
             if($order) {
-                if($request->image_remove) {
-                    $path = public_path(). "/uploads/". $order->image->image;
-                    if (File::exists($path)) {
-                        unlink($path);
-                    }
-                    if(isset($order->image)  && $order->image->type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
-                        $this->googleDriveService->deleteFile($order->image->file_id);
-                        $order->image->delete();
-                    }
-                }
                 if(isset($request->image_data)) {
-                    $fileName = $this->upload($request->image_data, $request->type_image, isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code, OrderImage::SAVE_GOOGLE_DRIVE, $order);
+                    $fileName = $this->upload(
+                        $request->image_data,
+                        $request->type_image,
+                        isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code,
+                        OrderImage::SAVE_SERVER, $order,
+                        $request->image_remove
+                    );
+                } else if($request->image_remove) {
+                    if($order->image->type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
+                        $this->googleDriveService->deleteFile($order->image->file_id);
+                    }
+                    $order->image->delete();
                 }
                 if(isset($fileName)) {
                     $is_total_order = OrderHistory::IS_TOTAL_ORDER;
@@ -447,7 +450,7 @@ class OrderController extends AppBaseController
                                 $orders[] = $order;
 
                                 if(isset($order->receiver) && !empty($order->receiver->receiver_phone)) {
-                                    app(SendSMSService::class)->sendSMS($order->receiver->receiver_phone, null, $order);
+                                    dispatch(new SendSMSJob($order));
                                 }
 
                                 app(OrderTrackingService::class)->create($order, $request->all());
@@ -643,7 +646,7 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
-    public function upload($image_data, $type_image, $order_code, $type_save, $order) {
+    public function upload($image_data, $type_image, $order_code, $type_save, $order, $is_remove=false) {
         $dataOrderImage = [];
         if($type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
             $fileImage = $this->orderImageService->setUp($image_data, $type_image, $order_code);
@@ -669,12 +672,13 @@ class OrderController extends AppBaseController
                 $file = $folderPath . $fileName;
                 file_put_contents($file, $image_base64);
             }
+            dispatch(new UploadGoogleDriveJob($order));
         }
         $dataOrderImage['image'] = $fileName;
         $dataOrderImage['order_id'] = $order->id;
         $dataOrderImage['type_upload'] = $type_image;
         $dataOrderImage['type_save'] = $type_save;
-        $this->orderImageService->createOrUpdate($order->id, $dataOrderImage);
+        $this->orderImageService->createOrUpdate($order->id, $dataOrderImage, $is_remove);
         return $fileName;
     }
 

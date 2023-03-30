@@ -36,6 +36,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('update_delivery_status --type=1')->everyMinute();
         $schedule->command('update_delivery_status --type=7')->everyMinute();
+        $schedule->command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
     }
 
     /**
