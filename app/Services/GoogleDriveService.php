@@ -23,30 +23,48 @@ class GoogleDriveService {
         $this->googleDrive = new Drive($this->googleClient);
     }
 
-    public function getOrCreateFolderId() {
-        $month = date('m');
-        $googleDrive = GoogleDrive::where('month', (int)$month)->first();
+    public function getOrCreateFolderId($month=null, $year=null) {
+        if(empty($month)) $month = date('m');
+        if(empty($year)) $year = date('Y');
+        $googleDrive = GoogleDrive::where('month', $month)->where('year', $year)->first();
+        $dataGGDrive = [
+            'month' => $month,
+            'year' => $year
+        ];
         if(empty($googleDrive)) {
-            $fileMetadata = new Drive\DriveFile();
-            $fileMetadata->setName($month);
-            $fileMetadata->setMimeType('application/vnd.google-apps.folder');
-            $fileMetadata->setParents([config('google_drive.folderId')]);
-            $folder = $this->googleDrive->files->create($fileMetadata, array(
-                'fields' => 'id'
-            ));
+            $googleDriveYear = GoogleDrive::where('year', $year)->first();
+            if(empty($googleDriveYear)) {
+                $forderYear = $this->createFolder($year);
+                $dataGGDrive['year_folder_id'] = $forderYear->id;
+            } else {
+                $dataGGDrive['year_folder_id'] = $googleDriveYear->year_folder_id;
+            }
             $googleDrive = new GoogleDrive();
-            $googleDrive->fill([
-                'folder_id' => $folder->id,
-                'month' => (int) $month
-            ]);
+            $folder = $this->createFolder($month, $dataGGDrive['year_folder_id']);
+            $dataGGDrive['folder_id'] = $folder->id;
+            $googleDrive->fill($dataGGDrive);
             $googleDrive->save();
         }
 
         return $googleDrive;
     }
 
-    public function createFile($nameFile, $content, $mimeType) {
-        $folder = $this->getOrCreateFolderId();
+    public function createFolder($name, $folderId=null) {
+        $fileMetadata = new Drive\DriveFile();
+        if(empty($folderId)) {
+            $folderId = config('google_drive.folderId');
+        }
+        $fileMetadata->setName($name);
+        $fileMetadata->setMimeType('application/vnd.google-apps.folder');
+        $fileMetadata->setParents([$folderId]);
+        $folder = $this->googleDrive->files->create($fileMetadata, array(
+            'fields' => 'id'
+        ));
+        return $folder;
+    }
+
+    public function createFile($nameFile, $content, $mimeType, $month=null, $year=null) {
+        $folder = $this->getOrCreateFolderId($month, $year);
         $this->setFolder($folder);
         $fileMetadata = new Drive\DriveFile(['name' => $nameFile]);
         $fileMetadata->setParents([$folder->folder_id]);

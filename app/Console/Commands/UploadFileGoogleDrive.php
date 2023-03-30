@@ -4,10 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\UploadGoogleDriveJob;
 use App\OrderImage;
-use App\Services\GoogleDriveService;
-use App\Services\OrderImageService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 
 class UploadFileGoogleDrive extends Command
 {

@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\File;
+use Carbon\Carbon;
 
 class UploadGoogleDriveJob implements ShouldQueue
 {
@@ -37,11 +38,20 @@ class UploadGoogleDriveJob implements ShouldQueue
         $orderImageService = new OrderImageService();
         $googleDriveService = new GoogleDriveService();
         if(isset($this->order->image)) {
+            $date = Carbon::createFromFormat('Y-m-d H:i:s', $this->order->created_at);
+            $month = $date->format('m');
+            $year = $date->format('Y');
             $folderPath = public_path()."/uploads/";
             $file = $folderPath . $this->order->image->image;
             $fileImage = $orderImageService->setUp($file, OrderImage::TYPE_IMAGE_PATH, $this->order->order_code);
             $fileName = $fileImage->getFileName();
-            $data = $googleDriveService->createFile($fileName, $fileImage->getContentFile(), $fileImage->getMimeType());
+            $data = $googleDriveService->createFile(
+                $fileName,
+                $fileImage->getContentFile(),
+                $fileImage->getMimeType(),
+                $month,
+                $year
+            );
             if(!empty($this->order->image->file_id)) {
                 $googleDriveService->deleteFile($this->order->image->file_id);
             }

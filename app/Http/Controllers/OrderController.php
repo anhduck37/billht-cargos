@@ -672,7 +672,7 @@ class OrderController extends AppBaseController
                 $file = $folderPath . $fileName;
                 file_put_contents($file, $image_base64);
             }
-            // dispatch(new UploadGoogleDriveJob($order));
+            dispatch(new UploadGoogleDriveJob($order));
         }
         $dataOrderImage['image'] = $fileName;
         $dataOrderImage['order_id'] = $order->id;
