@@ -37,6 +37,8 @@ class SendSMSService {
         if(!str_contains($order->note, $this->textSendSMS) && !$isSend) {
             return;
         }
+        $order->note = str_replace($this->textSendSMS, '',$order->note);
+        $order->save();
         $this->data['Phone'] = $phone;
         if($content) {
             $this->data['Content'] = $content;

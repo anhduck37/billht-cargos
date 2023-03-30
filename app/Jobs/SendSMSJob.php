@@ -33,7 +33,7 @@ class SendSMSJob implements ShouldQueue
     {
         if(isset($this->order->receiver->receiver_phone)) {
             $sendSMSService = new SendSMSService();
-            $sendSMSService->sendSMS($this->order->receiver->receiver_phone, null, $this->order, true);
+            $sendSMSService->sendSMS($this->order->receiver->receiver_phone, null, $this->order, false);
         }
     }
 }
