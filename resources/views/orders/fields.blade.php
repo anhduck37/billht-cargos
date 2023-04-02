@@ -333,7 +333,7 @@
         </div>
         <div id="results" style="text-align: center">
             @if (isset($order->image))
-                <img class="imageShow" style="{{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM  ? 'transform: rotate(270deg);': ''}}" src="{{asset('uploads/'.$order->image->image)}}" />
+                <img class="imageShow" style="{{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM  ? 'transform: rotate(270deg);': ''}}" src="{{$order->image->type_save == \App\OrderImage::SAVE_GOOGLE_DRIVE ? $order->image->url : asset('uploads/'.$order->image->image)}}" />
                 <div class="mt-2">
                     <button id="removeImage" type="button" class="btn btn-danger">Xóa</button>
                 </div>

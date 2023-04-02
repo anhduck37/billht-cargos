@@ -30,6 +30,7 @@
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <button id="print" type="button" data-id="{{$order->id}}" class="btn btn-primary mb-2">In đơn</button>
                             <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary mb-2">Gửi email</button>
+                            <button type="button" id="sendSMS"  data-id="{{$order->id}}" class="btn btn-primary mb-2">Gửi SMS</button>
                             @endif
                             <a class='btn btn-primary mb-2' href="{{route('orders.index')}}">Tìm vận đơn</a>
                             <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn khác</a>
@@ -113,6 +114,18 @@
                         },
                     });
                 }
+            })
+
+            $('#sendSMS').on('click', function() {
+                let orderId = $(this).attr('data-id');
+                $.ajax({
+                    type: "POST",
+                    url: '/order/send-sms',
+                    data: {'order_ids': [orderId], isUpdate: true },
+                    success: function (res) {
+                        window.location.href = res;
+                    },
+                });
             })
         });
         function print(html) {

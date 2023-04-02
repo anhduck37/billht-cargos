@@ -20,13 +20,14 @@ Route::get('/', function () {
 //    $level = 1;
 //    return view('template.print', ['orders' => $order, 'level' => $level])->render();
 // });
-Route::get('email', function () {
-    $order = \App\Models\Order::first();
-    return view('template.email_success', ['order' => $order]);
-});
+// Route::get('email', function () {
+//     $order = \App\Models\Order::first();
+//     return view('template.email_success', ['order' => $order]);
+// });
 
 Auth::routes();
 Route::post('/register', 'Auth\RegisterController@create');
+
 Route::middleware(['checkLevel'])->group(function() {
     Route::resource('users', 'UserController');
 });
@@ -46,5 +47,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/delete-many', 'OrderController@deleteMany');
     Route::post('/order/update-many', 'OrderController@updateMany');
     Route::post('/order/send-email', 'OrderController@sendEmail');
+    Route::post('/order/send-sms', 'OrderController@sendSMS');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');
