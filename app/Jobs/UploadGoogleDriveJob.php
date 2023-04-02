@@ -55,11 +55,13 @@ class UploadGoogleDriveJob implements ShouldQueue
             if(!empty($this->order->image->file_id)) {
                 $googleDriveService->deleteFile($this->order->image->file_id);
             }
-            $dataOrderImage['google_drive_id'] = $data->getFolder()->id;
-            $dataOrderImage['file_id'] = $data->getFile()->id;
-            $dataOrderImage['url'] = config('google_drive.url') . $data->getFile()->id;
-            $dataOrderImage['type_save'] = OrderImage::SAVE_GOOGLE_DRIVE;
-            $orderImageService->createOrUpdate($this->order->id, $dataOrderImage, true);
+            if(isset($data->getFile()->id)) {
+                $dataOrderImage['google_drive_id'] = $data->getFolder()->id;
+                $dataOrderImage['file_id'] = $data->getFile()->id;
+                $dataOrderImage['url'] = config('google_drive.url') . $data->getFile()->id;
+                $dataOrderImage['type_save'] = OrderImage::SAVE_GOOGLE_DRIVE;
+                $orderImageService->createOrUpdate($this->order->id, $dataOrderImage, true);
+            }
         }
     }
 }
