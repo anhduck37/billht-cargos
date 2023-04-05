@@ -43,7 +43,7 @@ class SendSMSService {
         if($content) {
             $this->data['Content'] = $content;
         } else if($order) {
-            $this->data['Content'] = '[HTExpress] Xin chao QK HTExpress dang thuc hien giao hang cho QK. Theo doi tai day: ' . route('tracking', ['order_code' => $order->order_code]) . '. Lien he: 1900633656';
+            $this->data['Content'] = '[HTExpress] Xin chao QK HTExpress dang thuc hien giao hang cho QK. Theo doi tai day: ' . route('tracking', ['order_code' => $order->order_code]) . ' Lien he: 1900633656';
             // $this->data['Content'] = 'Cam on quy khach da su dung dich vu cua chung toi. Chuc quy khach mot ngay tot lanh!';
         }
         $response = $this->client->post($this->url, ['json' => $this->data]);
