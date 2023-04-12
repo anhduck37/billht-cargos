@@ -122,6 +122,10 @@
                     type: "POST",
                     url: '/order/send-sms',
                     data: {'order_ids': [orderId], isUpdate: true },
+                    beforeSend: function() {
+                        $('#sendSMS').attr("disabled", true)
+                        $('#sendSMS').html(`Gửi SMS <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
+                    },
                     success: function (res) {
                         window.location.href = res;
                     },
