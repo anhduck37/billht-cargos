@@ -212,7 +212,7 @@
                             </div>
                             <div class="col-md-5">
                                 <h4 class="card-title">Thông tin giao nhận</h4>
-                                <p class="card-text size-text">Ngày gửi:..............</p>
+                                <p class="card-text size-text">Ngày phát:..............</p>
                                 <p class="card-text size-text">Nv phát:..............</p>
                                 <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người nhận</p>
                             </div>
