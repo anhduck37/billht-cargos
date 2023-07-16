@@ -29,6 +29,7 @@ use App\Services\GoogleDriveService;
 use App\Services\OrderHistoryService;
 use App\Services\OrderImageService;
 use App\Services\SendSMSService;
+use App\Services\ZaloService;
 use Illuminate\Support\Facades\File;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -42,13 +43,21 @@ class OrderController extends AppBaseController
     private $googleDriveService;
     private $orderImageService;
 
+    private $zaloService;
+
     private $limit = 20;
 
-    public function __construct(OrderRepository $orderRepo, GoogleDriveService $googleDriveService, OrderImageService $orderImageService)
+    public function __construct(
+        OrderRepository $orderRepo, 
+        GoogleDriveService $googleDriveService, 
+        OrderImageService $orderImageService,
+        ZaloService $zaloSevice
+    )
     {
         $this->orderRepository = $orderRepo;
         $this->googleDriveService = $googleDriveService;
         $this->orderImageService = $orderImageService;
+        $this->zaloService = $zaloSevice;
     }
 
     /**
@@ -720,6 +729,49 @@ class OrderController extends AppBaseController
         if($request->isUpdate && $orderId) {
             return route('orders.edit', [$orderId]);
         }
+        return route('orders.index');
+    }
+
+    public function sendZaloZNS(Request $request) {
+        $orderIds = $request->order_ids;
+        if(empty($orderIds)){
+            Flash::error('Bạn vui lòng chọn vận đơn');
+            return route('orders.index');
+        }
+
+        $errors = [];
+        $success = [];
+        $orderId = null;
+
+        // try {
+            $orders = Order::whereIn('id', $orderIds)->get();
+            foreach ($orders as $order){
+                $orderId = $order->id;
+                // if($order && isset($order->receiver) && !empty($order->receiver->receiver_phone)){
+                    $response = $this->zaloService->sendZNS($order);
+                //     if($response->CodeResult == 100) {
+                //         array_push($success, $order->order_code);
+                //     } else {
+                //         array_push($errors, $order->order_code . ': '.  $response->ErrorMessage);
+                //     }
+                // }else {
+                //     array_push($errors, $order->order_code);
+                // }
+            }
+            // if(!empty($errors)) {
+            //     Flash::error('Xảy ra lỗi gửi SMS với các vận đơn: '. implode(', ', $errors));
+            // }
+            // if(!empty($success)){
+            //     Flash::success('Gửi SMS thành công với các vận đơn: ' . implode(', ', $success));
+            // }
+
+        // } catch (Exception $e) {
+        //     Flash::error($e->getMessage());
+        // }
+
+        // if($request->isUpdate && $orderId) {
+        //     return route('orders.edit', [$orderId]);
+        // }
         return route('orders.index');
     }
 }

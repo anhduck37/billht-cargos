@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Order;
+use App\Services\ZaloService;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -50,3 +52,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/send-sms', 'OrderController@sendSMS');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');
+Route::get('/test', function() {
+    $zalo = new ZaloService();
+    $order = Order::first();
+    $zalo->sendZNS($order);
+});

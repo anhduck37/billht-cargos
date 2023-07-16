@@ -101,6 +101,9 @@
                             <div class="col mb-1">
                                 <button style="width: 100%" id="sendSMS" type="button" class="btn btn-primary">Gửi SMS</button>
                             </div>
+                            <div class="col mb-1">
+                                <button style="width: 100%" id="sendZaloZNS" type="button" class="btn btn-primary">Gửi Zalo</button>
+                            </div>
                             @endif
                         </div>
                     </div>
