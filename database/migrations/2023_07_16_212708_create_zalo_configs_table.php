@@ -18,8 +18,8 @@ class CreateZaloConfigsTable extends Migration
             $table->string('app_id');
             $table->string('template_id');
             $table->string('secret_key');
-            $table->string('access_token')->nullable();
-            $table->string('refresh_token');
+            $table->text('access_token')->nullable();
+            $table->text('refresh_token');
             $table->tinyInteger('status')->default(0);
             $table->timestamps();
             $table->index(['app_id', 'status']);

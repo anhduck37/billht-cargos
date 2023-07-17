@@ -30,6 +30,7 @@ use App\Services\OrderHistoryService;
 use App\Services\OrderImageService;
 use App\Services\SendSMSService;
 use App\Services\ZaloService;
+use App\ZaloConfig;
 use Illuminate\Support\Facades\File;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -743,35 +744,35 @@ class OrderController extends AppBaseController
         $success = [];
         $orderId = null;
 
-        // try {
+        try {
             $orders = Order::whereIn('id', $orderIds)->get();
             foreach ($orders as $order){
                 $orderId = $order->id;
-                // if($order && isset($order->receiver) && !empty($order->receiver->receiver_phone)){
+                if($order && isset($order->receiver) && !empty($order->receiver->receiver_phone)){
                     $response = $this->zaloService->sendZNS($order);
-                //     if($response->CodeResult == 100) {
-                //         array_push($success, $order->order_code);
-                //     } else {
-                //         array_push($errors, $order->order_code . ': '.  $response->ErrorMessage);
-                //     }
-                // }else {
-                //     array_push($errors, $order->order_code);
-                // }
+                    if($response['error'] == ZaloConfig::SUCCESS_CODE) {
+                        array_push($success, $order->order_code);
+                    } else {
+                        array_push($errors, $order->order_code . ': '.  $response->ErrorMessage);
+                    }
+                }else {
+                    array_push($errors, $order->order_code);
+                }
             }
-            // if(!empty($errors)) {
-            //     Flash::error('Xảy ra lỗi gửi SMS với các vận đơn: '. implode(', ', $errors));
-            // }
-            // if(!empty($success)){
-            //     Flash::success('Gửi SMS thành công với các vận đơn: ' . implode(', ', $success));
-            // }
+            if(!empty($errors)) {
+                Flash::error('Xảy ra lỗi gửi SMS với các vận đơn: '. implode(', ', $errors));
+            }
+            if(!empty($success)){
+                Flash::success('Gửi SMS thành công với các vận đơn: ' . implode(', ', $success));
+            }
 
-        // } catch (Exception $e) {
-        //     Flash::error($e->getMessage());
-        // }
+        } catch (Exception $e) {
+            Flash::error($e->getMessage());
+        }
 
-        // if($request->isUpdate && $orderId) {
-        //     return route('orders.edit', [$orderId]);
-        // }
+        if($request->isUpdate && $orderId) {
+            return route('orders.edit', [$orderId]);
+        }
         return route('orders.index');
     }
 }

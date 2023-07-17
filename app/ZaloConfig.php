@@ -17,6 +17,7 @@ class ZaloConfig extends Model
     protected $table = 'zalo_configs';
 
     const ERROR_TOKEN_INVALID = -124;
+    const SUCCESS_CODE = 0;
 
     const STATUS_ACTIVE = 1;
     const STATUS_UNACTIVE = 0;

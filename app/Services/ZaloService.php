@@ -16,17 +16,18 @@ class ZaloService {
     protected $zalo_config;
     protected $headers = ['Content-Type' => 'application/json'];
     protected $url_refresh_token = 'https://oauth.zaloapp.com/v4/oa/access_token';
+    private $textSendSMS;
 
     public function __construct() {
         $this->model = new ZaloConfig();
         $this->config();
+        $this->textSendSMS = config('sms.textSendSMS');
     }
 
     public function sendZNS($order) {
         $phone = $order->receiver->receiver_phone;
         $phone = $this->formatPhone($phone);
         $data = [
-            'mode' => 'development',
             'phone' => $phone,
             'template_id' => $this->template_id,
             'template_data' => [
@@ -41,13 +42,14 @@ class ZaloService {
         ]);
         $response = $client->post($this->url, ['json' => $data]);
         $response = json_decode($response->getBody()->getContents(), true);
-
-        dd($response);
-        // $response = $this->client->post
+        if($response['error'] == ZaloConfig::SUCCESS_CODE) {
+            $order->note = str_replace($this->textSendSMS, '',$order->note);
+            $order->save();
+        }
+        return $response;
     }
 
     public function refresh_token() {
-        
         $data = [
             'refresh_token' => $this->refresh_token,
             'app_id' => $this->app_id,
@@ -57,10 +59,11 @@ class ZaloService {
         $client = new Client([
             'headers' => $this->headers
         ]);
-        $response = $client->post($this->url_refresh_token, ['json' => $data]);
+        $response = $client->post($this->url_refresh_token, ['form_params' => $data]);
         $response = json_decode($response->getBody()->getContents(), true);
         if(isset($response['access_token'])) {
             $this->zalo_config->access_token = $response['access_token'];
+            $this->zalo_config->refresh_token = $response['refresh_token'];
             $this->zalo_config->save();
         }
         return $this->zalo_config;
@@ -88,11 +91,12 @@ class ZaloService {
             $zaloConfig = $this->model;
             $data['refresh_token'] = $this->refresh_token;
             $data['status'] = ZaloConfig::STATUS_ACTIVE;
+            $zaloConfig->fill($data);
+            $zaloConfig->save();
         }
-        $zaloConfig->fill($data);
-        $zaloConfig->save();
         $this->zalo_config = $zaloConfig;
         $this->access_token = $zaloConfig->access_token;
+        $this->refresh_token = $zaloConfig->refresh_token;
         return $this;
     }
     
