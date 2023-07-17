@@ -96,10 +96,13 @@
                                 <button style="width: 100%" type="button" id="updateMany" class="btn btn-primary">Cập nhật trạng thái</button>
                             </div>
                             <div class="col mb-1">
-                                <button style="width: 100%" type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button>
+                                {{-- <button style="width: 100%" type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary">Gửi email</button> --}}
                             </div>
                             <div class="col mb-1">
                                 <button style="width: 100%" id="sendSMS" type="button" class="btn btn-primary">Gửi SMS</button>
+                            </div>
+                            <div class="col mb-1">
+                                <button style="width: 100%" id="sendZaloZNS" type="button" class="btn btn-primary">Gửi Zalo</button>
                             </div>
                             @endif
                         </div>

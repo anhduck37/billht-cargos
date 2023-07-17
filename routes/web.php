@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Order;
+use App\Services\ZaloService;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -48,5 +50,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/update-many', 'OrderController@updateMany');
     Route::post('/order/send-email', 'OrderController@sendEmail');
     Route::post('/order/send-sms', 'OrderController@sendSMS');
+    Route::post('/order/send-zalo-zns', 'OrderController@sendZaloZNS');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');

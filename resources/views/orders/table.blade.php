@@ -271,6 +271,20 @@
                     },
                 });
             })
+            $('#sendZaloZNS').on('click', function () {
+                $.ajax({
+                    type: "POST",
+                    url: '/order/send-zalo-zns',
+                    data: {'order_ids': dataPrint},
+                    beforeSend: function() {
+                        $('#sendZaloZNS').attr("disabled", true)
+                        $('#sendZaloZNS').html(`Gửi Zalo <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
+                    },
+                    success: function (res) {
+                        window.location.href = res;
+                    },
+                });
+            })
             $('#updateMany').on('click', function () {
                 let isUpdate = confirm('Bạn có chắc muốn cập nhật vận đơn này?');
                 if(isUpdate) {
