@@ -29,7 +29,7 @@
 
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <button id="print" type="button" data-id="{{$order->id}}" class="btn btn-primary mb-2">In đơn</button>
-                            <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary mb-2">Gửi email</button>
+                            {{-- <button type="button" data-toggle="modal" data-target="#openModalEmail" class="btn btn-primary mb-2">Gửi email</button> --}}
                             <button type="button" id="sendSMS"  data-id="{{$order->id}}" class="btn btn-primary mb-2">Gửi SMS</button>
                             <button type="button" id="sendZaloZNS"  data-id="{{$order->id}}" class="btn btn-primary mb-2">Gửi Zalo</button>
                             @endif
