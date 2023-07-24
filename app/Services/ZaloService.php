@@ -1,8 +1,9 @@
 <?php
 namespace App\Services;
+use App\OrderLog;
 use GuzzleHttp\Client;
 use App\ZaloConfig;
-
+use App\Services\OrderLogService;
 class ZaloService {
 
     protected $app_id;
@@ -17,11 +18,13 @@ class ZaloService {
     protected $headers = ['Content-Type' => 'application/json'];
     protected $url_refresh_token = 'https://oauth.zaloapp.com/v4/oa/access_token';
     private $textSendSMS;
+    protected $orderLogService;
 
     public function __construct() {
         $this->model = new ZaloConfig();
         $this->config();
         $this->textSendSMS = config('sms.textSendSMS');
+        $this->orderLogService = new OrderLogService(new OrderLog());
     }
 
     public function sendZNS($order) {
@@ -42,10 +45,13 @@ class ZaloService {
         ]);
         $response = $client->post($this->url, ['json' => $data]);
         $response = json_decode($response->getBody()->getContents(), true);
+        $status = OrderLog::STATUS_ERROR;
         if($response['error'] == ZaloConfig::SUCCESS_CODE) {
             $order->note = str_replace($this->textSendSMS, '',$order->note);
             $order->save();
+            $status = OrderLog::STATUS_SUCCESS;
         }
+        $this->orderLogService->create($order, $data, $response, OrderLog::ACTION_ZALO, $status);
         return $response;
     }
 

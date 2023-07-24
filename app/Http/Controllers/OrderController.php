@@ -748,22 +748,22 @@ class OrderController extends AppBaseController
             $orders = Order::whereIn('id', $orderIds)->get();
             foreach ($orders as $order){
                 $orderId = $order->id;
-                if($order && isset($order->receiver) && !empty($order->receiver->receiver_phone)){
+                if($order && isset($order->receiver) && !empty($order->receiver->receiver_phone) && !empty($order->receiver->receiver_name)){
                     $response = $this->zaloService->sendZNS($order);
                     if($response['error'] == ZaloConfig::SUCCESS_CODE) {
                         array_push($success, $order->order_code);
                     } else {
-                        array_push($errors, $order->order_code . ': '.  $response->ErrorMessage);
+                        array_push($errors, $order->order_code . ': '.  $response['message']);
                     }
                 }else {
                     array_push($errors, $order->order_code);
                 }
             }
             if(!empty($errors)) {
-                Flash::error('Xảy ra lỗi gửi SMS với các vận đơn: '. implode(', ', $errors));
+                Flash::error('Xảy ra lỗi gửi zalo với các vận đơn: '. implode(', ', $errors));
             }
             if(!empty($success)){
-                Flash::success('Gửi SMS thành công với các vận đơn: ' . implode(', ', $success));
+                Flash::success('Gửi zalo thành công với các vận đơn: ' . implode(', ', $success));
             }
 
         } catch (Exception $e) {
