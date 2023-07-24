@@ -20,7 +20,9 @@ class CreateOrderLogsTable extends Migration
             $table->longText('response');
             $table->tinyInteger('action')->default(0);
             $table->string('path');
+            $table->tinyInteger('status')->default(0);
             $table->timestamps();
+            $table->index(['order_code', 'action', 'status']);
         });
     }
 

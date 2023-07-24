@@ -45,11 +45,13 @@ class ZaloService {
         ]);
         $response = $client->post($this->url, ['json' => $data]);
         $response = json_decode($response->getBody()->getContents(), true);
+        $status = OrderLog::STATUS_ERROR;
         if($response['error'] == ZaloConfig::SUCCESS_CODE) {
             $order->note = str_replace($this->textSendSMS, '',$order->note);
             $order->save();
+            $status = OrderLog::STATUS_SUCCESS;
         }
-
+        $this->orderLogService->create($order, $data, $response, OrderLog::ACTION_ZALO, $status);
         return $response;
     }
 

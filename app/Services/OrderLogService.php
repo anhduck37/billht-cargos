@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\OrderLog;
+use App\ZaloConfig;
 use Illuminate\Support\Facades\Route;
 
 class OrderLogService {
@@ -11,7 +12,7 @@ class OrderLogService {
         $this->model = $orderLog;
     }
 
-    public function create($order, $request, $response, $action) {
+    public function create($order, $request, $response, $action, $status = 0) {
         if(!is_string($request)) {
             $request = json_encode($request);
         }
@@ -23,7 +24,8 @@ class OrderLogService {
             'request' => $request,
             'response' => $response,
             'action' => $action,
-            'path' => Route::getCurrentRoute()->getPath()
+            'path' => request()->path(),
+            'status' => $status
         ];
         $orderLog = $this->model->fill($data);
         $orderLog->save();

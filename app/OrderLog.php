@@ -11,8 +11,11 @@ class OrderLog extends Model
         'request',
         'response',
         'action',
-        'path'
+        'path',
+        'status'
     ];
 
     const ACTION_ZALO = 1;
+    const STATUS_SUCCESS = 1;
+    const STATUS_ERROR = 0;
 }
