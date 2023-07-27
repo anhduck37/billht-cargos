@@ -362,7 +362,22 @@
             </div>
         </div>
     </div>
-</div>
+
+    <div id="modal-camera-scanner" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="padding-bottom:0">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding-top:0">
+                <h3 style="    text-align: center;margin-bottom: 15px;">Bạn vui lòng điều chỉnh mã vạch vào chính giữa</h3>
+                    <div id="camera-scanner" class="mb-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 <script type="text/javascript" src="{{ asset('js/barcode.js') }}"></script>
 @section('javascript')
@@ -370,6 +385,7 @@
 
     $(document).ready(function(){
         $('#barcode-scanner').click(function() {
+            $('#modal-camera-scanner').modal('show');
             startScanner()
         })
         
@@ -406,6 +422,7 @@
                     $('#invoice_code').val(result.codeResult.code)
                     Quagga.stop()
                     $('#camera-scanner').html('')
+                    $('#modal-camera-scanner').modal('hide');
                 }
             }
         }); 
