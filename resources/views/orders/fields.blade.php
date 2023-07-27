@@ -382,22 +382,14 @@
                 type: "LiveStream",
                 target: document.querySelector('#camera-scanner'),
                 constraints: {
-                    width: "390",
-                    height: "100",
+                    width: "100",
+                    height: "390",
                     facingMode: "environment" //environment for back camera
                  },
             },   
             decoder: {
                 readers: [
-                    'ean_reader',
-                    'code_128_reader',
-                    'ean_8_reader',
-                    'code_39_reader',
-                    'code_39_vin_reader',
-                    'codabar_reader',
-                    'upc_reader', 
-                    'upc_e_reader',
-                    'i2of5_reader'
+                    'code_128_reader'
                 ],
                 debug: {
                     showCanvas: true,
