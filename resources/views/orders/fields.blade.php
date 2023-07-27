@@ -384,7 +384,7 @@
                 constraints: {
                     width: "500",
                     height: "400",
-                    facingMode: "user" //environment for back camera
+                    facingMode: "environment" //environment for back camera
                  },
             },   
             decoder: {
