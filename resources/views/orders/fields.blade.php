@@ -208,7 +208,7 @@
                         </span>
                     @endif
                     <button type="button" id="barcode-scanner" class="btn btn-primary mb-2 mt-2">Quét mã vạch</button>
-                    <div id="camera-scanner"></div>
+                    
                 </div>
                 @endif
 {{--                <div class="col-md-4 mb-3">--}}
@@ -382,13 +382,14 @@
                 type: "LiveStream",
                 target: document.querySelector('#camera-scanner'),
                 constraints: {
-                    facingMode: "environment" //environment for back camera
+                    facingMode: "environment"
                  },
             },   
             decoder: {
                 readers: [
                     'code_128_reader'
-                ]
+                ],
+                multiple: false
             },
         },
         function (err) {
@@ -404,6 +405,7 @@
                 if (result.codeResult && result.codeResult.code) {
                     $('#invoice_code').val(result.codeResult.code)
                     Quagga.stop()
+                    $('#camera-scanner').html('')
                 }
             }
         }); 
