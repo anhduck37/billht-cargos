@@ -382,8 +382,8 @@
                 type: "LiveStream",
                 target: document.querySelector('#camera-scanner'),
                 constraints: {
-                    width: "500",
-                    height: "400",
+                    width: "390",
+                    height: "100",
                     facingMode: "environment" //environment for back camera
                  },
             },   
