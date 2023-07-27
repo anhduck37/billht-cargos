@@ -388,6 +388,11 @@
             $('#modal-camera-scanner').modal('show');
             startScanner()
         })
+
+        $('.close').click(function() {
+            $('#camera-scanner').html('')
+            Quagga.stop()
+        })
         
     })
 
