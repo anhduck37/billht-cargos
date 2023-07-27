@@ -22,12 +22,12 @@
                             @include('orders.fields')
 
                         <div class="card-footer text-center">
-                            @if(auth()->user()->level != \App\User::LEVEL_USER)
+                            <!-- @if(auth()->user()->level != \App\User::LEVEL_USER)
                             <button type="button" id="image" class="btn btn-primary mb-2">Chụp ảnh</button>
                             <div class="scanner-box">
                                 <div id="scanner-container" class="main_scanner"></div>
                             </div>
-                            @endif
+                            @endif -->
                             {!! Form::submit( 'Cập nhật' , ['class' => 'btn btn-primary mb-2']) !!}
                             <!-- <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a> -->
                             <a class='btn btn-primary mb-2' href="{{route('orders.index')}}">Tìm vận đơn</a>

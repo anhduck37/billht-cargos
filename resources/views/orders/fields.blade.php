@@ -207,6 +207,8 @@
                             <strong>{{ $errors->first('order.invoice_code') }}</strong>
                         </span>
                     @endif
+                    <button type="button" id="barcode-scanner" class="btn btn-primary mb-2 mt-2">Quét mã vạch</button>
+                    <div id="camera-scanner"></div>
                 </div>
                 @endif
 {{--                <div class="col-md-4 mb-3">--}}
@@ -367,24 +369,18 @@
     <script type="text/javascript">
 
     $(document).ready(function(){
-        if($(".scanner-box").length > 0){
-            var canvas_width        = $(".scanner-box").width();
-            var canvas_height       = $(".scanner-box").height();
-            if (_scannerIsRunning) {
-                Quagga.stop();
-            } else {
-                startScanner(canvas_width,canvas_height);
-            }
-        }
+        $('#barcode-scanner').click(function() {
+            startScanner()
+        })
+        
     })
 
-    var _scannerIsRunning = false;
     function startScanner(canvasRatio,canvasHeight) {
         Quagga.init({
             inputStream: {
                 name: "Live",
                 type: "LiveStream",
-                target: document.querySelector('#scanner-container'),
+                target: document.querySelector('#camera-scanner'),
                 constraints: {
                     width: "500",
                     height: "400",
@@ -421,12 +417,12 @@
         },
         function (err) {
             if (err) {
-                    $("#error").text(err);
+                    // $("#error").text(err);
+                    console.log(err)
                     return
             }
             console.log("Initialization finished. Ready to start");
             Quagga.start();
-            _scannerIsRunning = true;
         });
 
         Quagga.onProcessed(function (result) {
@@ -434,42 +430,15 @@
             drawingCanvas = Quagga.canvas.dom.overlay;
 
             if (result) {
-                if (result.boxes) {
-                    drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-                    result.boxes.filter(function (box) {
-                            return box !== result.box;
-                    }).forEach(function (box) {
-                            Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
-                    });
-                }
-                if (result.box) {
-                    Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
-                }
                 if (result.codeResult && result.codeResult.code) {
-                    Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
+                    $('#invoice_code').val(result.codeResult.code)
+                    Quagga.stop()
                 }
             }
-        });
-
-        let arrCode = []
-
-        Quagga.onDetected(function(result) {
-            var code = result.codeResult.code;
-            if (code && arrCode.includes(code)) {
-                console.log(code)
-                Quagga.stop()
-                arrCode = []
-                return 
-            }
-            if (code) {
-                arrCode.push(code)
-            }
-
-        });
-            
+        }); 
     }
 
-        startScanner(10, 10)
+        // startScanner(10, 10)
 
         $(function() {
             var shutter = new Audio();
