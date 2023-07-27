@@ -362,8 +362,114 @@
     </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
+<script type="text/javascript" src="{{ asset('js/barcode.js') }}"></script>
 @section('javascript')
     <script type="text/javascript">
+
+    $(document).ready(function(){
+        if($(".scanner-box").length > 0){
+            var canvas_width        = $(".scanner-box").width();
+            var canvas_height       = $(".scanner-box").height();
+            if (_scannerIsRunning) {
+                Quagga.stop();
+            } else {
+                startScanner(canvas_width,canvas_height);
+            }
+        }
+    })
+
+    var _scannerIsRunning = false;
+    function startScanner(canvasRatio,canvasHeight) {
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#scanner-container'),
+                constraints: {
+                    width: "500",
+                    height: "400",
+                    facingMode: "user" //environment for back camera
+                 },
+            },   
+            decoder: {
+                readers: [
+                    'ean_reader',
+                    'code_128_reader',
+                    'ean_8_reader',
+                    'code_39_reader',
+                    'code_39_vin_reader',
+                    'codabar_reader',
+                    'upc_reader', 
+                    'upc_e_reader',
+                    'i2of5_reader'
+                ],
+                debug: {
+                    showCanvas: true,
+                    showPatches: true,
+                    showFoundPatches: true,
+                    showSkeleton: true,
+                    showLabels: true,
+                    showPatchLabels: true,
+                    showRemainingPatchLabels: true,
+                    boxFromPatches: {
+                            showTransformed: true,
+                            showTransformedBox: true,
+                            showBB: true
+                    }
+                }
+            },
+        },
+        function (err) {
+            if (err) {
+                    $("#error").text(err);
+                    return
+            }
+            console.log("Initialization finished. Ready to start");
+            Quagga.start();
+            _scannerIsRunning = true;
+        });
+
+        Quagga.onProcessed(function (result) {
+            var drawingCtx = Quagga.canvas.ctx.overlay,
+            drawingCanvas = Quagga.canvas.dom.overlay;
+
+            if (result) {
+                if (result.boxes) {
+                    drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                    result.boxes.filter(function (box) {
+                            return box !== result.box;
+                    }).forEach(function (box) {
+                            Quagga.ImageDebug.drawPath(box, { x: 0, y: 1 }, drawingCtx, { color: "green", lineWidth: 2 });
+                    });
+                }
+                if (result.box) {
+                    Quagga.ImageDebug.drawPath(result.box, { x: 0, y: 1 }, drawingCtx, { color: "#00F", lineWidth: 2 });
+                }
+                if (result.codeResult && result.codeResult.code) {
+                    Quagga.ImageDebug.drawPath(result.line, { x: 'x', y: 'y' }, drawingCtx, { color: 'red', lineWidth: 3 });
+                }
+            }
+        });
+
+        let arrCode = []
+
+        Quagga.onDetected(function(result) {
+            var code = result.codeResult.code;
+            if (code && arrCode.includes(code)) {
+                console.log(code)
+                Quagga.stop()
+                arrCode = []
+                return 
+            }
+            if (code) {
+                arrCode.push(code)
+            }
+
+        });
+            
+    }
+
+        startScanner(10, 10)
 
         $(function() {
             var shutter = new Audio();
@@ -528,6 +634,33 @@
                 })
                 $(`#${name}`).html(html)
             })
+        }
+
+        function readBarCodeFromImage(urlImage) {
+            var Quagga = window.Quagga;
+            var App = {
+                _scanner: null,
+                init: function() {
+
+                    this.decode();
+                },
+                decode: function(file) {
+                    Quagga
+                        .decoder({readers: ['code_39_reader']})
+                        .locator({patchSize: 'x-small'})
+                        .fromSource(urlImage, {size: 1920})
+                        .toPromise()
+                        .then(function(result) {
+                            $('barcode-text').text(result.codeResult.code)
+                            document.getElementById("resultdiv").innerHTML=result.codeResult.code; 
+                        })
+                        .catch(function() {
+                            document.getElementById("resultdiv").innerHTML= "Not Found"; 
+                        })
+
+                }
+            };
+            App.init();
         }
 
     </script>
