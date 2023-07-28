@@ -32,6 +32,15 @@ class UserController extends AppBaseController
         if( !empty($formFilter) && empty($formFilter['email'])){
             unset($formFilter['email']);
         }
+        
+        if( !empty($formFilter) && empty($formFilter['status'])){
+            unset($formFilter['status']);
+        }
+
+        if( !empty($formFilter) && empty($formFilter['level'])){
+            unset($formFilter['level']);
+        }
+
         $users = $this->userRepository->allQuery($formFilter);
         $users = $users->paginate($pageSize);
 

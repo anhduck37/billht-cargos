@@ -15,6 +15,7 @@ class User extends Authenticatable
     const STATUS_ENABLE     = 1;
 
     const STATUS_MAP = [
+        '' => '',
         self::STATUS_ENABLE     => 'Kích hoạt',
         self::STATUS_DISABLE     => 'Tắt',
     ];
@@ -25,6 +26,7 @@ class User extends Authenticatable
     const LEVEL_STAFF = 4;
 
     const LEVEL_MAP = [
+        '' => '',
         self::LEVEL_USER    => 'Khách hàng',
         self::LEVEL_ADMIN   => 'Quản lý',
         self::LEVEL_POSTMAN => 'Bưu tá',
