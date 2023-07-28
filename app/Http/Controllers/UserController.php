@@ -29,8 +29,8 @@ class UserController extends AppBaseController
     {
         $formFilter = $request-> all();
         $pageSize = intval(env('PAGE_SIZE'));
-        if( !empty($formFilter) && empty($formFilter['email'])){
-            $email = $formFilter['email'];
+        $email = $formFilter['email'] ?? null;
+        if(isset($formFilter['email'])){
             unset($formFilter['email']);
         }
         
@@ -43,6 +43,7 @@ class UserController extends AppBaseController
         }
 
         $users = $this->userRepository->allQuery($formFilter);
+        
         if(isset($email)) {
             $users = $users->where('email', 'LIKE', '%'.$email.'%');
         }
