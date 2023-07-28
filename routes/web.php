@@ -32,6 +32,7 @@ Route::post('/register', 'Auth\RegisterController@create');
 
 Route::middleware(['checkLevel'])->group(function() {
     Route::resource('users', 'UserController');
+    Route::resource('partners', 'PartnerController');
 });
 Route::middleware(['auth'])->group(function () {
 //    Route::get('/profile', 'ProfileController@index');
@@ -44,7 +45,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('fileDemo', 'OrderController@fileDownload')->name('fileDemo');
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');
     Route::get('order/export', 'OrderController@export')->name('orders.export');
-    Route::resource('partners', 'PartnerController');
     Route::post('/template/render', 'OrderController@renderTemplate');
     Route::post('/order/delete-many', 'OrderController@deleteMany');
     Route::post('/order/update-many', 'OrderController@updateMany');

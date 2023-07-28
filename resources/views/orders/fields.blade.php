@@ -207,6 +207,8 @@
                             <strong>{{ $errors->first('order.invoice_code') }}</strong>
                         </span>
                     @endif
+                    <button type="button" id="barcode-scanner" class="btn btn-primary mb-2 mt-2">Quét mã vạch</button>
+                    
                 </div>
                 @endif
 {{--                <div class="col-md-4 mb-3">--}}
@@ -360,10 +362,76 @@
             </div>
         </div>
     </div>
-</div>
+
+    <div id="modal-camera-scanner" class="modal fade" data-toggle="modal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="padding-bottom:0">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span style="font-size: 2.25rem" aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding-top:0">
+                <h3 style="text-align: center;margin-bottom: 15px;">Bạn vui lòng điều chỉnh mã vạch vào chính giữa</h3>
+                    <div id="camera-scanner" class="mb-4"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
+<script type="text/javascript" src="{{ asset('js/barcode.js') }}"></script>
 @section('javascript')
     <script type="text/javascript">
+
+    $(document).ready(function(){
+        $('#barcode-scanner').click(function() {
+            $('#modal-camera-scanner').modal('show');
+            startScanner()
+        })
+
+        $('.close').click(function() {
+            $('#camera-scanner').html('')
+            Quagga.stop()
+        })
+        
+    })
+
+    function startScanner() {
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#camera-scanner'),
+                constraints: {
+                    facingMode: "environment"
+                 },
+            },   
+            decoder: {
+                readers: [
+                    'code_128_reader'
+                ],
+                multiple: false
+            },
+        },
+        function (err) {
+            if (err) {
+                console.log(err)
+                return
+            }
+            Quagga.start();
+        });
+
+        Quagga.onProcessed(function (result) {
+            if (result) {
+                if (result.codeResult && result.codeResult.code) {
+                    $('#invoice_code').val(result.codeResult.code)
+                    Quagga.stop()
+                    $('#camera-scanner').html('')
+                    $('#modal-camera-scanner').modal('hide');
+                }
+            }
+        }); 
+    }
 
         $(function() {
             var shutter = new Audio();
@@ -528,6 +596,33 @@
                 })
                 $(`#${name}`).html(html)
             })
+        }
+
+        function readBarCodeFromImage(urlImage) {
+            var Quagga = window.Quagga;
+            var App = {
+                _scanner: null,
+                init: function() {
+
+                    this.decode();
+                },
+                decode: function(file) {
+                    Quagga
+                        .decoder({readers: ['code_39_reader']})
+                        .locator({patchSize: 'x-small'})
+                        .fromSource(urlImage, {size: 1920})
+                        .toPromise()
+                        .then(function(result) {
+                            $('barcode-text').text(result.codeResult.code)
+                            document.getElementById("resultdiv").innerHTML=result.codeResult.code; 
+                        })
+                        .catch(function() {
+                            document.getElementById("resultdiv").innerHTML= "Not Found"; 
+                        })
+
+                }
+            };
+            App.init();
         }
 
     </script>

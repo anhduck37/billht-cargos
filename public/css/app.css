@@ -1,26 +1,10 @@
-.dropdown-menu {
-    width: 170px !important;
-}
-.convert-radio {
-    margin-left: 20px !important;
-    margin-right: 5px !important;
-}
-.margin-radio {
-    margin-bottom: 5px !important;
-    margin-right: 5px !important;
-}
-.div-limit {
-    white-space: nowrap;
-    max-width: 500px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
 
-.td-percent-min {
-    padding-left: 0 !important;
+#camera-scanner > canvas{
+    position: absolute;
+    left : 0px;
+    top: 0px;
 }
-
-.td-percent-icon {
-    padding-top: 40px !important;
-    padding-right: 0 !important;
+#camera-scanner video, canvas {
+    width: 100%;
+    height: auto;
 }

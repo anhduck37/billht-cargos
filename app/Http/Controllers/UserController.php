@@ -29,10 +29,24 @@ class UserController extends AppBaseController
     {
         $formFilter = $request-> all();
         $pageSize = intval(env('PAGE_SIZE'));
-        if( !empty($formFilter) && empty($formFilter['email'])){
+        $email = $formFilter['email'] ?? null;
+        if(isset($formFilter['email'])){
             unset($formFilter['email']);
         }
+        
+        if( !empty($formFilter) && empty($formFilter['status'])){
+            unset($formFilter['status']);
+        }
+
+        if( !empty($formFilter) && empty($formFilter['level'])){
+            unset($formFilter['level']);
+        }
+
         $users = $this->userRepository->allQuery($formFilter);
+        
+        if(isset($email)) {
+            $users = $users->where('email', 'LIKE', '%'.$email.'%');
+        }
         $users = $users->paginate($pageSize);
 
         return view('users.index')

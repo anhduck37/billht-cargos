@@ -139,7 +139,10 @@ class OrderController extends AppBaseController
 
             return redirect(route('orders.index'));
         }
-
+        $user = auth()->user();
+        if($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
+            return abort(403);
+        }
         return view('orders.show')->with('order', $order);
     }
 
@@ -246,6 +249,10 @@ class OrderController extends AppBaseController
             Flash::error('Vận đơn không tồn tại.');
             return redirect(route('orders.index'));
         }
+        $user = auth()->user();
+        if($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
+            return abort(403);
+        }
         return view('orders.edit', ['citys' => $citys, 'partners' => $partners,'order' => $order, 'update' => true, 'users' => $users]);
     }
 
@@ -267,9 +274,13 @@ class OrderController extends AppBaseController
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
         $fileName = null;
-        // DB::beginTransaction();
-        // try {
+        DB::beginTransaction();
+        try {
             $order = $this->orderRepository->find($id);
+            $user = auth()->user();
+            if($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
+                return abort(403);
+            }
             $order_old = $order;
             if($order) {
                 if(isset($request->image_data)) {
@@ -358,10 +369,10 @@ class OrderController extends AppBaseController
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
             return back();
-        // }catch (Exception $e) {
-        //     Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
-        //     DB::rollback();
-        // }
+        }catch (Exception $e) {
+            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
+            DB::rollback();
+        }
         return redirect()->route('orders.index');
     }
 
