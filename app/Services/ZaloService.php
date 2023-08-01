@@ -28,6 +28,9 @@ class ZaloService {
     }
 
     public function sendZNS($order) {
+        if(!str_contains($order->note, $this->textSendSMS)) {
+            return;
+        }
         $phone = $order->receiver->receiver_phone;
         $phone = $this->formatPhone($phone);
         $data = [
