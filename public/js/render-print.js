@@ -221,20 +221,20 @@ function renderHtml (data) {
                     <div class="col custom-col">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-7">
+                                <div class="col-7">
                                     <h4 class="card-title">Ký xác nhận người gửi hàng: </h4>
                                     <p class="card-text size-text"><b>Ngày gửi:</b> ${converDate(order.order_date)} </p>
                                     <div class="row">
-                                        <div class="col-md-6">
+                                        <div class="col-6">
                                             <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
                                         </div>
-                                        <div class="col-md-6 custom-border">
+                                        <div class="col-6 custom-border">
                                             <p class="card-text size-text">Dấu ngày gửi</p>
                                             <div class="mt-5 custom-div"></div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-5">
                                     <h4 class="card-title">Thông tin giao nhận</h4>
                                     <p class="card-text size-text">Ngày phát:..............</p>
                                     <p class="card-text size-text">Nv phát:..............</p>
@@ -242,10 +242,10 @@ function renderHtml (data) {
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-7">
+                                <div class="col-7">
                                     <p class="card-text size-text">NV-Chấp nhận:..............</p>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-5">
                                     <p class="card-text size-text">Bộ phận:..............</p>
                                 </div>
                             </div>
@@ -256,13 +256,13 @@ function renderHtml (data) {
                         <div class="card-body">
 
                             <div class="row">
-                                <div class="col-md-7">
+                                <div class="col-7">
                                     <div class="row">
                                         <div class="col">
                                             <h4 class="card-title">Thông tin hàng hóa</h4>
                                             <div class="row">
-                                                <div class="col-md-4 size-text custom-height custom-border">Số kiện</div>
-                                                <div class="col-md-8 size-text">Trọng lượng thực tế <p class="col-5 text-center"> ${(order.weight ? order.weight : 0) + ' g'}</p></div>
+                                                <div class="col-4 size-text custom-height custom-border">Số kiện</div>
+                                                <div class="col-8 size-text">Trọng lượng thực tế <p class="col-5 text-center"> ${(order.weight ? order.weight : 0) + ' g'}</p></div>
 
                                             </div>
                                             <p class="size-text" style="margin-left: 30px">Kích thước (${(order.height ? order.height : 0) + ' x '+ (order.long ? order.long : 0) + ' x '+ (order.width ? order.width : 0) +' cm'}${(order.height ? order.height : 0) + ' x '+ (order.long ? order.long : 0) + ' x '+ (order.width ? order.width : 0) +' cm'})</p>
@@ -275,7 +275,7 @@ function renderHtml (data) {
                                             for (const key in data.payment_method) {
                                                 if (!data.payment_method.hasOwnProperty(key)) continue;
                                                 html += `
-                                                    <div class="col-md-4" style="margin-left: 20px">
+                                                    <div class="col-4" style="margin-left: 20px">
                                                         <input type="checkbox" ${order.payment_method == key ? 'checked' : ''} class="form-check-input">
                                                         <label class="size-text">${data.payment_method[key]}</label>
                                                     </div>
@@ -285,13 +285,13 @@ function renderHtml (data) {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-5">
+                                <div class="col-5">
                                     <h4 class="card-title size-text">Trọng lượng thanh toán</h4>
                                     <p class="size-text">Trọng lượng tính cước</p>
-                                    <p>...........................................</p>
+                                    <p>.........................................</p>
                                     <p class="size-text">Cước phí:.........................</p>
                                     <p class="size-text">Phí khác:..........................</p>
-                                    <p class="size-text">VAT:...................................</p>
+                                    <p class="size-text">VAT:.................................</p>
                                     <p class="size-text">Bảo hiểm:........................</p>
                                     <p class="size-text">Tổng cộng:......................</p>
                                 </div>
@@ -430,20 +430,20 @@ function renderHtml (data) {
                             <div class="col custom-col">
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-md-7">
+                                        <div class="col-7">
                                             <h4 class="card-title">Ký xác nhận người gửi hàng: </h4>
                                             <p class="card-text size-text"><b>Ngày gửi:</b> ${converDate(order.order_date)} </p>
                                             <div class="row">
-                                                <div class="col-md-6">
+                                                <div class="col-6">
                                                     <p class="card-text size-text" style="margin-bottom: 100px">Ký ghi rõ họ tên người gửi </p>
                                                 </div>
-                                                <div class="col-md-6 custom-border">
+                                                <div class="col-6 custom-border">
                                                     <p class="card-text size-text">Dấu ngày gửi</p>
                                                     <div class="mt-5 custom-div"></div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-5">
+                                        <div class="col-5">
                                             <h4 class="card-title">Thông tin giao nhận</h4>
                                             <p class="card-text size-text">Ngày phát:..............</p>
                                             <p class="card-text size-text">Nv phát:..............</p>
@@ -465,13 +465,13 @@ function renderHtml (data) {
                                 <div class="card-body">
 
                                     <div class="row">
-                                        <div class="col-md-7">
+                                        <div class="col-7">
                                             <div class="row">
                                                 <div class="col">
                                                     <h4 class="card-title">Thông tin hàng hóa</h4>
                                                     <div class="row">
-                                                        <div class="col-md-4 pb-4 size-text custom-height custom-border">Số kiện</div>
-                                                        <div class="col-md-8 size-text">Trọng lượng thức tế <p class="col-5 text-center"> ${(order.weight ? order.weight : 0) + ' g'}</p></div>
+                                                        <div class="col-4 pb-4 size-text custom-height custom-border">Số kiện</div>
+                                                        <div class="col-8 size-text">Trọng lượng thức tế <p class="col-5 text-center"> ${(order.weight ? order.weight : 0) + ' g'}</p></div>
 
                                                     </div>
                                                     <p class="size-text" style="margin-left: 30px">Kích thước (${(order.height ? order.height : 0) + ' x '+ (order.long ? order.long : 0) + ' x '+ (order.width ? order.width : 0) +' cm'})</p>
@@ -484,7 +484,7 @@ function renderHtml (data) {
                                                     for (const key in data.payment_method) {
                                                         if (!data.payment_method.hasOwnProperty(key)) continue;
                                                         html += `
-                                                            <div class="col-md-4" style="margin-left: 20px">
+                                                            <div class="col-4" style="margin-left: 20px">
                                                                 <input type="checkbox" ${order.payment_method == key ? 'checked' : ''} class="form-check-input">
                                                                 <label class="size-text">${data.payment_method[key]}</label>
                                                             </div>
@@ -494,13 +494,13 @@ function renderHtml (data) {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-5">
+                                        <div class="col-5">
                                             <h4 class="card-title size-text">Trọng lượng thanh toán</h4>
                                             <p class="size-text">Trọng lượng tính cước</p>
-                                            <p>...........................................</p>
+                                            <p>.........................................</p>
                                             <p class="size-text">Cước phí:.........................</p>
                                             <p class="size-text">Phí khác:..........................</p>
-                                            <p class="size-text">VAT:...................................</p>
+                                            <p class="size-text">VAT:.................................</p>
                                             <p class="size-text">Bảo hiểm:........................</p>
                                             <p class="size-text">Tổng cộng:......................</p>
                                         </div>
