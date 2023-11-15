@@ -52,9 +52,6 @@ class UploadGoogleDriveJob implements ShouldQueue
                 $month,
                 $year
             );
-            if(!empty($this->order->image->file_id)) {
-                $googleDriveService->deleteFile($this->order->image->file_id);
-            }
             if(isset($data->getFile()->id)) {
                 $dataOrderImage['google_drive_id'] = $data->getFolder()->id;
                 $dataOrderImage['file_id'] = $data->getFile()->id;

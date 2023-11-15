@@ -18,7 +18,7 @@ class OrderImageService {
                 $order_image = $find_order_image;
                 if($order_image->type_save == OrderImage::SAVE_GOOGLE_DRIVE && $isRemove) {
                     $gooleDriveService = new GoogleDriveService();
-                    $gooleDriveService->deleteFile($order_image->file_id);
+                    // $gooleDriveService->deleteFile($order_image->file_id);
                 } else if($isRemove) {
                     $path = public_path(). "/uploads/". $order_image->image;
                     if (File::exists($path)) {

@@ -293,7 +293,7 @@ class OrderController extends AppBaseController
                     );
                 } else if($request->image_remove) {
                     if($order->image->type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
-                        $this->googleDriveService->deleteFile($order->image->file_id);
+                        // $this->googleDriveService->deleteFile($order->image->file_id);
                     }
                     $order->image->delete();
                 }
