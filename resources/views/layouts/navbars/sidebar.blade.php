@@ -53,6 +53,7 @@
                     </div>
                 </div>
             </div>
+            <img src="https://ht-cargos.com/wp-content/plugins/devvn-tet-holiday/images/bottom-2.png">
             <ul class="navbar-nav">
                 <li class="nav-item">
                     <a class="nav-link active" href="#navbar-order" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="navbar-examples">
