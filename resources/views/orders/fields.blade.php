@@ -178,7 +178,9 @@
 {{--                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[order_date]" value="10/24/1984" id="order_date">--}}
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[order_date]" value="{{old('order.order_date') ? old('order.order_date') : (isset($order->order_date) ? $order->converDate($order->order_date) : '') }}" id="order_date">
                 </div>
-                    <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-6 @endif mb-3">
+                @endif
+                @if(in_array(auth()->user()->level, [\App\User::LEVEL_USER, \App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                    <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_USER, \App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])) col-md-3 @else col-md-6 @endif mb-3">
                         <label for="validationDefault01"> Phương thức thanh toán </label>
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[payment_method]" class="form-control">
                             <option value="{{\App\Models\Order::PAYMENT_METHOD_LAST}}" @if(!isset($order->payment_method)) selected @endif></option>
