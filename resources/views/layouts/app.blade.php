@@ -29,7 +29,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <!-- Argon CSS -->
     <link type="text/css" href="{{ asset('argon/css/argon.css?v=1.0.0') }}" rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" type="text/css" href="/jsdelivr/daterangepicker.css" />
     <link rel="stylesheet" type="text/css" href="{{asset('css/app.css')}}" />
     <style>
         @media screen and (min-width: 500px) {
@@ -66,14 +66,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+<script type="text/javascript" src="/jsdelivr/jquery.min.js"></script>
 @yield('javascript')
 @yield('js')
-<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="/jsdelivr/moment.min.js"></script>
 <!-- Argon JS -->
 <script src="{{ asset('argon/vendor/jquery/dist/jquery.min.js') }}"></script>
 <script src="{{ asset('argon/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('argon/js/argon.js?v=1.0.0') }}"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<script type="text/javascript" src="/jsdelivr/daterangepicker.min.js"></script>
 </body>
 </html>
