@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\City;
 use App\Exports\OrderExport;
 use App\Partner;
+use App\PartnerConfig;
 use App\Receiver;
 use App\Repositories\OrderRepository;
 use App\Http\Controllers\AppBaseController;
 use App\Http\Requests\OrderFormRequestLevelPosman;
+use App\Jobs\SendOrderViettelPostJob;
 use App\Jobs\SendSMSJob;
 use App\Jobs\UploadGoogleDriveJob;
 use App\Sender;
@@ -201,6 +203,10 @@ class OrderController extends AppBaseController
                     $orderForm['invoice_code'] = $orderForm['order_code'];
                 }
                 $order = $this->orderRepository->create($orderForm);
+                // $partner = Partner::where('name', 'LIKE', '%'.$partnerName.'%')->first();
+                // if(isset($partner->prefix_code) && $partner->prefix_code == PartnerConfig::CODE_VIETTEL_POST) {
+                dispatch(new SendOrderViettelPostJob($order));
+                // }
             }
             if(isset($request->image_data)) {
                 $fileName = $this->upload($request->image_data, $request->type_image, $order->order_code, OrderImage::SAVE_SERVER, $order);
@@ -467,7 +473,7 @@ class OrderController extends AppBaseController
 
                             $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
                             $order = Order::create($orderData);
-                            if($order ){
+                            if($order){
                                 $orders[] = $order;
 
                                 if(isset($order->receiver) && !empty($order->receiver->receiver_phone)) {
@@ -475,6 +481,14 @@ class OrderController extends AppBaseController
                                 }
 
                                 app(OrderTrackingService::class)->create($order, $request->all());
+                                if($sheet->getCell( 'O' . $row )->getValue()) {
+                                    $partnerName = $sheet->getCell( 'O' . $row )->getValue();
+                                    // $partner = Partner::where('name', 'LIKE', '%'.$partnerName.'%')->first();
+                                    // if(isset($partner->prefix_code) && $partner->prefix_code == PartnerConfig::CODE_VIETTEL_POST) {
+                                        dispatch(new SendOrderViettelPostJob($order));
+                                    // }
+                                }
+                                
                             }
                             $dataService = [];
                             if($sheet->getCell( 'J' . $row )->getValue()){

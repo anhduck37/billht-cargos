@@ -40,7 +40,7 @@ class MapWard extends Command
      */
     public function handle()
     {
-        District::chunkById(50, function ($districts) {
+        District::chunkById(500, function ($districts) {
             foreach ($districts as $item) {
                 $urlWard = 'https://partner.viettelpost.vn/v2/categories/listWards?districtId='.$item->district_code;
                 $response = Http::get($urlWard);
@@ -50,11 +50,22 @@ class MapWard extends Command
                     $dataWard = [
                         'district_id' => $item->id,
                         'ward_name' => $itemWard['WARDS_NAME'],
+                        'ward_code' => $itemWard['WARDS_ID'],
                     ];
-                    array_push($data, $dataWard);
+                    $ward = Ward::where('district_id', $item->id)->where('ward_name',$itemWard['WARDS_NAME'])->first();
+                    if($ward) {
+                        $ward->ward_code = $dataWard['ward_code'];
+                        $ward->save();
+                    } else {
+                        array_push($data, $dataWard);
+                    }
+                    
                 }
-                Ward::insert($data);
+                if(!empty($data)) {
+                    Ward::insert($data);
+                }
             }
         });
+        Ward::whereNull('ward_code')->delete();
     }
 }
