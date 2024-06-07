@@ -205,7 +205,9 @@ class OrderController extends AppBaseController
                 $order = $this->orderRepository->create($orderForm);
                 // $partner = Partner::where('name', 'LIKE', '%'.$partnerName.'%')->first();
                 // if(isset($partner->prefix_code) && $partner->prefix_code == PartnerConfig::CODE_VIETTEL_POST) {
-                dispatch(new SendOrderViettelPostJob($order));
+                // dispatch(new SendOrderViettelPostJob($order));
+                $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                $sendOrderViettelPost->handle();
                 // }
             }
             if(isset($request->image_data)) {
@@ -481,13 +483,15 @@ class OrderController extends AppBaseController
                                 }
 
                                 app(OrderTrackingService::class)->create($order, $request->all());
-                                if($sheet->getCell( 'O' . $row )->getValue()) {
+                                // if($sheet->getCell( 'O' . $row )->getValue()) {
                                     $partnerName = $sheet->getCell( 'O' . $row )->getValue();
                                     // $partner = Partner::where('name', 'LIKE', '%'.$partnerName.'%')->first();
                                     // if(isset($partner->prefix_code) && $partner->prefix_code == PartnerConfig::CODE_VIETTEL_POST) {
-                                        dispatch(new SendOrderViettelPostJob($order));
+                                        // dispatch(new SendOrderViettelPostJob($order));
+                                        $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                                        $sendOrderViettelPost->handle();
                                     // }
-                                }
+                                // }
                                 
                             }
                             $dataService = [];
