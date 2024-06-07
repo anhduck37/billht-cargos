@@ -235,7 +235,7 @@ class OrderController extends AppBaseController
             Flash::success( ($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thành công.');
             return redirect()->route('orders.edit', [$order->id]);
         }catch (Exception $e) {
-            Flash::error(($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thất bại.');
+            Flash::error(($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thất bại.'. ' '. $e->getMessage());
             DB::rollback();
         }
         if($is_update) {
