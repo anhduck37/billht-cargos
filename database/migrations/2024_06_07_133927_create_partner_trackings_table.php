@@ -19,7 +19,7 @@ class CreatePartnerTrackingsTable extends Migration
             $table->string('order_partner_code');
             $table->string('order_reference')->nullable();
             $table->string('order_statusdate')->nullable();
-            $table->string('order_status')->nullable();
+            $table->tinyInteger('order_status')->nullable();
             $table->string('status_name')->nullable();
             $table->string('location_currently')->nullable();
             $table->longText('note')->nullable();
@@ -30,7 +30,7 @@ class CreatePartnerTrackingsTable extends Migration
             $table->bigInteger('product_weight')->nullable();
             $table->string('order_service')->nullable();
             $table->timestamps();
-            $table->index(['order_id', 'order_partner_code', 'order_reference', 'order_statusdate', 'order_status']);
+            $table->index(['order_id', 'order_partner_code', 'order_status']);
         });
     }
 
