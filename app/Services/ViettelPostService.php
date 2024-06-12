@@ -67,7 +67,7 @@ class ViettelPostService {
             "SENDER_WARD" => $order->sender->ward->ward_code ?? 0,
             "SENDER_DISTRICT" => $order->sender->district->district_code ?? 0,
             "SENDER_PROVINCE" => $order->sender->city->city_code ?? 0,
-            "RECEIVER_FULLNAME" => $order->receiver->city->receiver_name ?? 0,
+            "RECEIVER_FULLNAME" => $order->receiver->receiver_name ?? 0,
             "RECEIVER_ADDRESS" => $receiverAddress,
             "RECEIVER_PHONE" => $order->receiver->receiver_phone,
             "RECEIVER_EMAIL" => $order->receiver->receiver_email,
