@@ -35,7 +35,10 @@ class OrderTrackingController extends Controller
                 // ->orWhere('invoice_code', $order_code)
                 ->first();
         }
-        if(!$order && $order_code) {
+        if($order || $order_code) {
+            $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
+        }
+        if(!$order && $order_code && !$mickey_tracking) {
             Flash::warning('Mã vận đơn không tồn tại hoặc chưa chính xác, vui lòng kiểm tra lại.');
         } else if($order) {
             $order_trackings = $order->order_trackings;
@@ -45,9 +48,6 @@ class OrderTrackingController extends Controller
             // }
         }
 
-        if($order || $order_code) {
-            $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
-        }
         return view('tracking', [
             'order_trackings' => $order_trackings, 
             'delivery_status' => $delivery_status, 
