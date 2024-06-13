@@ -14,40 +14,40 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td>Mã Bưu phẩm</td>
-                        <td>{{$table1['so_hieu']}}</td>
+                        <td class="custom-size">Mã Bưu phẩm</td>
+                        <td class="custom-size">{{$table1['so_hieu']}}</td>
                     </tr>
                     <tr>
-                        <td>Người gửi</td>
-                        <td>{{$table1['ten_kh']}}</td>
+                        <td class="custom-size">Người gửi</td>
+                        <td class="custom-size">{{$table1['ten_kh']}}</td>
                     </tr>
                     <tr>
-                        <td>Trọng Lượng</td>
-                        <td>{{$table1['kluong']}}</td>
+                        <td class="custom-size">Trọng Lượng</td>
+                        <td class="custom-size">{{$table1['kluong']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-weight">Tuyến phát</td>
-                        <td class="custom-weight">{{$table1['tinh']}}</td>
+                        <td class="custom-weight custom-size">Tuyến phát</td>
+                        <td class="custom-weight custom-size">{{$table1['tinh']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-weight">Trạng Thái</td>
-                        <td class="custom-weight">{{$table1['tinh_trang']}}</td>
+                        <td class="custom-weight custom-size">Trạng Thái</td>
+                        <td class="custom-weight custom-size">{{$table1['tinh_trang']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-weight">Ngày giờ</td>
-                        <td class="custom-weight">{{$table1['ngay_phat'] . ' ' . $table1['gio_phat']}}</td>
+                        <td class="custom-weight custom-size">Ngày giờ</td>
+                        <td class="custom-weight custom-size">{{$table1['ngay_phat'] . ' ' . $table1['gio_phat']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-weight">Địa chỉ nhận</td>
-                        <td class="custom-weight">{{$table[0]['dchi']}}</td>
+                        <td class="custom-weight custom-size">Địa chỉ nhận</td>
+                        <td class="custom-weight custom-size">{{$table[0]['dchi']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-weight">Người Ký Nhận</td>
-                        <td class="custom-weight">{{$table1['nguoi_nhan']}}</td>
+                        <td class="custom-weight custom-size">Người Ký Nhận</td>
+                        <td class="custom-weight custom-size">{{$table1['nguoi_nhan']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-weight">Ghi chú Kết Quả Phát</td>
-                        <td class="custom-weight">{{$table1['ghi_chu_phat']}}</td>
+                        <td class="custom-weight custom-size">Ghi chú Kết Quả Phát</td>
+                        <td class="custom-weight custom-size">{{$table1['ghi_chu_phat']}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -61,17 +61,17 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="custom-weight">STT</td>
-                        <td class="custom-weight">Ngày đến</td>
-                        <td class="custom-weight">Trạng thái</td>
-                        <td class="custom-weight">Bưu cục</td>
+                        <td class="custom-weight custom-size">STT</td>
+                        <td class="custom-weight custom-size">Ngày đến</td>
+                        <td class="custom-weight custom-size">Trạng thái</td>
+                        <td class="custom-weight custom-size">Bưu cục</td>
                     </tr>
                     @foreach($table as $item)
                     <tr>
-                        <td>{{$item['stt']}}</td>
-                        <td>{{$item['ngay_den'] . ' ' . $item['gio']}}</td>
-                        <td>{{$item['trang_thai']}}</th>
-                        <td>{{$item['dchi']}}</td>
+                        <td class="custom-size">{{$item['stt']}}</td>
+                        <td class="custom-size">{{$item['ngay_den'] . ' ' . $item['gio']}}</td>
+                        <td class="custom-size">{{$item['trang_thai']}}</th>
+                        <td class="custom-size">{{$item['dchi']}}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -103,10 +103,13 @@
         font-size: 15px !important;
     }
     .custom-weight {
-        font-weight: 700;
+        font-weight: 600;
     }
     .custom-padding {
         padding: 0 10%
+    }
+    .custom-size {
+        font-size: 0.9rem !important;
     }
     @media only screen and (max-width: 600px) {
         .custom-padding {
