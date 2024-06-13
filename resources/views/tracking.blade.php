@@ -30,7 +30,7 @@
                         </div>
                     </div>
                     {!! Form::close() !!}
-                    @if($mickey_tracking)
+                    @if($mickey_tracking && (!empty($mickey_tracking['table']) || !empty($mickey_tracking['table1'])))
                         @include('tracking.mickey', ['mickey_tracking' => $mickey_tracking])
                     @else
                         <div class="card-body text-center">
