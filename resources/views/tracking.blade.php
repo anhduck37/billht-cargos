@@ -3,11 +3,11 @@
 
     @include('layouts.headers.cards')
 
-    <div class="container-fluid mt--4">
+    <div class="container-fluid ml-4">
         <div class="row mt-5">
             <div class="col-xl-12 mb-5 mb-xl-0">
                 @include('flash::message')
-                <div class="card shadow">
+                <div class="card shadow custom-padding">
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
@@ -19,7 +19,7 @@
 
                     <div class="card-body mt-3">
                         <div class="row">
-                            <div class="form-group col-md-5">
+                            <div class="form-group col-md-5" style="margin-bottom: 0rem">
                                 <label>Vui lòng nhập mã vận đơn, ví dụ: HE000001</label>
                                 <!-- {!! Form::label( 'Vui lòng nhập mã vận đơn. Ví dụ: HE000001' ) !!} -->
                                 {!! Form::text('order_code', request('order_code', ''), ['class' => 'form-control', 'id' => 'order_code']) !!}
