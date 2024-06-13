@@ -27,27 +27,27 @@
                     </tr>
                     <tr>
                         <td class="custom-weight">Tuyến phát</td>
-                        <td>{{$table1['tinh']}}</td>
+                        <td class="custom-weight">{{$table1['tinh']}}</td>
                     </tr>
                     <tr>
                         <td class="custom-weight">Trạng Thái</td>
-                        <td>{{$table1['tinh_trang']}}</td>
+                        <td class="custom-weight">{{$table1['tinh_trang']}}</td>
                     </tr>
                     <tr>
                         <td class="custom-weight">Ngày giờ</td>
-                        <td>{{$table1['ngay_phat'] . ' ' . $table1['gio_phat']}}</td>
+                        <td class="custom-weight">{{$table1['ngay_phat'] . ' ' . $table1['gio_phat']}}</td>
                     </tr>
                     <tr>
                         <td class="custom-weight">Địa chỉ nhận</td>
-                        <td>{{$table[0]['dchi']}}</td>
+                        <td class="custom-weight">{{$table[0]['dchi']}}</td>
                     </tr>
                     <tr>
                         <td class="custom-weight">Người Ký Nhận</td>
-                        <td>{{$table1['nguoi_nhan']}}</td>
+                        <td class="custom-weight">{{$table1['nguoi_nhan']}}</td>
                     </tr>
                     <tr>
                         <td class="custom-weight">Ghi chú Kết Quả Phát</td>
-                        <td>{{$table1['ghi_chu_phat']}}</td>
+                        <td class="custom-weight">{{$table1['ghi_chu_phat']}}</td>
                     </tr>
                 </tbody>
             </table>
@@ -61,10 +61,10 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td>STT</td>
-                        <td>Ngày đến</td>
-                        <td>Trạng thái</td>
-                        <td>Bưu cục</td>
+                        <td class="custom-weight">STT</td>
+                        <td class="custom-weight">Ngày đến</td>
+                        <td class="custom-weight">Trạng thái</td>
+                        <td class="custom-weight">Bưu cục</td>
                     </tr>
                     @foreach($table as $item)
                     <tr>
@@ -79,7 +79,20 @@
         </div>
     </div>
     <div class="col custom-image" style="text-align: center">
-        <img style="max-width: 500px; width:100%" src="{{$table1['img']}}">
+        <img style="max-width: 500px; width:100%" data-toggle="modal" data-target=".bd-example-modal-lg" src="{{$table1['img']}}">
+    </div>
+</div>
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="padding: 0">
+                <button style="position: absolute; right: 10px; top: 10px" type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span style="font-size: 35px" aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <img style="padding: 35px" src="{{$table1['img']}}">
+        </div>
     </div>
 </div>
 
