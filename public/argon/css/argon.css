@@ -2303,6 +2303,12 @@ pre code
     background-color: #172b4d;
 }
 
+.table .thead-custom th {
+    color: #f8f9fe;
+    border-color: #cf7224;
+    background-color: #cf7224;
+}
+
 .table .thead-light th
 {
     color: #8898aa;
