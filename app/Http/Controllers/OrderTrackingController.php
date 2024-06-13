@@ -38,7 +38,7 @@ class OrderTrackingController extends Controller
         if($order || $order_code) {
             $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
         }
-        if(!$order && $order_code && !$mickey_tracking) {
+        if(!$order && $order_code && empty($mickey_tracking['table']) && empty($mickey_tracking['table1'])) {
             Flash::warning('Mã vận đơn không tồn tại hoặc chưa chính xác, vui lòng kiểm tra lại.');
         } else if($order) {
             $order_trackings = $order->order_trackings;
