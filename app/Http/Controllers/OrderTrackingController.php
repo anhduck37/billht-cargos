@@ -45,8 +45,8 @@ class OrderTrackingController extends Controller
             // }
         }
 
-        if($order) {
-            $mickey_tracking = $this->mickeyService->tracking($order);
+        if($order || $order_code) {
+            $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
         }
         return view('tracking', [
             'order_trackings' => $order_trackings, 

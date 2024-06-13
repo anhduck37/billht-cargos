@@ -13,12 +13,12 @@ class MickeyService {
         $this->api = config('tracking.mickey_url');
     }
 
-    public function tracking($order) {
+    public function tracking($order, $order_code=null) {
         $path = '/api/tracking';
         $client = new Client(['headers' => $this->headers]);
         $data = [
             'ma_dvi' => "190",
-            'so_hieu' => $order->order_code
+            'so_hieu' => $order->order_code ?? $order_code
         ];
         try{
             $response = $client->post(
