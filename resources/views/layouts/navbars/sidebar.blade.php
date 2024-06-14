@@ -73,6 +73,11 @@
                                     Tạo vận đơn
                                 </a>
                             </li>
+                                                        <li class="nav-item">
+                                <a class="nav-link @if(Request::url() == route('orders.showFormImport')) active-custom @endif" href="{{route('orders.showFormImport')}}">
+                                    Nhập file Excel
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>
@@ -130,6 +135,11 @@
                 <li class="nav-item">
                     <a class="nav-link @if(Request::url() == route('tracking')) active-custom @endif" href="{{route('tracking')}}">
                         <i class="fas fa-search-location" style="color: #f4645f;"></i> Tra cứu đơn hàng
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @if(Request::url() == 'https://ht-cargos.com/tinnhanzalo/') active-custom @endif" href="https://ht-cargos.com/tinnhanzalo/" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-comment-dots" style="color: #f4645f;"></i> Tra cứu gửi tin ZALO
                     </a>
                 </li>
             </ul>
