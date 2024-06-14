@@ -196,7 +196,7 @@ body
 
     text-align: left;
 
-    color: #525f7f;
+    color: #17181a;
     background-color: #f8f9fe;
 }
 
@@ -9784,7 +9784,7 @@ button.bg-darker:focus
 .ml-4,
 .mx-4
 {
-    margin-left: 1.5rem !important;
+    margin-left: 0rem !important;
 }
 
 .m-5
