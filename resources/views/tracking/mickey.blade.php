@@ -3,7 +3,7 @@
     $table = $mickey_tracking['table'] ?? [];
 ?>
 
-<div class="row mb-4 mt-4 ml-2 mr-2">
+<div class="row mb-4 mt-4 ml-2 mr-2 custorm-m">
     <div class="col">
         <div class="table-responsive">
             <table class="table table-bordered">
@@ -117,6 +117,9 @@
         }
         .custom-image {
             margin-top: 20px;
+        }
+        .custorm-m {
+            margin: 1.5rem 0 0 0 !important;
         }
     }
 </style>
