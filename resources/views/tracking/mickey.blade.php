@@ -47,12 +47,12 @@
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Ghi chú Kết Quả Phát</td>
-                        <td class="custom-weight custom-size">{{$table1['ghi_chu_phat']}}</td>
+                        <td class="custom-weight custom-size"><span style="white-space:pre-line">{{$table1['ghi_chu_phat']}}</span></td>
                     </tr>
                 </tbody>
             </table>
         </div>
-        <div class="table-responsive">
+        {{-- <div class="table-wrapper"> --}}
             <table class="table table-bordered mt-4">
                 <thead class="thead-custom">
                     <tr>
@@ -70,13 +70,13 @@
                     <tr>
                         <td class="custom-size">{{$item['stt']}}</td>
                         <td class="custom-size">{{$item['ngay_den'] . ' ' . $item['gio']}}</td>
-                        <td class="custom-size">{{$item['trang_thai']}}</th>
+                        <td class="custom-size"><span style="white-space:pre-line">{{$item['trang_thai']}}</span></th>
                         <td class="custom-size">{{$item['dchi']}}</td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
-        </div>
+        {{-- </div> --}}
     </div>
     <div class="col custom-image" style="text-align: center">
         <img style="max-width: 500px; width:100%" data-toggle="modal" data-target=".bd-example-modal-lg" src="{{$table1['img']}}">
