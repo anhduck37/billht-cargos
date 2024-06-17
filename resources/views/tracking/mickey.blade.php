@@ -21,10 +21,10 @@
                         <td class="custom-size">Người gửi</td>
                         <td class="custom-size">{{$table1['ten_kh']}}</td>
                     </tr>
-                    <tr>
+                    <!-- <tr>
                         <td class="custom-size">Trọng Lượng</td>
                         <td class="custom-size">{{$table1['kluong']}}</td>
-                    </tr>
+                    </tr> -->
                     <tr>
                         <td class="custom-weight custom-size">Tuyến phát</td>
                         <td class="custom-weight custom-size">{{$table1['tinh']}}</td>
