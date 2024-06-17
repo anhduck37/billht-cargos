@@ -19,7 +19,7 @@
                     </tr>
                     <tr>
                         <td class="custom-size">Người gửi</td>
-                        <td class="custom-size">{{$table1['ten_kh']}}</td>
+                        <td class="custom-size">{{$order->sender->sender_name ?? $table1['ten_kh']}}</td>
                     </tr>
                     <!-- <tr>
                         <td class="custom-size">Trọng Lượng</td>
@@ -39,7 +39,22 @@
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Địa chỉ nhận</td>
-                        <td class="custom-weight custom-size">{{$table[0]['dchi']}}</td>
+                        <td class="custom-weight custom-size">
+                            @if(isset($order->receiver))
+                                @if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif
+                                @if(isset($order->receiver->ward))
+                                <b>{{ $order->receiver->ward->ward_name.',' }}</b><br>
+                                @endif
+                                @if(isset($order->receiver->district))
+                                <b>{{ $order->receiver->district->district_name.',' }}</b><br>
+                                @endif
+                                @if(isset($order->receiver->city))
+                                <b>{{$order->receiver->city->city_name}}</b><br>
+                                @endif
+                            @else
+                                {{$table[0]['dchi']}}
+                            @endif
+                        </td>
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Người Ký Nhận</td>
