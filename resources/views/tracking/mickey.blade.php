@@ -14,11 +14,11 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td class="custom-size">Mã Bưu phẩm</td>
-                        <td class="custom-size">{{$table1['so_hieu']}}</td>
+                        <td class="custom-weight custom-size">Mã Bưu phẩm</td>
+                        <td class="custom-weight custom-size">{{$table1['so_hieu']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-size">Người gửi</td>
+                        <td class="custom-weight custom-size">Người gửi</td>
                         <td class="custom-size">{{$order->sender->sender_name ?? $table1['ten_kh']}}</td>
                     </tr>
                     <!-- <tr>
@@ -27,29 +27,29 @@
                     </tr> -->
                     <tr>
                         <td class="custom-weight custom-size">Tuyến phát</td>
-                        <td class="custom-weight custom-size">{{$table1['tinh']}}</td>
+                        <td class="custom-size">{{$table1['tinh']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-weight custom-size">Trạng Thái</td>
-                        <td class="custom-weight custom-size">{{$table1['tinh_trang']}}</td>
+                        <td class="custom-weight custom-size">Trạng thái</td>
+                        <td class="custom-size">{{$table1['tinh_trang']}}</td>
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Ngày giờ</td>
-                        <td class="custom-weight custom-size">{{$table1['ngay_phat'] . ' ' . $table1['gio_phat']}}</td>
+                        <td class="custom-size">{{$table1['ngay_phat'] . ' ' . $table1['gio_phat']}}</td>
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Địa chỉ nhận</td>
-                        <td class="custom-weight custom-size">
+                        <td class="custom-size">
                             @if(isset($order->receiver))
-                                @if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif
+                                @if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) {{$item.','}}<br> @endforeach @endif
                                 @if(isset($order->receiver->ward))
-                                <b>{{ $order->receiver->ward->ward_name.',' }}</b><br>
+                                {{ $order->receiver->ward->ward_name.',' }}<br>
                                 @endif
                                 @if(isset($order->receiver->district))
-                                <b>{{ $order->receiver->district->district_name.',' }}</b><br>
+                                {{ $order->receiver->district->district_name.',' }}<br>
                                 @endif
                                 @if(isset($order->receiver->city))
-                                <b>{{$order->receiver->city->city_name}}</b><br>
+                                {{$order->receiver->city->city_name}}<br>
                                 @endif
                             @else
                                 {{$table[0]['dchi']}}
@@ -57,12 +57,12 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="custom-weight custom-size">Người Ký Nhận</td>
-                        <td class="custom-weight custom-size">{{$table1['nguoi_nhan']}}</td>
+                        <td class="custom-weight custom-size">Người ký nhận</td>
+                        <td class="custom-size">{{$table1['nguoi_nhan']}}</td>
                     </tr>
                     <tr>
-                        <td class="custom-weight custom-size">Ghi chú Kết Quả Phát</td>
-                        <td class="custom-weight custom-size"><span style="white-space:pre-line">{{$table1['ghi_chu_phat']}}</span></td>
+                        <td class="custom-weight custom-size">Ghi chú kết quả phát</td>
+                        <td class="custom-size"><span style="white-space:pre-line">{{$table1['ghi_chu_phat']}}</span></td>
                     </tr>
                 </tbody>
             </table>
