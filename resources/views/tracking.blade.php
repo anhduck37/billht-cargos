@@ -128,23 +128,26 @@
             </div>
         </div>
     </div>
-    <style>
-        @media only screen and (max-width: 1425px) {
-            .custorm-margin {
-                margin-top: 1.5rem
+    @if($mickey_tracking && (!empty($mickey_tracking['table']) || !empty($mickey_tracking['table1'])))
+        <style>
+            @media only screen and (max-width: 1425px) {
+                .custorm-margin {
+                    margin-top: 1.5rem
+                }
             }
-        }
-        @media only screen and (max-width: 940px) {
-            .custorm-margin {
-                margin-top: 3rem
+
+            @media only screen and (max-width: 940px) {
+                .custorm-margin {
+                    margin-top: 3rem
+                }
             }
-        }
-        @media only screen and (max-width: 600px) {
-            .custorm-margin {
-                margin-top: 0
+            @media only screen and (max-width: 600px) {
+                .custorm-margin {
+                    margin-top: 0
+                }
             }
-        }
-    </style>
+        </style>
+    @endif
 @endsection
 
 @section('javascript')
