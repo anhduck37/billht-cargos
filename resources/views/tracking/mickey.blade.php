@@ -5,7 +5,7 @@
 
 <div class="row mb-4 mt-4 ml-2 mr-2 custorm-m">
     <div class="col">
-        <div class="table-responsive">
+        {{-- <div class="table-responsive"> --}}
             <table class="table table-bordered">
                     <thead class="thead-custom">
                         <tr>
@@ -19,7 +19,7 @@
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Người gửi</td>
-                        <td class="custom-size">{{$order->sender->sender_name ?? $table1['ten_kh']}}</td>
+                        <td class="custom-size"><span style="white-space:pre-line">{{$order->sender->sender_name ?? $table1['ten_kh']}} hahahahah kdkdkdk ahahsdhfdhf ạdhjhsjhfj<span></td>
                     </tr>
                     <!-- <tr>
                         <td class="custom-size">Trọng Lượng</td>
@@ -66,7 +66,7 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
+        {{-- </div> --}}
         {{-- <div class="table-wrapper"> --}}
             <table class="table table-bordered mt-4">
                 <thead class="thead-custom">

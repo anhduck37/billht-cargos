@@ -71,7 +71,7 @@
 
                         </div>
                     
-                        <div class="table-responsive mt-4">
+                        <div class="mt-4">
                             <table class="table align-items-center">
                                 <thead style="background-color: #f6821f; color: white" class="thead-light">
                                 <tr>
@@ -104,12 +104,12 @@
                                             </div>
                                         </th>  --}}
                                         <td>{{$item->getDeliveryStatusName($item->delivery_status)}}</td>
-                                        <td>{{isset($item->order) && isset($item->order->sender) ? $item->order->sender->sender_name : ''}}</td>
+                                        <td><span style="white-space:pre-line">{{isset($item->order) && isset($item->order->sender) ? $item->order->sender->sender_name : ''}}</span></td>
                                         <td>{{isset($item->order) && isset($item->order->receiver) ? $item->order->receiver->receiver_name : ''}}</td>
-                                        <td>{{isset($item->order->receiver) && isset($item->order->receiver) ? $item->order->receiver->address : ''}}</td>
+                                        <td><span style="white-space:pre-line">{{isset($item->order->receiver) && isset($item->order->receiver) ? $item->order->receiver->address : ''}}</span></td>
                                         <td>{{$item->signator}}</td>
                                         <!-- <td>{{$item->updated_at}}</td> -->
-                                        <td>{{isset($item->order) ? $item->order->note : ''}}</td>
+                                        <td><span style="white-space:pre-line">{{isset($item->order) ? $item->order->note : ''}}</span></td>
                                     </tr>
                                 @endforeach
                                 </tbody>
