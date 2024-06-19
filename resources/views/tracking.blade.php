@@ -24,7 +24,7 @@
                                 <!-- {!! Form::label( 'Vui lòng nhập mã vận đơn. Ví dụ: HE000001' ) !!} -->
                                 {!! Form::text('order_code', request('order_code', ''), ['class' => 'form-control', 'id' => 'order_code']) !!}
                             </div>
-                            <div class="form-group col-md-3">
+                            <div class="form-group col-md-3 custorm-margin">
                                 {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'margin-bottom: -83px;']) !!}
                             </div>
                         </div>
@@ -128,6 +128,23 @@
             </div>
         </div>
     </div>
+    <style>
+        @media only screen and (max-width: 1425px) {
+            .custorm-margin {
+                margin-top: 1.5rem
+            }
+        }
+        @media only screen and (max-width: 940px) {
+            .custorm-margin {
+                margin-top: 3rem
+            }
+        }
+        @media only screen and (max-width: 600px) {
+            .custorm-margin {
+                margin-top: 0
+            }
+        }
+    </style>
 @endsection
 
 @section('javascript')
