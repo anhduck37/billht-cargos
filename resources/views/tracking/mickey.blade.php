@@ -19,7 +19,7 @@
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Người gửi</td>
-                        <td class="custom-size"><span style="white-space:pre-line">{{$order->sender->sender_name ?? $table1['ten_kh']}} hahahahah kdkdkdk ahahsdhfdhf ạdhjhsjhfj<span></td>
+                        <td class="custom-size"><span style="white-space:pre-line">{{$order->sender->sender_name ?? $table1['ten_kh']}}<span></td>
                     </tr>
                     <!-- <tr>
                         <td class="custom-size">Trọng Lượng</td>
