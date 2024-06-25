@@ -5,16 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\OrderTracking;
 use App\Services\MickeyService;
+use App\Services\ViettelPostService;
 use Illuminate\Http\Request;
 use Flash;
 
 class OrderTrackingController extends Controller
 {
     protected $mickeyService;
+    protected $viettelPostService;
 
-    public function __construct(MickeyService $mickeyService)
+    public function __construct(MickeyService $mickeyService, ViettelPostService $viettelPostService)
     {
         $this->mickeyService = $mickeyService;
+        $this->viettelPostService = $viettelPostService;
     }
 
     public function tracking(Request $request) {
@@ -23,6 +26,7 @@ class OrderTrackingController extends Controller
         $delivery_status = 0;
         $order = null;
         $mickey_tracking = null;
+        $viettel_post = null;
         if($order_code) {
             // $order_trackings = OrderTracking::join('orders', 'orders.id', '=', 'order_trackings.order_id')
             // ->where('orders.invoice_code', $order_code)->orWhere('order_trackings.order_code', $order_code)
@@ -36,7 +40,12 @@ class OrderTrackingController extends Controller
                 ->first();
         }
         if($order || $order_code) {
-            $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
+            if(isset($order->order_partner_code)) {
+                $viettel_post = $this->viettelPostService->tracking($order);
+            } else {
+                $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
+            }
+            
         }
         if(!$order && $order_code && empty($mickey_tracking['table']) && empty($mickey_tracking['table1'])) {
             Flash::warning('Mã vận đơn không tồn tại hoặc chưa chính xác, vui lòng kiểm tra lại.');
@@ -52,7 +61,8 @@ class OrderTrackingController extends Controller
             'order_trackings' => $order_trackings, 
             'delivery_status' => $delivery_status, 
             'order' => $order,
-            'mickey_tracking' => $mickey_tracking
+            'mickey_tracking' => $mickey_tracking,
+            'viettel_post' => $viettel_post
         ]);
     }
 }

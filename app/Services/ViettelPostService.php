@@ -16,11 +16,13 @@ class ViettelPostService {
         'Content-Type' => 'application/json'
     ];
     public $url;
+    private $api;
 
     public function __construct() {
         $this->username = config('viettel_post.username');
         $this->password = config('viettel_post.password');
         $this->url = config('viettel_post.url');
+        $this->api = config('viettel_post.api');
     }
     
     public function refreshToken() {
@@ -133,6 +135,23 @@ class ViettelPostService {
         $partnerTracking->fill($dataPartnerTracking);
         $partnerTracking->save();
         return $partnerTracking;
+    }
+
+    public function tracking($order) {
+        $path = '/api/setting/listOrderTrackingVTP3';
+        $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
+        $this->headers['token'] = $partnerConfig->token ?? '';
+        $client = new Client([
+            'headers' => $this->headers
+        ]);
+
+        $response = $client->get($this->api.$path, [
+            'query' => [
+                'OrderNumber' => $order->order_partner_code
+            ]
+        ]);
+        $result = json_decode($response->getBody()->getContents(), true);
+        return $result['data'] ?? null;
     }
 
     private function formatDataWebhook($order, $data) {

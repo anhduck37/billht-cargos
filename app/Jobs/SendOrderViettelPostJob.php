@@ -25,14 +25,9 @@ class SendOrderViettelPostJob implements ShouldQueue
         $this->order = $order;
     }
 
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
     public function handle()
     {
         $viettelPostService = new ViettelPostService();
-        $viettelPostService->createOrder($this->order);
+        return $viettelPostService->createOrder($this->order);
     }
 }

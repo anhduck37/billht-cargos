@@ -51,5 +51,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/send-email', 'OrderController@sendEmail');
     Route::post('/order/send-sms', 'OrderController@sendSMS');
     Route::post('/order/send-zalo-zns', 'OrderController@sendZaloZNS');
+    Route::get('/order/create-order-viettel/{id}', 'OrderController@createOrderViettelPost')->name('orders.createViettelPost');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');

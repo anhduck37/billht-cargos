@@ -203,12 +203,6 @@ class OrderController extends AppBaseController
                     $orderForm['invoice_code'] = $orderForm['order_code'];
                 }
                 $order = $this->orderRepository->create($orderForm);
-                // $partner = Partner::where('name', 'LIKE', '%'.$partnerName.'%')->first();
-                // if(isset($partner->prefix_code) && $partner->prefix_code == PartnerConfig::CODE_VIETTEL_POST) {
-                // dispatch(new SendOrderViettelPostJob($order));
-                $sendOrderViettelPost = new SendOrderViettelPostJob($order);
-                $sendOrderViettelPost->handle();
-                // }
             }
             if(isset($request->image_data)) {
                 $fileName = $this->upload($request->image_data, $request->type_image, $order->order_code, OrderImage::SAVE_SERVER, $order);
@@ -803,5 +797,17 @@ class OrderController extends AppBaseController
             return route('orders.edit', [$orderId]);
         }
         return route('orders.index');
+    }
+
+    public function createOrderViettelPost($id) {
+        $order = Order::findOrFail($id);
+        $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+        $result = $sendOrderViettelPost->handle();
+        if($result['error']) {
+            Flash::error('Xảy ra lỗi tạo vận đơn sang Viettel Post: '. ($result['message'] ?? ''));
+        } else {
+            Flash::success('Tạo vận đơn sang Viettel Post thành công.');
+        }
+        return back();
     }
 }
