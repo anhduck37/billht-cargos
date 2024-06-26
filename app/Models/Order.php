@@ -49,9 +49,12 @@ class Order extends Model
         'department',
         'invoice_code',
         'person_charge',
-        'signator'
+        'signator',
+        'quantity',
+        'type',
+        'partner_code'
     ];
-
+    const CODE_IMPORT_VIETTEL_POST = 'VTP';
 	const ORDER_OK = 1;
 	const ORDER_RETURN = 2;
     const ORDER_CANCEL = 3;
@@ -89,11 +92,17 @@ class Order extends Model
     const PAYMENT_METHOD_OTHER = 3;
     const PAYMENT_METHOD_LAST = 4;
     const PAYMENT_METHOD_MAP = [
-      self::PAYMENT_METHOD_COD => 'COD',
+        self::PAYMENT_METHOD_COD => 'COD',
         self::PAYMENT_METHOD_LAST => 'Thanh toán cuối tháng',
-      self::PAYMENT_METHOD_INTERNET_BANKING => 'Người nhận trả cước',
-      self::PAYMENT_METHOD_OTHER => 'Đã thanh toán',
+        self::PAYMENT_METHOD_INTERNET_BANKING => 'Người nhận trả cước',
+        self::PAYMENT_METHOD_OTHER => 'Đã thanh toán',
+    ];
 
+    const ORDER_TYPE_DOCUMENT = 1;
+    const ORDER_TYPE_PARCEL = 2;
+    const MAP_ORDER_TYPE = [
+        self::ORDER_TYPE_DOCUMENT => 'Tài liệu',
+        self::ORDER_TYPE_PARCEL => 'Bưu kiện'
     ];
     /**
      * The attributes that should be casted to native types.

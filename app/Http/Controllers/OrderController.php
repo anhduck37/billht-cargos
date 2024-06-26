@@ -475,17 +475,15 @@ class OrderController extends AppBaseController
                                 if(isset($order->receiver) && !empty($order->receiver->receiver_phone)) {
                                     dispatch(new SendSMSJob($order));
                                 }
-
-                                app(OrderTrackingService::class)->create($order, $request->all());
-                                // if($sheet->getCell( 'O' . $row )->getValue()) {
-                                    $partnerName = $sheet->getCell( 'O' . $row )->getValue();
-                                    // $partner = Partner::where('name', 'LIKE', '%'.$partnerName.'%')->first();
-                                    // if(isset($partner->prefix_code) && $partner->prefix_code == PartnerConfig::CODE_VIETTEL_POST) {
+                                if($sheet->getCell( 'O' . $row )->getValue() ) {
+                                    $partnerCode = $sheet->getCell( 'O' . $row )->getValue();
+                                    if($partnerCode == Order::CODE_IMPORT_VIETTEL_POST) {
                                         // dispatch(new SendOrderViettelPostJob($order));
                                         $sendOrderViettelPost = new SendOrderViettelPostJob($order);
                                         $sendOrderViettelPost->handle();
-                                    // }
-                                // }
+                                    }
+                                }
+                                app(OrderTrackingService::class)->create($order, $request->all());
                                 
                             }
                             $dataService = [];
@@ -510,8 +508,8 @@ class OrderController extends AppBaseController
                             if($order && !empty($dataService)){
                                 app(OrderService::class)->insertService($dataService, $order->id);
                             }
+                            
                         }
-
                         DB::commit();
                     }catch (Exception $e) {
                         DB::rollback();

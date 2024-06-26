@@ -81,7 +81,7 @@
                     <div>
                         <label>
                             @if(isset($order->receiver))
-                            Địa chỉ: @if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif
+                            Địa chỉ: <span style="white-space: pre-line">@if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif</span>
                             @if(isset($order->receiver->ward))
                             <b>{{ $order->receiver->ward->ward_name.',' }}</b><br>
                             @endif
