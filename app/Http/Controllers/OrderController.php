@@ -483,9 +483,9 @@ class OrderController extends AppBaseController
                                 if($sheet->getCell( 'R' . $row )->getValue() ) {
                                     $partnerCode = $sheet->getCell( 'R' . $row )->getValue();
                                     if($partnerCode == Order::CODE_VIETTEL_POST) {
-                                        // dispatch(new SendOrderViettelPostJob($order));
-                                        $sendOrderViettelPost = new SendOrderViettelPostJob($order);
-                                        $sendOrderViettelPost->handle();
+                                        dispatch(new SendOrderViettelPostJob($order));
+                                        // $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                                        // $sendOrderViettelPost->handle();
                                     }
                                 }
                                 app(OrderTrackingService::class)->create($order, $request->all());
