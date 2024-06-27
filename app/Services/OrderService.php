@@ -61,6 +61,18 @@ class OrderService
         return $data;
     }
 
+    public function getType($type) {
+        $data = Order::ORDER_TYPE_DOCUMENT;
+        $value = ucfirst(mb_strtolower(trim($type), 'UTF-8'));
+        foreach (Order::MAP_ORDER_TYPE as $key => $item) {
+            if($value == ucfirst(mb_strtolower(trim($item), 'UTF-8'))) {
+                $data = $key;
+                break;
+            }
+        }
+        return $data;
+    }
+
     public function getKeyPaymentMethod($name) {
         $convertName = ucfirst(mb_strtolower(trim($name), 'UTF-8'));
         if($convertName == 'Cod') {

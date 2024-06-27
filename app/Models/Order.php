@@ -54,7 +54,7 @@ class Order extends Model
         'type',
         'partner_code'
     ];
-    const CODE_IMPORT_VIETTEL_POST = 'VTP';
+    const CODE_VIETTEL_POST = 'VTP';
 	const ORDER_OK = 1;
 	const ORDER_RETURN = 2;
     const ORDER_CANCEL = 3;

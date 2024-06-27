@@ -112,6 +112,7 @@ class ViettelPostService {
         if(!empty($result['data'])) {
             $status = OrderPartnerLog::STATUS_SUCCESS;
             $order->order_partner_code = $result['data']['ORDER_NUMBER'] ?? null;
+            $order->partner_code = Order::CODE_VIETTEL_POST;
             $order->save();
         }
         $orderPartnerLog->order_id = $order->id;

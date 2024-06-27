@@ -415,6 +415,7 @@ class OrderController extends AppBaseController
                         $senderData = [
                             'sender_name' => $sheet->getCell( 'B' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '',
                             'sender_phone' => $sheet->getCell( 'C' . $row )->getValue() ? $sheet->getCell( 'C' . $row )->getValue() : '' ,
+                            'address' => $sheet->getCell( 'Q' . $row )->getValue() ?? '',
                         ];
                         // dd($senderData);
                         $receiverData = [
@@ -437,9 +438,13 @@ class OrderController extends AppBaseController
                                 'user_id' => auth()->user()->id,
                                 'order_status' => Order::ORDER_BLANK,
                                 'delivery_status' => Order::DELIVERY_STATUS_PROCESSING,
+                                'quantity' => $sheet->getCell( 'O' . $row )->getValue() ?? 1
                             ];
                             if($sheet->getCell( 'H' . $row )->getValue()) {
                                 $orderData['payment_method'] = app(OrderService::class)->getKeyPaymentMethod($sheet->getCell( 'H' . $row )->getValue());
+                            }
+                            if($sheet->getCell( 'P' . $row )->getValue()) {
+                                $orderData['type'] = app(OrderService::class)->getType($sheet->getCell( 'P' . $row )->getValue());
                             }
                             if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])){
                                 if($sheet->getCell( 'N' . $row )->getValue()) {
@@ -475,9 +480,9 @@ class OrderController extends AppBaseController
                                 if(isset($order->receiver) && !empty($order->receiver->receiver_phone)) {
                                     dispatch(new SendSMSJob($order));
                                 }
-                                if($sheet->getCell( 'O' . $row )->getValue() ) {
-                                    $partnerCode = $sheet->getCell( 'O' . $row )->getValue();
-                                    if($partnerCode == Order::CODE_IMPORT_VIETTEL_POST) {
+                                if($sheet->getCell( 'R' . $row )->getValue() ) {
+                                    $partnerCode = $sheet->getCell( 'R' . $row )->getValue();
+                                    if($partnerCode == Order::CODE_VIETTEL_POST) {
                                         // dispatch(new SendOrderViettelPostJob($order));
                                         $sendOrderViettelPost = new SendOrderViettelPostJob($order);
                                         $sendOrderViettelPost->handle();
@@ -512,6 +517,7 @@ class OrderController extends AppBaseController
                         }
                         DB::commit();
                     }catch (Exception $e) {
+                        Flash::error($e->getMessage());
                         DB::rollback();
                     }
                     $startcount++;
