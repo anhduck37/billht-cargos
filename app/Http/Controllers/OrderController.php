@@ -480,6 +480,7 @@ class OrderController extends AppBaseController
                                     $orderData['order_code'] = $orderData['invoice_code'];
                                 } else {
                                     $message .= 'Mã bill '.$orderData['invoice_code'].' đã tồn tại trên hệ thống nên được thay thế bằng mã bill mới là: '.$orderData['order_code'] . '<br>';
+                                    $orderData['invoice_code'] = $orderData['order_code'];
                                 }
                             }
                             $order = Order::create($orderData);
