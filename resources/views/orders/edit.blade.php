@@ -35,6 +35,7 @@
                             @endif
                             <a class='btn btn-primary mb-2' href="{{route('orders.index')}}">Tìm vận đơn</a>
                             <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn khác</a>
+                            <a class='btn btn-primary mb-2' href="{{ route('orders.createViettelPost', ['id' => $order->id]) }}">Tạo vận đơn Viettel Post</a>
                             <!-- <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a> -->
                         </div>
 

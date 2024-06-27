@@ -307,6 +307,29 @@
                 @endforeach
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Số lượng</label>
+                    <div class="form-control" style="border: none">
+                        <input type="number" class="form-control" name="order[quantity]" value="{{old('order.quantity') ? old('order.quantity') : ( isset($order->quantity) ? $order->quantity : 0)}}" placeholder="Số lượng">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group mt-2">
+                    <label>Loại hàng hóa</label>
+                    <div class="form-control" style="border: none">
+                        @foreach(\App\Models\Order::MAP_ORDER_TYPE as $value => $label)
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" @if($order->type == $value) checked="checked" @endif type="radio" name="order[type]" value="{{$value}}">
+                            <label class="form-check-label">{{$label}}</label>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="form-group">
             <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>

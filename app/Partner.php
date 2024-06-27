@@ -10,4 +10,6 @@ class Partner extends Model
         'name',
         'prefix_code'
     ];
+
+    
 }

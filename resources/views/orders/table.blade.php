@@ -74,14 +74,14 @@
                     <div><label>Xã / Phường: <b>{{isset($order->sender) && isset($order->sender->ward) ? $order->sender->ward->ward_name : ''}}</b></label></div>
                     <div><label>Địa chỉ: <b>{{isset($order->sender) ? $order->sender->address : ''}}</b></label></div> -->
                 </td>
-                <td>
+                <td style="max-width: 450px">
                     <div><label>Tên người nhận: <b>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</b></label></div>
                     <div><label>Số điện thoại: <b>{{isset($order->receiver) ? $order->receiver->receiver_phone : ''}}</b></label></div>
 {{--                    <div><label>Email: <b>{{isset($order->receiver) ? $order->receiver->receiver_email : ''}}</b></label></div>--}}
                     <div>
                         <label>
                             @if(isset($order->receiver))
-                            Địa chỉ: @if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif
+                            Địa chỉ: <span style="white-space: pre-line">@if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif</span>
                             @if(isset($order->receiver->ward))
                             <b>{{ $order->receiver->ward->ward_name.',' }}</b><br>
                             @endif
@@ -110,7 +110,7 @@
                 @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                 <td>{{isset($order->user) ? $order->user->email : ''}}</td>
                 @endif
-                <td class="text-center">
+                <td class="text-center" style="min-width: 110px">
 {{--                    <div class="dropdown">--}}
 {{--                        <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">--}}
 {{--                            <i class="fas fa-ellipsis-v"></i>--}}
@@ -310,3 +310,8 @@
     </script>
 @endsection
 
+<style>
+    .table td, .table th {
+        white-space: normal !important;
+    }
+</style>

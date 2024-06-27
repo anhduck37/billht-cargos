@@ -58,7 +58,7 @@
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Người ký nhận</td>
-                        <td class="custom-size">{{$table1['nguoi_nhan']}}</td>
+                        <td class="custom-size">{{$order->signator ?? $table1['nguoi_nhan']}}</td>
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Ghi chú kết quả phát</td>
@@ -94,7 +94,11 @@
         {{-- </div> --}}
     </div>
     <div class="col custom-image" style="text-align: center">
-        <img style="max-width: 500px; width:100%" data-toggle="modal" data-target=".bd-example-modal-lg" src="{{$table1['img']}}">
+        @if(isset($order->image) && ($order->image->image || $order->image->file_id))
+        <img style="max-width: 500px; width:100%; {{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM ? 'transform: rotate(270deg);' : ''}}" src="{{$order->image->type_save == \App\OrderImage::SAVE_GOOGLE_DRIVE ? (config('google_drive.url').$order->image->file_id) : asset('uploads/'.$order->image->image)}}" />
+        @else
+        <img style="max-width: 500px; width:100%  {{isset($order->image->image) && $order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM ? 'transform: rotate(270deg);' : ''}}" data-toggle="modal" data-target=".bd-example-modal-lg" src="{{$table1['img']}}">
+        @endif
     </div>
 </div>
 

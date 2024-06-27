@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\City;
 use App\Exports\OrderExport;
 use App\Partner;
+use App\PartnerConfig;
 use App\Receiver;
 use App\Repositories\OrderRepository;
 use App\Http\Controllers\AppBaseController;
 use App\Http\Requests\OrderFormRequestLevelPosman;
+use App\Jobs\SendOrderViettelPostJob;
 use App\Jobs\SendSMSJob;
 use App\Jobs\UploadGoogleDriveJob;
 use App\Sender;
@@ -227,7 +229,7 @@ class OrderController extends AppBaseController
             Flash::success( ($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thành công.');
             return redirect()->route('orders.edit', [$order->id]);
         }catch (Exception $e) {
-            Flash::error(($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thất bại.');
+            Flash::error(($is_update ? 'Cập nhật' : 'Tạo') . ' vận đơn thất bại.'. ' '. $e->getMessage());
             DB::rollback();
         }
         if($is_update) {
@@ -413,6 +415,7 @@ class OrderController extends AppBaseController
                         $senderData = [
                             'sender_name' => $sheet->getCell( 'B' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '',
                             'sender_phone' => $sheet->getCell( 'C' . $row )->getValue() ? $sheet->getCell( 'C' . $row )->getValue() : '' ,
+                            'address' => $sheet->getCell( 'Q' . $row )->getValue() ?? '',
                         ];
                         // dd($senderData);
                         $receiverData = [
@@ -435,9 +438,13 @@ class OrderController extends AppBaseController
                                 'user_id' => auth()->user()->id,
                                 'order_status' => Order::ORDER_BLANK,
                                 'delivery_status' => Order::DELIVERY_STATUS_PROCESSING,
+                                'quantity' => $sheet->getCell( 'O' . $row )->getValue() ?? 1
                             ];
                             if($sheet->getCell( 'H' . $row )->getValue()) {
                                 $orderData['payment_method'] = app(OrderService::class)->getKeyPaymentMethod($sheet->getCell( 'H' . $row )->getValue());
+                            }
+                            if($sheet->getCell( 'P' . $row )->getValue()) {
+                                $orderData['type'] = app(OrderService::class)->getType($sheet->getCell( 'P' . $row )->getValue());
                             }
                             if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])){
                                 if($sheet->getCell( 'N' . $row )->getValue()) {
@@ -467,14 +474,22 @@ class OrderController extends AppBaseController
 
                             $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
                             $order = Order::create($orderData);
-                            if($order ){
+                            if($order){
                                 $orders[] = $order;
 
                                 if(isset($order->receiver) && !empty($order->receiver->receiver_phone)) {
                                     dispatch(new SendSMSJob($order));
                                 }
-
+                                if($sheet->getCell( 'R' . $row )->getValue() ) {
+                                    $partnerCode = $sheet->getCell( 'R' . $row )->getValue();
+                                    if($partnerCode == Order::CODE_VIETTEL_POST) {
+                                        // dispatch(new SendOrderViettelPostJob($order));
+                                        $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                                        $sendOrderViettelPost->handle();
+                                    }
+                                }
                                 app(OrderTrackingService::class)->create($order, $request->all());
+                                
                             }
                             $dataService = [];
                             if($sheet->getCell( 'J' . $row )->getValue()){
@@ -498,10 +513,11 @@ class OrderController extends AppBaseController
                             if($order && !empty($dataService)){
                                 app(OrderService::class)->insertService($dataService, $order->id);
                             }
+                            
                         }
-
                         DB::commit();
                     }catch (Exception $e) {
+                        Flash::error($e->getMessage());
                         DB::rollback();
                     }
                     $startcount++;
@@ -785,5 +801,21 @@ class OrderController extends AppBaseController
             return route('orders.edit', [$orderId]);
         }
         return route('orders.index');
+    }
+
+    public function createOrderViettelPost($id) {
+        $order = Order::findOrFail($id);
+        if($order->order_partner_code) {
+            Flash::error('Vận đơn đã có trên Viettel Post.');
+            return back();
+        }
+        $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+        $result = $sendOrderViettelPost->handle();
+        if($result['error']) {
+            Flash::error('Xảy ra lỗi tạo vận đơn sang Viettel Post: '. ($result['message'] ?? ''));
+        } else {
+            Flash::success('Tạo vận đơn sang Viettel Post thành công.');
+        }
+        return back();
     }
 }

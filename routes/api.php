@@ -21,3 +21,7 @@ Route::middleware([])->group(function () {
     Route::get('/district/{city_id}', 'DistrictController@getDistricts');
     Route::get('/ward/{district_id}', 'WardController@getWards');
 });
+
+Route::group(['prefix'=>'webhook'], function() {
+    Route::any('/viettel-post', 'WebhookController@viettelPost');
+});
