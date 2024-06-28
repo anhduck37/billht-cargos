@@ -95,7 +95,7 @@
     </div>
     <div class="col custom-image" style="text-align: center">
         @if(isset($order->image) && ($order->image->image || $order->image->file_id))
-        <img style="max-width: 500px; width:100%; {{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM ? 'transform: rotate(270deg);' : ''}}" src="{{$order->image->type_save == \App\OrderImage::SAVE_GOOGLE_DRIVE ? (config('google_drive.url').$order->image->file_id) : asset('uploads/'.$order->image->image)}}" />
+        <img style="max-width: 60%; width:100%; {{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM ? 'transform: rotate(270deg);' : ''}}" data-toggle="modal" data-target=".bd-example-modal-lg" src="{{$order->image->type_save == \App\OrderImage::SAVE_GOOGLE_DRIVE ? (config('google_drive.url').$order->image->file_id) : asset('uploads/'.$order->image->image)}}" />
         @else
         <img style="max-width: 500px; width:100%  {{isset($order->image->image) && $order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM ? 'transform: rotate(270deg);' : ''}}" data-toggle="modal" data-target=".bd-example-modal-lg" src="{{$table1['img']}}">
         @endif
@@ -110,7 +110,12 @@
                     <span style="font-size: 35px" aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <img style="padding: 35px" src="{{$table1['img']}}">
+            
+            @if(isset($order->image) && ($order->image->image || $order->image->file_id))
+        <img  width:100%; {{$order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM ? 'transform: rotate(270deg);' : ''}}" data-toggle="modal" data-target=".bd-example-modal-lg" src="{{$order->image->type_save == \App\OrderImage::SAVE_GOOGLE_DRIVE ? (config('google_drive.url').$order->image->file_id) : asset('uploads/'.$order->image->image)}}" />
+        @else
+        <img style="max-width: 500px; width:100%  {{isset($order->image->image) && $order->image->type_upload == \App\OrderImage::TYPE_IMAGE_WEBCAM ? 'transform: rotate(270deg);' : ''}}" data-toggle="modal" data-target=".bd-example-modal-lg" src="{{$table1['img']}}">
+        @endif
         </div>
     </div>
 </div>
