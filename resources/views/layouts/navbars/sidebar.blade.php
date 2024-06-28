@@ -73,11 +73,13 @@
                                     Tạo vận đơn
                                 </a>
                             </li>
+                            @if(auth()->user()->level == \App\User::LEVEL_ADMIN)
                                                         <li class="nav-item">
                                 <a class="nav-link @if(Request::url() == route('orders.showFormImport')) active-custom @endif" href="{{route('orders.showFormImport')}}">
                                     Nhập file Excel
                                 </a>
                             </li>
+                            @endif
                         </ul>
                     </div>
                 </li>
