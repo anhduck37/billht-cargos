@@ -397,6 +397,7 @@ class OrderController extends AppBaseController
 
     public function import(Request $request) {
         $file = $request->file('file');
+        $message = '';
         if($file) {
             $partners = Partner::get();
             $orders = [];
@@ -473,6 +474,15 @@ class OrderController extends AppBaseController
                             }
 
                             $orderData['order_code'] = app(OrderService::class)->getOrderCode(config('order_manager.prefix_code'));
+                            if(isset($orderData['invoice_code'])) {
+                                $checkOrder = Order::where('order_code', $orderData['invoice_code'])->first();
+                                if(!$checkOrder) {
+                                    $orderData['order_code'] = $orderData['invoice_code'];
+                                } else {
+                                    $message .= 'Mã bill '.$orderData['invoice_code'].' đã tồn tại trên hệ thống nên được thay thế bằng mã bill mới là: '.$orderData['order_code'] . '<br>';
+                                    $orderData['invoice_code'] = $orderData['order_code'];
+                                }
+                            }
                             $order = Order::create($orderData);
                             if($order){
                                 $orders[] = $order;
@@ -483,9 +493,9 @@ class OrderController extends AppBaseController
                                 if($sheet->getCell( 'R' . $row )->getValue() ) {
                                     $partnerCode = $sheet->getCell( 'R' . $row )->getValue();
                                     if($partnerCode == Order::CODE_VIETTEL_POST) {
-                                        // dispatch(new SendOrderViettelPostJob($order));
-                                        $sendOrderViettelPost = new SendOrderViettelPostJob($order);
-                                        $sendOrderViettelPost->handle();
+                                        dispatch(new SendOrderViettelPostJob($order));
+                                        // $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                                        // $sendOrderViettelPost->handle();
                                     }
                                 }
                                 app(OrderTrackingService::class)->create($order, $request->all());
@@ -522,7 +532,9 @@ class OrderController extends AppBaseController
                     }
                     $startcount++;
                 }
-
+                if($message != '') {
+                    Flash::success($message);
+                }
                 return view('orders.import', ['orders' => $orders, 'partners' => $partners]);
             } else {
                 Flash::error('File đã chọn phải là excel');

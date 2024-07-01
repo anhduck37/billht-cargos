@@ -61,7 +61,7 @@ class ViettelPostService {
         $senderAddress = ($order->sender->address ?? '') . ' ' .($order->sender->ward->ward_name ?? '') . ' ' . ($order->sender->city->city_name ?? '');
         $receiverAddress = ($order->receiver->address ?? '') . ' ' .($order->receiver->ward->ward_name ?? '') . ' ' . ($order->receiver->city->city_name ?? '');
         $formatData = [
-            "ORDER_NUMBER" => $order->order_code,
+            "ORDER_NUMBER" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
             "SENDER_FULLNAME" => $order->sender->sender_name ?? '',
             "SENDER_ADDRESS" => !empty(trim($senderAddress)) ? $senderAddress : '',
             "SENDER_PHONE" => $order->sender->sender_phone ?? '',

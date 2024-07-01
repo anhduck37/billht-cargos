@@ -37,8 +37,6 @@
                         @if(isset($order->receiver->city))
                         {{$order->receiver->city->city_name}}<br>
                         @endif
-                    @else
-                        {{$table[0]['dchi']}}
                     @endif
                 </td>
             </tr>
@@ -48,7 +46,7 @@
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Ghi chú kết quả phát</td>
-                <td class="custom-size"><span style="white-space:pre-line">{{$viettel_post[0]['TRACKINGS'][0]['NOI_DUNG'] ?? ''}}</span></td>
+                <td class="custom-size"><span style="white-space:pre-line">{{preg_replace("/\([^)]*\)/", "", ($viettel_post[0]['TRACKINGS'][0]['NOI_DUNG'] ?? '')) ?? ''}}</span></td>
             </tr>
         </tbody>
     </table>
@@ -74,7 +72,7 @@
                         <tr>
                             <td class="custom-size">{{$tracking['THOI_GIAN']}}</td>
                             <td class="custom-size">{{$tracking['STATUS_NAME']}}</th>
-                            <td class="custom-size"><span style="white-space: pre-line">{{$tracking['NOI_DUNG']}}</span></td>
+                            <td class="custom-size"><span style="white-space: pre-line">{{preg_replace("/\([^)]*\)/", "", $tracking['NOI_DUNG'])}}</span></td>
                         </tr>
                     @endforeach
                 @endforeach
