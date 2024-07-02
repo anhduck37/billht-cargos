@@ -35,7 +35,9 @@
                             @endif
                             <a class='btn btn-primary mb-2' href="{{route('orders.index')}}">Tìm vận đơn</a>
                             <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn khác</a>
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <a class='btn btn-primary mb-2' href="{{ route('orders.createViettelPost', ['id' => $order->id]) }}">Tạo vận đơn Viettel Post</a>
+                            @endif
                             <!-- <a class='btn btn-light mb-2' href="{{route('orders.index')}}">Thoát</a> -->
                         </div>
 
