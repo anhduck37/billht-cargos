@@ -53,7 +53,8 @@ class Order extends Model
         'quantity',
         'type',
         'partner_code',
-        'collection'
+        'collection',
+        'long'
     ];
     const CODE_VIETTEL_POST = 'VTP';
     const MAP_CODE_PARTNER = [
