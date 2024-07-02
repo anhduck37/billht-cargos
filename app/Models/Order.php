@@ -52,9 +52,14 @@ class Order extends Model
         'signator',
         'quantity',
         'type',
-        'partner_code'
+        'partner_code',
+        'collection',
+        'long'
     ];
     const CODE_VIETTEL_POST = 'VTP';
+    const MAP_CODE_PARTNER = [
+        self::CODE_VIETTEL_POST => 'VIETTEL POST'
+    ];
 	const ORDER_OK = 1;
 	const ORDER_RETURN = 2;
     const ORDER_CANCEL = 3;
