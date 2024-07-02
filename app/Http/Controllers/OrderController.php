@@ -416,7 +416,7 @@ class OrderController extends AppBaseController
                         $senderData = [
                             'sender_name' => $sheet->getCell( 'B' . $row )->getValue() ? $sheet->getCell( 'B' . $row )->getValue() : '',
                             'sender_phone' => $sheet->getCell( 'C' . $row )->getValue() ? $sheet->getCell( 'C' . $row )->getValue() : '' ,
-                            'address' => $sheet->getCell( 'Q' . $row )->getValue() ?? '',
+                            'address' => $sheet->getCell( 'S' . $row )->getValue() ?? '',
                         ];
                         // dd($senderData);
                         $receiverData = [
@@ -483,6 +483,10 @@ class OrderController extends AppBaseController
                                     $orderData['invoice_code'] = $orderData['order_code'];
                                 }
                             }
+                            $total = $sheet->getCell( 'Q' . $row )->getValue();
+                            $collection = $sheet->getCell( 'R' . $row )->getValue();
+                            $orderData['total'] = (int)$total;
+                            $orderData['collection'] = (int)$collection;
                             $order = Order::create($orderData);
                             if($order){
                                 $orders[] = $order;
@@ -490,12 +494,12 @@ class OrderController extends AppBaseController
                                 if(isset($order->receiver) && !empty($order->receiver->receiver_phone)) {
                                     dispatch(new SendSMSJob($order));
                                 }
-                                if($sheet->getCell( 'R' . $row )->getValue() ) {
-                                    $partnerCode = $sheet->getCell( 'R' . $row )->getValue();
+                                $partnerCode = $sheet->getCell( 'T' . $row )->getValue();
+                                if($partnerCode) {
                                     if($partnerCode == Order::CODE_VIETTEL_POST) {
-                                        dispatch(new SendOrderViettelPostJob($order));
-                                        // $sendOrderViettelPost = new SendOrderViettelPostJob($order);
-                                        // $sendOrderViettelPost->handle();
+                                        // dispatch(new SendOrderViettelPostJob($order));
+                                        $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                                        $sendOrderViettelPost->handle();
                                     }
                                 }
                                 app(OrderTrackingService::class)->create($order, $request->all());
@@ -829,5 +833,25 @@ class OrderController extends AppBaseController
             Flash::success('Tạo vận đơn sang Viettel Post thành công.');
         }
         return back();
+    }
+
+    public function createViettelPost(Request $request) {
+        $orderIds = $request->order_ids;
+        if(empty($orderIds)){
+            Flash::error('Bạn vui lòng chọn vận đơn');
+            return route('orders.index');
+        }
+        try {
+            $orders = Order::whereIn('id', $orderIds)->get();
+            foreach ($orders as $order){
+                // dispatch(new SendOrderViettelPostJob($order));
+                $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                $result = $sendOrderViettelPost->handle();
+            }
+
+        } catch (Exception $e) {
+            Flash::error($e->getMessage());
+        }
+        return route('orders.index');
     }
 }

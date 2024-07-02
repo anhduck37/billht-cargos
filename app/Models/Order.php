@@ -52,7 +52,8 @@ class Order extends Model
         'signator',
         'quantity',
         'type',
-        'partner_code'
+        'partner_code',
+        'collection'
     ];
     const CODE_VIETTEL_POST = 'VTP';
 	const ORDER_OK = 1;

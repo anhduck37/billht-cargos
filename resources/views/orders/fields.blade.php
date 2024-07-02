@@ -308,15 +308,23 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label>Số lượng</label>
                     <div class="form-control" style="border: none">
-                        <input type="number" class="form-control" name="order[quantity]" value="{{old('order.quantity') ? old('order.quantity') : ( isset($order->quantity) ? $order->quantity : 0)}}" placeholder="Số lượng">
+                        <input type="number" class="form-control" name="order[quantity]" value="{{old('order.quantity') ? old('order.quantity') : ( isset($order->quantity) ? $order->quantity : 1)}}" placeholder="Số lượng">
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Tiền thu hộ</label>
+                    <div class="form-control" style="border: none">
+                        <input type="number" class="form-control" name="order[collection]" value="{{old('order.collection') ? old('order.collection') : ( isset($order->collection) ? $order->collection : 0)}}" placeholder="Tiền thu hộ">
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
                 <div class="form-group mt-2">
                     <label>Loại hàng hóa</label>
                     <div class="form-control" style="border: none">

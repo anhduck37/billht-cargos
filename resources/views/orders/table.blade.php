@@ -271,6 +271,20 @@
                     },
                 });
             })
+            $('#createViettelPost').on('click', function () {
+                $.ajax({
+                    type: "POST",
+                    url: '/order/create-viettel-post',
+                    data: {'order_ids': dataPrint},
+                    beforeSend: function() {
+                        $('#createViettelPost').attr("disabled", true)
+                        $('#createViettelPost').html(`Tạo vận đơn Viettel Post <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
+                    },
+                    success: function (res) {
+                        window.location.href = res;
+                    },
+                });
+            })
             $('#sendZaloZNS').on('click', function () {
                 $.ajax({
                     type: "POST",
