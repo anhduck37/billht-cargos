@@ -7,6 +7,7 @@ use App\Partner;
 use App\PartnerConfig;
 use App\PartnerTracking;
 use GuzzleHttp\Client;
+use GuzzleHttp\RequestOptions;
 
 class ViettelPostService {
 
@@ -60,6 +61,19 @@ class ViettelPostService {
         $this->headers['Token'] = $partnerConfig->token ?? '';
         $senderAddress = ($order->sender->address ?? '') . ' ' .($order->sender->ward->ward_name ?? '') . ' ' . ($order->sender->city->city_name ?? '');
         $receiverAddress = ($order->receiver->address ?? '') . ' ' .($order->receiver->ward->ward_name ?? '') . ' ' . ($order->receiver->city->city_name ?? '');
+        $orderPayment = 1;
+        switch($order->payment_method) {
+            case Order::PAYMENT_METHOD_LAST:
+                if($order->collection > 0) {
+                    $orderPayment = 3;
+                }
+                break;
+            case Order::PAYMENT_METHOD_INTERNET_BANKING:
+            case Order::PAYMENT_METHOD_COD:
+                $orderPayment = 4;
+                break;
+        }
+        $orderService = $this->getPriceAllNlp($order);
         $formatData = [
             "ORDER_NUMBER" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
             "SENDER_FULLNAME" => $order->sender->sender_name ?? '',
@@ -84,10 +98,10 @@ class ViettelPostService {
             "PRODUCT_LENGTH" => $order->long,
             "PRODUCT_PRICE" => $order->total,
             "PRODUCT_TYPE" => $order->type == Order::ORDER_TYPE_DOCUMENT ? "TH" : "HH",
-            "ORDER_PAYMENT" => 4,
-            "ORDER_SERVICE" => "VCN",
+            "ORDER_PAYMENT" => $orderPayment,
+            "ORDER_SERVICE" => $orderService,
             "ORDER_NOTE" => $order->note,
-            "MONEY_COLLECTION" => 0,
+            "MONEY_COLLECTION" => $order->collection,
             "MONEY_TOTALFEE" => 0,
             "MONEY_FEECOD" => 0,
             "MONEY_FEEVAS" => 0,
@@ -177,5 +191,36 @@ class ViettelPostService {
             'location_currently' => $data['LOCALION_CURRENTLY']
         ];
         return $mapData;
+    }
+
+    public function getPriceAllNlp($order, $orderService = true) {
+        $path = '/v2/order/getPriceAllNlp';
+        $senderAddress = ($order->sender->address ?? '') . ' ' .($order->sender->ward->ward_name ?? '') . ' ' . ($order->sender->city->city_name ?? '');
+        $receiverAddress = ($order->receiver->address ?? '') . ' ' .($order->receiver->ward->ward_name ?? '') . ' ' . ($order->receiver->city->city_name ?? '');
+        $formatData = [
+            "SENDER_ADDRESS" => $senderAddress,
+            "RECEIVER_ADDRESS" => $receiverAddress,
+            "PRODUCT_TYPE" => $order->type == Order::ORDER_TYPE_DOCUMENT ? "TH" : "HH",
+            "PRODUCT_WEIGHT" => $order->weight,
+            "PRODUCT_WIDTH" => $order->width,
+            "PRODUCT_HEIGHT" => $order->height,
+            "PRODUCT_LENGTH" => $order->long,
+            "PRODUCT_PRICE" => $order->total,
+            "MONEY_COLLECTION" => $order->collection,
+            "TYPE" => 1
+        ];
+        $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
+        $this->headers['Token'] = $partnerConfig->token ?? '';
+        $client = new Client([
+            'headers' => $this->headers
+        ]);
+        $response = $client->post(
+            $this->url . $path,
+            [
+                'body' => json_encode($formatData)
+            ]
+        );
+        $result = json_decode($response->getBody()->getContents(), true);
+        return $orderService ? ($result['RESULT'][0]['MA_DV_CHINH'] ?? null) : $result;
     }
 }
