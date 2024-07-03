@@ -102,7 +102,7 @@
                                 <button style="width: 100%" id="sendSMS" type="button" class="btn btn-primary">Gửi SMS</button>
                             </div> --}}
                             <div class="col mb-1">
-                                <button style="width: 100%" id="createViettelPost" type="button" class="btn btn-primary">Tạo vận đơn Viettl Post</button>
+                                <button style="width: 100%" id="createViettelPost" type="button" class="btn btn-primary">Tạo vận đơn Viettel Post</button>
                             </div>
                             <div class="col mb-1">
                                 <button style="width: 100%" id="sendZaloZNS" type="button" class="btn btn-primary">Gửi Zalo</button>
