@@ -848,7 +848,7 @@ class OrderController extends AppBaseController
                 $sendOrderViettelPost = new SendOrderViettelPostJob($order);
                 $result = $sendOrderViettelPost->handle();
             }
-            Flash::success('Vận đơn đã được thêm vào danh sách chờ đẩy lên VIETTEL POST. Kiểm tra tại đây <a style="color: white" href="#">Link</a>');
+            Flash::success('Vận đơn đã được thêm vào danh sách chờ đẩy lên VIETTEL POST. Kiểm tra tại đây <a style="color: white" href="https://ht-cargos.com/vtp">Link</a>');
         } catch (Exception $e) {
             Flash::error($e->getMessage());
         }
