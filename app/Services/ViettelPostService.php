@@ -69,10 +69,10 @@ class ViettelPostService {
                 }
                 break;
             case Order::PAYMENT_METHOD_INTERNET_BANKING:
-            case Order::PAYMENT_METHOD_COD:
                 $orderPayment = 4;
                 break;
         }
+        if($order->collection > 0) $orderPayment = 3;
         $orderService = $this->getPriceAllNlp($order);
         $formatData = [
             "ORDER_NUMBER" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
