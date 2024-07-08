@@ -68,13 +68,14 @@
                         <td class="viettel-post-title" colspan="3">{{$item['STATUS_NAME']}}</td>
                     </tr> --}}
 
-                    @foreach($item['TRACKINGS'] as $tracking)
+                    {{-- @foreach($item['TRACKINGS'] as $tracking) --}}
+
                         <tr>
-                            <td class="custom-size">{{$tracking['THOI_GIAN']}}</td>
-                            <td class="custom-size">{{$tracking['STATUS_NAME']}}</th>
-                            <td class="custom-size"><span style="white-space: pre-line">{{preg_replace("/\([^)]*\)/", "", $tracking['NOI_DUNG'])}}</span></td>
+                            <td class="custom-size">{{$item['TRACKINGS'][((count($item['TRACKINGS']) - 1) > 0 ? count($item['TRACKINGS']) - 1 : 0)]['THOI_GIAN'] ?? ''}}</td>
+                            <td class="custom-size">{{$item['TRACKINGS'][((count($item['TRACKINGS']) - 1) > 0 ? count($item['TRACKINGS']) - 1 : 0)]['STATUS_NAME'] ?? ''}}</th>
+                            <td class="custom-size"><span style="white-space: pre-line">{{preg_replace("/\([^)]*\)/", "", ($item['TRACKINGS'][((count($item['TRACKINGS']) - 1) > 0 ? count($item['TRACKINGS']) - 1 : 0)]['NOI_DUNG'] ?? ''))}}</span></td>
                         </tr>
-                    @endforeach
+                    {{-- @endforeach --}}
                 @endforeach
             </tbody>
         </table>
