@@ -62,7 +62,7 @@
                     </tr>
                     <tr>
                         <td class="custom-weight custom-size">Ghi chú kết quả phát</td>
-                        <td class="custom-size"><span style="white-space:pre-line">{{$table1['ghi_chu_phat']}}</span></td>
+                        <td class="custom-size"><span style="white-space:pre-line">{{$table[0]['ghi_chu'] ?? ''}}</span></td>
                     </tr>
                 </tbody>
             </table>
