@@ -79,4 +79,23 @@ class Service extends Model
             ]
         ],
     ];
+
+    const VIETTEL_POST_LSTD = 'LSTD';
+    const VIETTEL_POST_LECO = 'LECO';
+
+    const VIETTEL_POST_SERVICE_ADD = [
+        self::VIETTEL_POST_LSTD => [
+            'type' => self::SERVICE_DOMESTIC,
+            'service_key' => self::CPN
+        ],
+        self::VIETTEL_POST_LECO => [
+            'type' => self::SERVICE_DOMESTIC,
+            'service_key' => self::TK
+        ]
+    ];
+
+    const VIETTEL_POST_SERVICE = [
+        self::CPN => 'VCN',
+        self::TK => 'VTK',
+    ];
 }

@@ -58,7 +58,7 @@ class OrderService
                 $data = ['type' => $key, 'service_key' => $service_key];
             }
         }
-        return $data;
+        return Service::VIETTEL_POST_SERVICE_ADD[$service] ?? $data;
     }
 
     public function getType($type) {

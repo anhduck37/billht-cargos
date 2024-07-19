@@ -1,11 +1,13 @@
 <?php
 namespace App\Services;
 
+use App\City;
 use App\Models\Order;
 use App\OrderPartnerLog;
 use App\Partner;
 use App\PartnerConfig;
 use App\PartnerTracking;
+use App\Service;
 use GuzzleHttp\Client;
 use GuzzleHttp\RequestOptions;
 
@@ -18,12 +20,14 @@ class ViettelPostService {
     ];
     public $url;
     private $api;
+    private $service_viettel;
 
-    public function __construct() {
+    public function __construct($service_viettel=null) {
         $this->username = config('viettel_post.username');
         $this->password = config('viettel_post.password');
         $this->url = config('viettel_post.url');
         $this->api = config('viettel_post.api');
+        $this->service_viettel = $service_viettel;
     }
     
     public function refreshToken() {
@@ -75,6 +79,7 @@ class ViettelPostService {
         if($order->collection > 0) $orderPayment = 3;
         $orderService = $this->getPriceAllNlp($order);
         $formatData = [
+            "GROUPADDRESS_ID" => $this->getGroupId($senderAddress),
             "ORDER_NUMBER" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
             "SENDER_FULLNAME" => $order->sender->sender_name ?? '',
             "SENDER_ADDRESS" => !empty(trim($senderAddress)) ? $senderAddress : '',
@@ -92,14 +97,14 @@ class ViettelPostService {
             "RECEIVER_PROVINCE" => $order->receiver->city->city_code ?? 0,
             "PRODUCT_NAME" => $order->note,
             "PRODUCT_QUANTITY" => $order->quantity,
-            "PRODUCT_WEIGHT" => $order->weight,
+            "PRODUCT_WEIGHT" => $this->service_viettel ? 50 : $order->weight,
             "PRODUCT_WIDTH" => $order->width,
             "PRODUCT_HEIGHT" => $order->height,
             "PRODUCT_LENGTH" => $order->long,
             "PRODUCT_PRICE" => $order->total,
             "PRODUCT_TYPE" => $order->type == Order::ORDER_TYPE_DOCUMENT ? "TH" : "HH",
             "ORDER_PAYMENT" => $orderPayment,
-            "ORDER_SERVICE" => $orderService,
+            "ORDER_SERVICE" => $this->service_viettel ?? $orderService,
             "ORDER_NOTE" => $order->note,
             "MONEY_COLLECTION" => $order->collection,
             "MONEY_TOTALFEE" => 0,
@@ -222,5 +227,45 @@ class ViettelPostService {
         );
         $result = json_decode($response->getBody()->getContents(), true);
         return $orderService ? ($result['RESULT'][0]['MA_DV_CHINH'] ?? null) : $result;
+    }
+
+    public function getGroupId($address) {
+        $replaceAddress = $this->stripVN($address);
+        $address = strtoupper($replaceAddress);
+        $groupId = 0;
+        $isBreak = false;
+        foreach(City::MAP_CITY_VIETTEL_POST as $city) {
+            foreach($city['city'] as $item) {
+                $replaceItem = $this->stripVN($item);
+                if(str_contains($address, $replaceItem)) {
+                    $groupId = $city['group_id'];
+                    $isBreak = true;
+                    break;
+                }
+            }
+            if($isBreak) {
+                break;
+            }
+        }
+        return $groupId;
+    }
+
+    public function stripVN($str) {
+        $str = preg_replace("/(à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ)/", 'a', $str);
+        $str = preg_replace("/(è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ)/", 'e', $str);
+        $str = preg_replace("/(ì|í|ị|ỉ|ĩ)/", 'i', $str);
+        $str = preg_replace("/(ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ)/", 'o', $str);
+        $str = preg_replace("/(ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ)/", 'u', $str);
+        $str = preg_replace("/(ỳ|ý|ỵ|ỷ|ỹ)/", 'y', $str);
+        $str = preg_replace("/(đ)/", 'd', $str);
+    
+        $str = preg_replace("/(À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ)/", 'A', $str);
+        $str = preg_replace("/(È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ)/", 'E', $str);
+        $str = preg_replace("/(Ì|Í|Ị|Ỉ|Ĩ)/", 'I', $str);
+        $str = preg_replace("/(Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ)/", 'O', $str);
+        $str = preg_replace("/(Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ)/", 'U', $str);
+        $str = preg_replace("/(Ỳ|Ý|Ỵ|Ỷ|Ỹ)/", 'Y', $str);
+        $str = preg_replace("/(Đ)/", 'D', $str);
+        return $str;
     }
 }
