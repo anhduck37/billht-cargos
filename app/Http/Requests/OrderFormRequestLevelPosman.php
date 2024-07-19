@@ -26,7 +26,21 @@ class OrderFormRequestLevelPosman extends FormRequest
     public function rules()
     {
         $formData = request()->all();
-        $rule = [];
+        $rule = [
+            'sender.sender_name' => 'required',
+            'sender.sender_phone' => 'required',
+            'sender.address' => 'required',
+            'receiver.receiver_name' => 'required',
+            'receiver.receiver_phone' => 'required',
+            'receiver.address' => 'required',
+            'sender.city_id' => 'required',
+            'sender.district_id' => 'required',
+            'sender.ward_id' => 'required',
+            'receiver.city_id' => 'required',
+            'receiver.district_id' => 'required',
+            'receiver.ward_id' => 'required'
+        ];
+
         if(!empty($formData['order_id'])) {
             $order = Order::find($formData['order_id']);
             if(auth()->user()->level == User::LEVEL_POSTMAN && !isset($order->image)) {
@@ -60,7 +74,19 @@ class OrderFormRequestLevelPosman extends FormRequest
             'order.invoice_code.required' => 'Nhập Mã vận đơn.',
             'order.delivery_status.required' => 'Tình trạng vận chuyển là bắt buộc.',
             'order.signator.required' => 'Người ký nhận là bắt buộc.',
-            'order.invoice_code.unique' => 'Mã vận đơn đã tồn tại.'
+            'order.invoice_code.unique' => 'Mã vận đơn đã tồn tại.',
+            'sender.sender_name.required' => 'Tên cá nhân/ Công ty là bắt buộc',
+            'sender.sender_phone.required' => 'Số điện thoại là bắt buộc',
+            'sender.address.required' => 'Địa chỉ là bắt buộc',
+            'receiver.receiver_name.required' => 'Tên cá nhân/ Công ty là bắt buộc',
+            'receiver.receiver_phone.required' => 'Số điện thoại là bắt buộc',
+            'receiver.address.required' => 'Địa chỉ là bắt buộc',
+            'receiver.city_id.required' => 'Tỉnh / Thành phố  là bắt buộc',
+            'receiver.district_id.required' => 'Huyện / Quận là bắt buộc',
+            'receiver.ward_id' => 'Xã / Phường là bắt buộc',
+            'sender.city_id' => 'Tỉnh / Thành phố  là bắt buộc',
+            'sender.district_id' => 'Huyện / Quận là bắt buộc',
+            'sender.ward_id' => 'Xã / Phường là bắt buộc'
         ];
     }
 }

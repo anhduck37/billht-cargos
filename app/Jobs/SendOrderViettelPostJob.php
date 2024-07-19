@@ -20,14 +20,16 @@ class SendOrderViettelPostJob implements ShouldQueue
      */
 
     public $order;
-    public function __construct($order)
+    public $service_viettel;
+    public function __construct($order, $service_viettel= null)
     {
         $this->order = $order;
+        $this->service_viettel = $service_viettel;
     }
 
     public function handle()
     {
-        $viettelPostService = new ViettelPostService();
+        $viettelPostService = new ViettelPostService($this->service_viettel);
         return $viettelPostService->createOrder($this->order);
     }
 }

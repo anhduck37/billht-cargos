@@ -497,8 +497,12 @@ class OrderController extends AppBaseController
                                 $partnerCode = $sheet->getCell( 'T' . $row )->getValue();
                                 if($partnerCode) {
                                     if($partnerCode == Order::CODE_VIETTEL_POST) {
-                                        // dispatch(new SendOrderViettelPostJob($order));
-                                        $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                                        $infoService = app(OrderService::class)->getKeyService($sheet->getCell( 'J' . $row )->getValue());
+                                        $serviceField = trim($sheet->getCell( 'J' . $row )->getValue());
+                                        // $serviceViettel = isset(Service::VIETTEL_POST_SERVICE_ADD[$serviceField]) ? $serviceField : (Service::VIETTEL_POST_SERVICE[$infoService['service_key']] ?? null);
+                                        // dispatch(new SendOrderViettelPostJob($order, $serviceViettel));
+                                        $serviceViettel = Service::VIETTEL_POST_SERVICE[$infoService['service_key']] ?? null;
+                                        $sendOrderViettelPost = new SendOrderViettelPostJob($order, $serviceViettel);
                                         $sendOrderViettelPost->handle();
                                     }
                                 }
