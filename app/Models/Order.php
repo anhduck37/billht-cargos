@@ -58,7 +58,7 @@ class Order extends Model
     ];
     const CODE_VIETTEL_POST = 'VTP';
     const MAP_CODE_PARTNER = [
-        self::CODE_VIETTEL_POST => 'VIETTEL POST'
+        self::CODE_VIETTEL_POST => 'EE'
     ];
 	const ORDER_OK = 1;
 	const ORDER_RETURN = 2;

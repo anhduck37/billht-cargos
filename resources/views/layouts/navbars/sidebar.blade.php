@@ -145,6 +145,11 @@
                         <i class="fas fa-comment-dots" style="color: #f4645f;"></i> Tra cứu gửi tin ZALO
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link @if(Request::url() == 'https://ht-cargos.com/vtp') active-custom @endif" href="https://ht-cargos.com/vtp" target="_blank" rel="noopener noreferrer">
+                        <i class="fas fa-sync" style="color: #f4645f;"></i> Đồng bộ VTP
+                    </a>
+                </li>
                 @endif
             </ul>
 
