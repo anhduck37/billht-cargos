@@ -38,7 +38,10 @@ class OrderFormRequestLevelPosman extends FormRequest
             'sender.ward_id' => 'required',
             'receiver.city_id' => 'required',
             'receiver.district_id' => 'required',
-            'receiver.ward_id' => 'required'
+            'receiver.ward_id' => 'required',
+            'order.note' => 'required',
+            'order.type' => 'required',
+            'order.weight' => 'required'
         ];
 
         if(!empty($formData['order_id'])) {
@@ -86,7 +89,10 @@ class OrderFormRequestLevelPosman extends FormRequest
             'receiver.ward_id' => 'Xã / Phường là bắt buộc',
             'sender.city_id' => 'Tỉnh / Thành phố  là bắt buộc',
             'sender.district_id' => 'Huyện / Quận là bắt buộc',
-            'sender.ward_id' => 'Xã / Phường là bắt buộc'
+            'sender.ward_id' => 'Xã / Phường là bắt buộc',
+            'order.note.required' => 'Nội dung là bắt buộc',
+            'order.type.required' => 'Loại hàng hóa là bắt buộc',
+            'order.weight.required' => 'Loại hàng hóa là bắt buộc'
         ];
     }
 }

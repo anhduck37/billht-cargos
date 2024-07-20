@@ -269,6 +269,11 @@
                 <div class="col-md-3 mb-3">
                     <label for="validationDefault01">Trọng lượng</label>
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[weight]" placeholder="Trọng lượng" value="{{old('order.weight') ? old('order.weight') :$order->weight}}">
+                    @if ($errors->has('order.weight'))
+                        <span class="invalid-feedback" style="display: block;" role="alert">
+                            <strong>{{ $errors->first('order.weight') }}</strong>
+                        </span>
+            @endif
                 </div>
                 <div class="col-md-6 mb-3">
                     <div class="row">
@@ -334,6 +339,11 @@
                             <label class="form-check-label">{{$label}}</label>
                         </div>
                         @endforeach
+                        @if ($errors->has('order.type'))
+                        <span class="invalid-feedback" style="display: block;" role="alert">
+                            <strong>{{ $errors->first('order.type') }}</strong>
+                        </span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -341,6 +351,11 @@
         <div class="form-group">
             <label>Nội dung</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
+            @if ($errors->has('order.note'))
+                        <span class="invalid-feedback" style="display: block;" role="alert">
+                            <strong>{{ $errors->first('order.note') }}</strong>
+                        </span>
+            @endif
         </div>
         @endif
         <div id="selectTypeImage" class="mt-2 mb-2" @if(!$errors->has('image_data')) style="display: none" @endif>
