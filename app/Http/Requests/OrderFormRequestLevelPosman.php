@@ -92,7 +92,7 @@ class OrderFormRequestLevelPosman extends FormRequest
             'sender.ward_id' => 'Xã / Phường là bắt buộc',
             'order.note.required' => 'Nội dung là bắt buộc',
             'order.type.required' => 'Loại hàng hóa là bắt buộc',
-            'order.weight.required' => 'Loại hàng hóa là bắt buộc'
+            'order.weight.required' => 'Cân nặng là bắt buộc'
         ];
     }
 }
