@@ -79,10 +79,9 @@ class ViettelPostService {
         if($order->collection > 0) $orderPayment = 3;
         $orderService = $this->getPriceAllNlp($order);
         $formatData = [
-            "GROUPADDRESS_ID" => $this->getGroupId($senderAddress),
             "ORDER_NUMBER" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
             "SENDER_FULLNAME" => $order->sender->sender_name ?? '',
-            "SENDER_ADDRESS" => !empty(trim($senderAddress)) ? $senderAddress : '',
+            "SENDER_ADDRESS" => $this->getGroupId($senderAddress) ?? (!empty(trim($senderAddress)) ? $senderAddress : ''),
             "SENDER_PHONE" => $order->sender->sender_phone ?? '',
             "SENDER_EMAIL" => $order->sender->sender_email ?? '',
             "SENDER_WARD" => $order->sender->ward->ward_code ?? 0,

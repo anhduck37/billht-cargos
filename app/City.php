@@ -44,7 +44,7 @@ class City extends Model
                 'TRÀ VINH',
                 'VĨNH LONG',
             ],
-            'group_id' => "26941"
+            'group_id' => "A51A Bạch Đằng, phường 2, Tân Bình, HCM"
         ],
         [
             'city' => [
@@ -83,7 +83,7 @@ class City extends Model
                 'YÊN BÁI',
                 'HÀ GIANG'
             ],
-            'group_id' => "00349"
+            'group_id' => "27/71 Hoàng Văn Thái, Khương Trung, Thanh Xuân, Hà Nội"
         ],
     ];
 }
