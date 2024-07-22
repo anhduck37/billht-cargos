@@ -44,7 +44,7 @@ class City extends Model
                 'TRÀ VINH',
                 'VĨNH LONG',
             ],
-            'group_id' => "A51A Bạch Đằng, phường 2, Tân Bình, HCM"
+            'group_id' => "A51A Bạch Đằng, phường 2, Tân Bình, Hồ Chí Minh"
         ],
         [
             'city' => [

@@ -69,7 +69,7 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <label>Địa chỉ</label>
+                        <label>Số nhà, Tên đường</label>
                         <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="sender[address]" value="{{old('sender.sender_email') ? old('sender.sender_email') : (isset($order->sender) ? $order->sender->address : '') }}" class="form-control" />
                     </div>
                     <div class="form-group col-md-4">
@@ -155,7 +155,7 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label>Địa chỉ</label>
+                        <label>Số nhà, Tên đường (*)</label>
                         <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="receiver[address]" value="{{old('receiver.address') ? old('receiver.address') : (isset($order->receiver) ? $order->receiver->address : '')}}" class="form-control" />
                         @if ($errors->has('receiver.address'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
@@ -381,7 +381,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label>Nội dung gửi(*)</label>
+            <label>Nội dung gửi (*)</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
             @if ($errors->has('order.note'))
                         <span class="invalid-feedback" style="display: block;" role="alert">
