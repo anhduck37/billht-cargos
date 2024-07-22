@@ -69,8 +69,13 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <label>Số nhà, Tên đường</label>
+                        <label>Số nhà, Tên đường (*)</label>
                         <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="sender[address]" value="{{old('sender.sender_email') ? old('sender.sender_email') : (isset($order->sender) ? $order->sender->address : '') }}" class="form-control" />
+                        @if ($errors->has('sender.address'))
+                            <span class="invalid-feedback" style="display: block;" role="alert">
+                                <strong style="color: red;">{!! $errors->first('sender.address') !!}</strong>
+                            </span>
+                        @endif
                     </div>
                     <div class="form-group col-md-4">
                         <label>Email</label>
@@ -300,7 +305,7 @@
             <div class="form-row">
                 <div class="col-md-3 mb-3">
                     <label for="validationDefault01">Trọng lượng</label>
-                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[weight]" placeholder="Trọng lượng" value="{{old('order.weight') ? old('order.weight') :$order->weight}}">
+                    <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[weight]" placeholder="Trọng lượng" value="{{old('order.weight') ? old('order.weight') : ( isset($order->weight) ? $order->weight : 0)}}">
                     @if ($errors->has('order.weight'))
                         <span class="invalid-feedback" style="display: block;" role="alert">
                             <strong style="color: red;">{!! $errors->first('order.weight') !!}</strong>
