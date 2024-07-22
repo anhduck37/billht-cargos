@@ -43,7 +43,7 @@ class Service extends Model
 
     const SERVICE_MAP = [
         self::SERVICE_DOMESTIC => [
-            'name' => 'Dịch vụ trong nước (*)',
+            'name' => '<span style="color: red; font-weight: bold;">Dịch vụ trong nước * (Bắt buộc)</span>',
             'value' => [
                 self::CPN => 'Chuyển phát nhanh',
                 self::PTN => 'Phát trong ngày',

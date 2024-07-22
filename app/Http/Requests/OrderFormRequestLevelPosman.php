@@ -23,9 +23,13 @@ class OrderFormRequestLevelPosman extends FormRequest
      *
      * @return array
      */
-    public function rules()
-    {
-        $formData = request()->all();
+public function rules()
+{
+    $formData = request()->all();
+    $rule = [];
+
+    // Áp dụng các trường bắt buộc chỉ cho User::LEVEL_USER
+    if (auth()->user()->level == User::LEVEL_USER) {
         $rule = [
             'sender.sender_name' => 'required',
             'sender.sender_phone' => 'required',
@@ -41,34 +45,37 @@ class OrderFormRequestLevelPosman extends FormRequest
             'receiver.ward_id' => 'required',
             'order.note' => 'required',
             'order.type' => 'required',
-            'order.weight' => 'required'
+            // 'order.weight' => 'required'
         ];
-
-        if(!empty($formData['order_id'])) {
-            $order = Order::find($formData['order_id']);
-            if(auth()->user()->level == User::LEVEL_POSTMAN && !isset($order->image)) {
-                $rule['image_data'] = 'required';
-            }
-            if($order && isset($formData['order']) && isset($formData['order']['invoice_code']) && $order->order_code != $formData['order']['invoice_code']) {
-                $rule['order.invoice_code'] = 'unique:orders,order_code';
-            }
-        } else {
-            // $rule['order.invoice_code'] = 'unique:orders,order_code';
-            if(auth()->user()->level == User::LEVEL_POSTMAN) {
-                $rule['image_data'] = 'required';
-            }
-        }
-        if(auth()->user()->level == User::LEVEL_POSTMAN) {
-            if(isset($rule['order.invoice_code'])) {
-                $rule['order.invoice_code'] .= '|required';
-            } else {
-                $rule['order.invoice_code'] = 'required';
-            }
-            $rule['order.delivery_status'] = 'required';
-            $rule['order.signator'] = 'required';
-        }
-        return $rule;
     }
+
+    // Các quy tắc validation khác cho các level khác
+    if(!empty($formData['order_id'])) {
+        $order = Order::find($formData['order_id']);
+        if(auth()->user()->level == User::LEVEL_POSTMAN && !isset($order->image)) {
+            $rule['image_data'] = 'required';
+        }
+        if($order && isset($formData['order']) && isset($formData['order']['invoice_code']) && $order->order_code != $formData['order']['invoice_code']) {
+            $rule['order.invoice_code'] = 'unique:orders,order_code';
+        }
+    } else {
+        if(auth()->user()->level == User::LEVEL_POSTMAN) {
+            $rule['image_data'] = 'required';
+        }
+    }
+
+    if(auth()->user()->level == User::LEVEL_POSTMAN) {
+        if(isset($rule['order.invoice_code'])) {
+            $rule['order.invoice_code'] .= '|required';
+        } else {
+            $rule['order.invoice_code'] = 'required';
+        }
+        $rule['order.delivery_status'] = 'required';
+        $rule['order.signator'] = 'required';
+    }
+
+    return $rule;
+}
 
     public function messages()
     {
@@ -86,10 +93,10 @@ class OrderFormRequestLevelPosman extends FormRequest
             'receiver.address.required' => 'Địa chỉ là bắt buộc',
             'receiver.city_id.required' => 'Tỉnh / Thành phố  là bắt buộc',
             'receiver.district_id.required' => 'Huyện / Quận là bắt buộc',
-            'receiver.ward_id' => 'Xã / Phường là bắt buộc',
-            'sender.city_id' => 'Tỉnh / Thành phố  là bắt buộc',
-            'sender.district_id' => 'Huyện / Quận là bắt buộc',
-            'sender.ward_id' => 'Xã / Phường là bắt buộc',
+            'receiver.ward_id.required' => 'Xã / Phường là bắt buộc',
+            'sender.city_id.required' => 'Tỉnh / Thành phố  là bắt buộc',
+            'sender.district_id.required' => 'Huyện / Quận là bắt buộc',
+            'sender.ward_id.required' => 'Xã / Phường là bắt buộc',
             'order.note.required' => 'Nội dung là bắt buộc',
             'order.type.required' => 'Loại hàng hóa là bắt buộc',
             'order.weight.required' => 'Cân nặng là bắt buộc'
