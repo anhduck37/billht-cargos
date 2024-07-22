@@ -43,7 +43,7 @@
                         @endif
                     </div>
                     <div class="form-group col-md-4">
-                            <label>Huyện / Quận (*)</label>
+                            <label>Huyện / Quận</label>
                             <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[district_id]" id="sender_district" class="form-control">
                                 <option value=""></option>
                             </select>
@@ -54,7 +54,7 @@
                         @endif
                     </div>
                     <div class="form-group col-md-4">
-                        <label>Xã / Phường (*)</label>
+                        <label>Xã / Phường</label>
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[ward_id]" id="sender_ward" class="form-control">
                             <option value=""></option>
                         </select>
