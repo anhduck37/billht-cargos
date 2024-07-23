@@ -825,10 +825,12 @@ class OrderController extends AppBaseController
 
     public function createOrderViettelPost($id) {
         $order = Order::findOrFail($id);
-        if($order->order_partner_code) {
-            Flash::error('Vận đơn đã có trên Viettel Post.');
-            return back();
-        }
+        // check đơn trùng trên viettel
+        // if($order->order_partner_code) {
+        //     Flash::error('Vận đơn đã có trên Viettel Post.');
+        //     return back();
+        // }
+        // check đơn trùng trên viettel
         $sendOrderViettelPost = new SendOrderViettelPostJob($order);
         $result = $sendOrderViettelPost->handle();
         if($result['error']) {
@@ -848,9 +850,9 @@ class OrderController extends AppBaseController
         try {
             $orders = Order::whereIn('id', $orderIds)->get();
             foreach ($orders as $order){
-                // dispatch(new SendOrderViettelPostJob($order));
-                $sendOrderViettelPost = new SendOrderViettelPostJob($order);
-                $result = $sendOrderViettelPost->handle();
+                dispatch(new SendOrderViettelPostJob($order));
+                // $sendOrderViettelPost = new SendOrderViettelPostJob($order);
+                // $result = $sendOrderViettelPost->handle();
             }
             Flash::success('Vận đơn đã được thêm vào danh sách chờ đẩy lên VIETTEL POST. Kiểm tra tại đây <a style="color: white" href="https://ht-cargos.com/vtp">Link</a>');
         } catch (Exception $e) {

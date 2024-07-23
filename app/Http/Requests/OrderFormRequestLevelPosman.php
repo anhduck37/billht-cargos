@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Order;
+use App\Service;
 use App\User;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -79,7 +80,7 @@ public function rules()
 
     public function messages()
     {
-        return [
+        $messages = [
             'image_data.required' => 'Chụp ảnh là bắt buộc.',
             'order.invoice_code.required' => 'Nhập Mã vận đơn.',
             'order.delivery_status.required' => 'Tình trạng vận chuyển là bắt buộc.',
@@ -101,5 +102,7 @@ public function rules()
             'order.type.required' => 'Loại hàng hóa là bắt buộc',
             'order.weight.required' => 'Cân nặng là bắt buộc'
         ];
+            $messages['order_service.'. Service::SERVICE_DOMESTIC.'.required'] = 'Dịch vụ trong nước là bắt buộc';
+            return $messages;
     }
 }

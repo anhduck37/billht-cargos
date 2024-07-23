@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Service;
 use App\Services\ViettelPostService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,6 +30,18 @@ class SendOrderViettelPostJob implements ShouldQueue
 
     public function handle()
     {
+        if(empty($service_viettel)) {
+            $orderService = Service::where('order_id', $this->order->id)
+            ->where('type', Service::SERVICE_DOMESTIC)
+            ->where(function($q) {
+                $q->where('service', Service::CPN)
+                ->orWhere('service', Service::TK);
+            })->first();
+            if($orderService) {
+                $this->service_viettel = Service::VIETTEL_POST_SERVICE[$orderService->service];
+            }
+        }
+        
         $viettelPostService = new ViettelPostService($this->service_viettel);
         return $viettelPostService->createOrder($this->order);
     }
