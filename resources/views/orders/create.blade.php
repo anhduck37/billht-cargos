@@ -13,6 +13,7 @@
                         <div class="row align-items-center">
                             <div class="col">
                                 <h1 class="text-center">Tạo vận đơn mới</h1>
+                                <center><p style="color: red;">(Lưu ý: Tất cả các trường được đánh dấu * là bắt buộc)</p></center>
                             </div>
                         </div>
                     </div>

@@ -96,7 +96,7 @@ class ViettelPostService {
             "RECEIVER_PROVINCE" => $order->receiver->city->city_code ?? 0,
             "PRODUCT_NAME" => $order->note,
             "PRODUCT_QUANTITY" => $order->quantity,
-            "PRODUCT_WEIGHT" => $this->service_viettel ? 50 : $order->weight,
+            "PRODUCT_WEIGHT" =>$order->weight,
             "PRODUCT_WIDTH" => $order->width,
             "PRODUCT_HEIGHT" => $order->height,
             "PRODUCT_LENGTH" => $order->long,

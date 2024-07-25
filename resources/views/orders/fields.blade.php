@@ -4,10 +4,10 @@
         <div class="card">
             <div class="card-body">
                 <h3 class="card-title">Thông tin người gửi</h3>
-                <p style="color: red;">(Lưu ý: Tất cả các trường được đánh dấu * là bắt buộc)</p>
+                <!-- <p style="color: red;">(Lưu ý: Tất cả các trường được đánh dấu * là bắt buộc)</p> -->
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label>Tên cá nhân/ Công ty (*)</label>
+                        <label>Tên cá nhân/ Công ty <span style="color: red; font-weight: bold;">(*)</span></label>
                         <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="sender[sender_name]" value="{{old('sender.sender_name') ? old('sender.sender_name') : (isset($order->sender) ? $order->sender->sender_name : '') }}" class="form-control" />
                         @if ($errors->has('sender.sender_name'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
@@ -16,7 +16,7 @@
                         @endif
                     </div>
                     <div class="form-group col-md-6">
-                        <label>Số điện thoại (*)</label>
+                        <label>Số điện thoại <span style="color: red; font-weight: bold;">(*)</span></label>
                         <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="number" name="sender[sender_phone]" value="{{old('sender.sender_phone') ? old('sender.sender_phone') : (isset($order->sender) ? $order->sender->sender_phone : '') }}" class="form-control" />
                         @if ($errors->has('sender.sender_phone'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
@@ -29,7 +29,7 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <label>Tỉnh / Thành phố (*)</label>
+                        <label>Tỉnh / Thành phố <span style="color: red; font-weight: bold;">(*)</span></label>
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[city_id]" id="sender_city" class="form-control">
                             <option value=""></option>
                             @foreach($citys as $city)
@@ -69,8 +69,8 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <label>Số nhà, Tên đường (*)</label>
-                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="sender[address]" value="{{old('sender.sender_email') ? old('sender.sender_email') : (isset($order->sender) ? $order->sender->address : '') }}" class="form-control" />
+                        <label>Số nhà, Tên đường <span style="color: red; font-weight: bold;">(*)</span></label>
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="sender[address]" value="{{old('sender.address') ? old('sender.address') : (isset($order->sender) ? $order->sender->address : '') }}" class="form-control" />
                         @if ($errors->has('sender.address'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
                                 <strong style="color: red;">{!! $errors->first('sender.address') !!}</strong>
@@ -97,10 +97,10 @@
         <div class="card">
             <div class="card-body">
                 <h3 class="card-title">Thông tin người nhận </h3>
-                <p style="color: red;">(Lưu ý: Tất cả các trường được đánh dấu * là bắt buộc)</p>
+                <!-- <p style="color: red;">(Lưu ý: Tất cả các trường được đánh dấu * là bắt buộc)</p> -->
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label>Tên cá nhân/ Công ty (*)</label>
+                        <label>Tên cá nhân/ Công ty <span style="color: red; font-weight: bold;">(*)</span></label>
                         <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="receiver[receiver_name]" value="{{old('receiver.receiver_name') ? old('receiver.receiver_name') : (isset($order->receiver) ? $order->receiver->receiver_name : '')}}" class="form-control" />
                         @if ($errors->has('receiver.receiver_name'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
@@ -109,7 +109,7 @@
                         @endif
                     </div>
                     <div class="form-group col-md-6">
-                        <label>Số điện thoại (*)</label>
+                        <label>Số điện thoại <span style="color: red; font-weight: bold;">(*)</span></label>
                         <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="number" name="receiver[receiver_phone]" value="{{old('receiver.receiver_phone') ? old('receiver.receiver_phone') : (isset($order->receiver) ? $order->receiver->receiver_phone : '')}}" class="form-control" />
                         @if ($errors->has('receiver.receiver_phone'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
@@ -121,7 +121,7 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-4">
-                        <label>Tỉnh / Thành phố (*)</label>
+                        <label>Tỉnh / Thành phố <span style="color: red; font-weight: bold;">(*)</span></label>
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="receiver[city_id]" id="receiver_city" class="form-control">
                             <option value=""></option>
                             @foreach($citys as $city)
@@ -135,7 +135,7 @@
                         @endif
                     </div>
                     <div class="form-group col-md-4">
-                        <label>Huyện / Quận (*)</label>
+                        <label>Huyện / Quận <span style="color: red; font-weight: bold;">(*)</span></label>
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="receiver[district_id]" id="receiver_district" class="form-control">
                             <option value=""></option>
                         </select>
@@ -146,7 +146,7 @@
                         @endif
                     </div>
                     <div class="form-group col-md-4">
-                        <label>Xã / Phường (*)</label>
+                        <label>Xã / Phường <span style="color: red; font-weight: bold;">(*)</span></label>
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="receiver[ward_id]" id="receiver_ward" class="form-control">
                             <option value=""></option>
                         </select>
@@ -160,7 +160,7 @@
 
                 <div class="form-row">
                     <div class="form-group col-md-6">
-                        <label>Số nhà, Tên đường (*)</label>
+                        <label>Số nhà, Tên đường <span style="color: red; font-weight: bold;">(*)</span></label>
                         <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" name="receiver[address]" value="{{old('receiver.address') ? old('receiver.address') : (isset($order->receiver) ? $order->receiver->address : '')}}" class="form-control" />
                         @if ($errors->has('receiver.address'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
@@ -368,7 +368,7 @@
             </div>
             <div class="col-md-4">
                 <div class="form-group mt-2">
-                    <label>Loại hàng hóa (*)</label>
+                    <label>Loại hàng hóa <span style="color: red; font-weight: bold;">(*)</span></label>
                     <div class="form-control" style="border: none">
                         @foreach(\App\Models\Order::MAP_ORDER_TYPE as $value => $label)
                         <div class="form-check form-check-inline">
@@ -386,7 +386,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label>Nội dung gửi (*) (VD: Thư, tên hàng hóa,..)</label>
+            <label>Nội dung gửi <span style="color: red; font-weight: bold;">(*)</span> (VD: Thư, tên hàng hóa,..)</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
             @if ($errors->has('order.note'))
                         <span class="invalid-feedback" style="display: block;" role="alert">

@@ -46,7 +46,8 @@
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Ghi chú kết quả phát</td>
-                <td class="custom-size"><span style="white-space:pre-line">{{preg_replace("/\([^)]*\)/", "", ($viettel_post[0]['TRACKINGS'][3]['NOI_DUNG'] ?? '')) ?? ''}}</span></td>
+                <td class="custom-size"><span style="white-space:pre-line">{{ preg_replace("/\([^)]*\)/", "", $viettel_post[0]['TRACKINGS'][count($viettel_post[0]['TRACKINGS']) - 1]['NOI_DUNG'] ?? '') }}</span></td>
+                
             </tr>
         </tbody>
     </table>
