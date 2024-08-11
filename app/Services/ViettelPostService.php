@@ -145,7 +145,7 @@ class ViettelPostService {
     }
 
     public function webhookTracking($data) {
-        app(LogFileService::class)->writeLog('viett_post', json_encode($data));
+        app(LogFileService::class)->writeLog('viettel_post', json_encode($data));
         $dataWebhook = isset($data['DATA']['ORDER_NUMBER']) ? $data['DATA'] : null;
         if(!$dataWebhook) return;
 
@@ -153,11 +153,12 @@ class ViettelPostService {
         if(!$order) {
             return;
         }
-        $dataPartnerTracking = $this->formatDataWebhook($order, $dataWebhook);
-        $partnerTracking = new PartnerTracking();
-        $partnerTracking->fill($dataPartnerTracking);
-        $partnerTracking->save();
-        return $partnerTracking;
+
+        if(isset(PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']])) {
+            $order->delivery_status = PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']];
+            $order->save();
+        }
+        return;
     }
 
     public function tracking($order) {

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Models\Order;
 use Illuminate\Database\Eloquent\Model;
 
 class PartnerConfig extends Model
@@ -49,5 +50,21 @@ class PartnerConfig extends Model
         510  => 'Hủy giao hàng',
         515  => 'Chuyển phát Bưu điện phê duyệt lệnh hoàn trả',
         550  => 'Yêu cầu Giao hàng Bưu điện gửi lại'
+    ];
+
+    const MAP_STATUS_VIETTEL_POST = [
+        105 => Order::DELIVERY_STATUS_RECEIVED,
+        200 => Order::DELIVERY_STATUS_RETURN,
+        202 => Order::DELIVERY_STATUS_RETURN,
+        300 => Order::DELIVERY_STATUS_RETURN,
+        320 => Order::DELIVERY_STATUS_RETURN, 
+        400 => Order::DELIVERY_STATUS_RETURN,
+        500 => Order::DELIVERY_STATUS_PERSON_CHARGE, 
+        506 => Order::DELIVERY_STATUS_PERSON_CHARGE,
+        570 => Order::DELIVERY_STATUS_PERSON_CHARGE, 
+        508 => Order::DELIVERY_STATUS_PERSON_CHARGE,
+        509 => Order::DELIVERY_STATUS_PERSON_CHARGE,
+        550 => Order::DELIVERY_STATUS_PERSON_CHARGE,
+        501 => Order::DELIVERY_STATUS_OK
     ];
 }
