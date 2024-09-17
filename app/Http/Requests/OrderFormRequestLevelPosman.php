@@ -48,7 +48,7 @@ public function rules()
             'order.type' => 'required',
             // 'order.weight' => 'required'
         ];
-            // $rule['order_service.'. Service::SERVICE_DOMESTIC] = 'required';
+            $rule['order_service.'. Service::SERVICE_DOMESTIC] = 'required';
     }
 
     // Các quy tắc validation khác cho các level khác
@@ -81,8 +81,8 @@ public function rules()
 
     public function messages()
     {
-        return [
-        // $messages = [
+        // return [
+        $messages = [
             'image_data.required' => 'Chụp ảnh là bắt buộc.',
             'order.invoice_code.required' => 'Nhập Mã vận đơn.',
             'order.delivery_status.required' => 'Tình trạng vận chuyển là bắt buộc.',
@@ -104,7 +104,7 @@ public function rules()
             'order.type.required' => 'Loại hàng hóa là bắt buộc',
             'order.weight.required' => 'Cân nặng là bắt buộc'
         ];
-            // $messages['order_service.'. Service::SERVICE_DOMESTIC.'.required'] = 'Dịch vụ trong nước là bắt buộc';
-            // return $messages;
+            $messages['order_service.'. Service::SERVICE_DOMESTIC.'.required'] = 'Dịch vụ trong nước là bắt buộc';
+            return $messages;
     }
 }

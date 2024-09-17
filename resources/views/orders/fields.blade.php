@@ -334,7 +334,7 @@
                 </div>
             </div>
         </div>
-        <div class="form-group">
+<!--         <div class="form-group">
             <div class="form-row">
                 @foreach(\App\Service::SERVICE_MAP as $type => $service)
                 <div class="col-md-4 mb-3">
@@ -348,7 +348,29 @@
                 </div>
                 @endforeach
             </div>
+        </div> -->
+        <div class="form-group">
+    <div class="form-row">
+        @foreach(\App\Service::SERVICE_MAP as $type => $service)
+        <div class="col-md-4 mb-3">
+            <h4>{!! $service['name'] !!}</h4>
+            @foreach($service['value'] as $key => $item)
+            <div class="form-check">
+                <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order_service[{{$type}}][]" value="{{$key}}" @if(in_array($key, $order->serviceArray($order->id))) checked @endif type="checkbox" class="form-check-input">
+                <label class="form-check-label">{{$item}}</label>
+            </div>
+            @endforeach
+            @if($type == \App\Service::SERVICE_DOMESTIC)
+                @if ($errors->has('order_service.' . \App\Service::SERVICE_DOMESTIC))
+                <span class="invalid-feedback" style="display: block;" role="alert">
+                    <strong style="color: red;">{!! $errors->first('order_service.' . \App\Service::SERVICE_DOMESTIC) !!}</strong>
+                </span>
+                @endif
+            @endif
         </div>
+        @endforeach
+    </div>
+</div>
         <div class="row">
             <div class="col-md-4">
                 <div class="form-group">

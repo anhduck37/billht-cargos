@@ -825,12 +825,12 @@ class OrderController extends AppBaseController
 
     public function createOrderViettelPost($id) {
         $order = Order::findOrFail($id);
-        // check đơn trùng trên viettel
-        // if($order->order_partner_code) {
-        //     Flash::error('Vận đơn đã có trên Viettel Post.');
-        //     return back();
-        // }
-        // check đơn trùng trên viettel
+        check đơn trùng trên viettel
+        if($order->order_partner_code) {
+            Flash::error('Vận đơn đã có trên Viettel Post.');
+            return back();
+        }
+        check đơn trùng trên viettel
         $sendOrderViettelPost = new SendOrderViettelPostJob($order);
         $result = $sendOrderViettelPost->handle();
         if($result['error']) {
