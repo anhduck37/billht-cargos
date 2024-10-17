@@ -30,6 +30,7 @@ class ViettelPostRefreshTokenCommand extends Command
     public function handle()
     {
         $viettelPostService = new ViettelPostService();
-        $viettelPostService->refreshToken();
+        $result = $viettelPostService->refreshToken();
+        dd($result);
     }
 }
