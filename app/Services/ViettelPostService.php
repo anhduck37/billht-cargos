@@ -182,7 +182,6 @@ class ViettelPostService
             ]
         ]);
         $result = json_decode($response->getBody()->getContents(), true);
-        dd($result);
         return $result['data'] ?? null;
     }
 
