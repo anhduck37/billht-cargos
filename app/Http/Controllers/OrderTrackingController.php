@@ -42,8 +42,9 @@ class OrderTrackingController extends Controller
                 ->first();
         }
         if ($order || $order_code) {
-            if (isset($order->order_partner_code) || $order->partner_code == Order::CODE_VIETTEL_POST) {
+            if (isset($order) && (isset($order->order_partner_code) || ($order->partner_code == Order::CODE_VIETTEL_POST))) {
                 $viettel_post = PartnerTracking::where('order_id', $order->id)->orderBy('id', 'DESC')->get();
+                $viettel_post = $viettel_post->isEmpty() ? null : $viettel_post;
             } else {
                 $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
             }
