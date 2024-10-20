@@ -20,6 +20,17 @@ class PartnerTracking extends Model
         'expected_delivery',
         'product_weight',
         'order_service',
-        'location_currently'
+        'location_currently',
+        'money_totalfee',
+        'order_payment',
+        'expected_delivery_date',
+        'detail',
+        'voucher_value',
+        'money_collection_origin',
+        'employee_name',
+        'employee_phone',
+        'is_returning',
+        'pod',
+        'receiver_fullname',
     ];
 }

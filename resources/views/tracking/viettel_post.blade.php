@@ -17,11 +17,11 @@
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Trạng thái</td>
-                <td class="custom-size">{{$viettel_post[0]['STATUS_NAME'] ?? $order->order_status}}</td>
+                <td class="custom-size">{{$viettel_post[0]['status_name'] ?? $order->order_status}}</td>
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Ngày giờ</td>
-                <td class="custom-size">{{$viettel_post[0]['TRACKINGS'][0]['THOI_GIAN'] ?? ''}}</td>
+                <td class="custom-size">{{$viettel_post[0]['order_statusdate'] ?? ''}}</td>
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Địa chỉ nhận</td>
@@ -42,11 +42,11 @@
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Người nhận</td>
-                <td class="custom-size">{{$viettel_post[0]['TRACKINGS'][0]['RECEIVER_FULLNAME'] ?? $order->receiver->receiver_name}}</td>
+                <td class="custom-size">{{$viettel_post[0]['receiver_fullname'] ?? $order->receiver->receiver_name}}</td>
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Ghi chú kết quả phát</td>
-                <td class="custom-size"><span style="white-space:pre-line">{{ preg_replace("/\([^)]*\)/", "", $viettel_post[0]['TRACKINGS'][count($viettel_post[0]['TRACKINGS']) - 1]['NOI_DUNG'] ?? '') }}</span></td>
+                <td class="custom-size"><span style="white-space:pre-line">{{ preg_replace("/\([^)]*\)/", "", $viettel_post[0]['note'] ?? '') }}</span></td>
                 
             </tr>
         </tbody>
@@ -72,9 +72,9 @@
                     {{-- @foreach($item['TRACKINGS'] as $tracking) --}}
 
                         <tr>
-                            <td class="custom-size">{{$item['TRACKINGS'][((count($item['TRACKINGS']) - 1) > 0 ? count($item['TRACKINGS']) - 1 : 0)]['THOI_GIAN'] ?? ''}}</td>
-                            <td class="custom-size">{{$item['TRACKINGS'][((count($item['TRACKINGS']) - 1) > 0 ? count($item['TRACKINGS']) - 1 : 0)]['STATUS_NAME'] ?? ''}}</th>
-                            <td class="custom-size"><span style="white-space: pre-line">{{preg_replace("/\([^)]*\)/", "", ($item['TRACKINGS'][((count($item['TRACKINGS']) - 1) > 0 ? count($item['TRACKINGS']) - 1 : 0)]['NOI_DUNG'] ?? ''))}}</span></td>
+                            <td class="custom-size">{{$item['order_statusdate'] ?? ''}}</td>
+                            <td class="custom-size">{{$item['status_name'] ?? ''}}</th>
+                            <td class="custom-size"><span style="white-space: pre-line">{{preg_replace("/\([^)]*\)/", "", ($item['note'] ?? ''))}}</span></td>
                         </tr>
                     {{-- @endforeach --}}
                 @endforeach

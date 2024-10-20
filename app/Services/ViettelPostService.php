@@ -156,10 +156,13 @@ class ViettelPostService
         if (!$dataWebhook) return;
 
         $order = Order::where('order_partner_code', $dataWebhook['ORDER_NUMBER'])->first();
+
         if (!$order) {
             return;
         }
 
+        $dataTracking = $this->formatDataWebhook($order, $dataWebhook);
+        PartnerTracking::create($dataTracking);
         if (isset(PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']])) {
             $order->delivery_status = PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']];
             $order->save();
@@ -193,15 +196,26 @@ class ViettelPostService
             'order_reference' => $data['ORDER_REFERENCE'] ?? null,
             'order_statusdate' => $data['ORDER_STATUSDATE'] ?? null,
             'order_status' => $data['ORDER_STATUS'] ?? null,
-            'status_name' => $data['STATUS_NAME'],
-            'note' => $data['NOTE'],
-            'money_conllection' => $data['MONEY_COLLECTION'],
-            'money_feecod' => $data['MONEY_FEECOD'],
-            'money_total' => $data['MONEY_TOTAL'],
-            'expected_delivery' => $data['EXPECTED_DELIVERY'],
-            'product_weight' => $data['PRODUCT_WEIGHT'],
-            'order_service' => $data['ORDER_SERVICE'],
-            'location_currently' => $data['LOCALION_CURRENTLY']
+            'status_name' => $data['STATUS_NAME'] ?? null,
+            'note' => $data['NOTE'] ?? null,
+            'money_conllection' => $data['MONEY_COLLECTION'] ?? null,
+            'money_feecod' => $data['MONEY_FEECOD'] ?? null,
+            'money_total' => $data['MONEY_TOTAL'] ?? null,
+            'expected_delivery' => $data['EXPECTED_DELIVERY'] ?? null,
+            'product_weight' => $data['PRODUCT_WEIGHT'] ?? null,
+            'order_service' => $data['ORDER_SERVICE'] ?? null,
+            'location_currently' => $data['LOCALION_CURRENTLY'] ?? null,
+            'money_totalfee' => $data['MONEY_TOTALFEE'] ?? null,
+            'order_payment' => $data['ORDER_PAYMENT'] ?? null,
+            'expected_delivery_date' => $data['EXPECTED_DELIVERY_DATE'] ?? null,
+            'detail' => isset($data['DETAIL']) ? json_encode($data['DETAIL']) : null,
+            'voucher_value' => $data['VOUCHER_VALUE'] ?? null,
+            'money_collection_origin' => $data['MONEY_COLLECTION_ORIGIN'] ?? null,
+            'employee_name' => $data['EMPLOYEE_NAME'] ?? null,
+            'employee_phone' => $data['EMPLOYEE_PHONE'] ?? null,
+            'is_returning' => $data['IS_RETURNING'] ?? null,
+            'pod' => $data['POD'] ?? (is_array($data['POD']) ? json_encode($data['POD']) : $data['POD']),
+            'receiver_fullname' => $data['RECEIVER_FULLNAME'] ?? null,
         ];
         return $mapData;
     }
