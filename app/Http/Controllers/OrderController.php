@@ -802,7 +802,6 @@ class OrderController extends AppBaseController
             $orderId = $order->id;
             if ($order && isset($order->receiver) && !empty($order->receiver->receiver_phone) && !empty($order->receiver->receiver_name)) {
                 $response = $this->zaloService->sendZNS($order);
-                dd($response);
                 if ($response['error'] == ZaloConfig::SUCCESS_CODE) {
                     array_push($success, $order->order_code);
                 } else {

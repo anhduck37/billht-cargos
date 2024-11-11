@@ -1,10 +1,14 @@
 <?php
+
 namespace App\Services;
+
 use App\OrderLog;
 use GuzzleHttp\Client;
 use App\ZaloConfig;
 use App\Services\OrderLogService;
-class ZaloService {
+
+class ZaloService
+{
 
     protected $app_id;
     protected $secret_key;
@@ -20,15 +24,17 @@ class ZaloService {
     private $textSendSMS;
     protected $orderLogService;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->model = new ZaloConfig();
         $this->config();
         $this->textSendSMS = config('sms.textSendSMS');
         $this->orderLogService = new OrderLogService(new OrderLog());
     }
 
-    public function sendZNS($order) {
-        if(!str_contains($order->note, $this->textSendSMS)) {
+    public function sendZNS($order)
+    {
+        if (!str_contains($order->note, $this->textSendSMS)) {
             return;
         }
         $phone = $order->receiver->receiver_phone;
@@ -48,9 +54,10 @@ class ZaloService {
         ]);
         $response = $client->post($this->url, ['json' => $data]);
         $response = json_decode($response->getBody()->getContents(), true);
+        dd($response);
         $status = OrderLog::STATUS_ERROR;
-        if($response['error'] == ZaloConfig::SUCCESS_CODE) {
-            $order->note = str_replace($this->textSendSMS, '',$order->note);
+        if ($response['error'] == ZaloConfig::SUCCESS_CODE) {
+            $order->note = str_replace($this->textSendSMS, '', $order->note);
             $order->save();
             $status = OrderLog::STATUS_SUCCESS;
         }
@@ -58,7 +65,8 @@ class ZaloService {
         return $response;
     }
 
-    public function refresh_token() {
+    public function refresh_token()
+    {
         $data = [
             'refresh_token' => $this->refresh_token,
             'app_id' => $this->app_id,
@@ -70,7 +78,7 @@ class ZaloService {
         ]);
         $response = $client->post($this->url_refresh_token, ['form_params' => $data]);
         $response = json_decode($response->getBody()->getContents(), true);
-        if(isset($response['access_token'])) {
+        if (isset($response['access_token'])) {
             $this->zalo_config->access_token = $response['access_token'];
             $this->zalo_config->refresh_token = $response['refresh_token'];
             $this->zalo_config->save();
@@ -78,13 +86,15 @@ class ZaloService {
         return $this->zalo_config;
     }
 
-    public function formatPhone($phone) {
-        $phone = preg_replace('/[^0-9]/','',$phone);
+    public function formatPhone($phone)
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
         $phone = substr($phone, 1);
         return 84 . $phone;
     }
 
-    public function config() {
+    public function config()
+    {
         $this->app_id = config('zalo.app_id');
         $this->secret_key = config('zalo.secret_key');
         $this->template_id = config('zalo.template_id');
@@ -96,7 +106,7 @@ class ZaloService {
             'template_id' => $this->template_id,
         ];
         $zaloConfig = $this->model->where('app_id', $this->app_id)->where('status',  ZaloConfig::STATUS_ACTIVE)->first();
-        if(!$zaloConfig) {
+        if (!$zaloConfig) {
             $zaloConfig = $this->model;
             $data['refresh_token'] = $this->refresh_token;
             $data['status'] = ZaloConfig::STATUS_ACTIVE;
@@ -108,5 +118,4 @@ class ZaloService {
         $this->refresh_token = $zaloConfig->refresh_token;
         return $this;
     }
-    
 }
