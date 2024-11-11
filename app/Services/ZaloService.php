@@ -54,7 +54,6 @@ class ZaloService
         ]);
         $response = $client->post($this->url, ['json' => $data]);
         $response = json_decode($response->getBody()->getContents(), true);
-        dd($response);
         $status = OrderLog::STATUS_ERROR;
         if ($response['error'] == ZaloConfig::SUCCESS_CODE) {
             $order->note = str_replace($this->textSendSMS, '', $order->note);
