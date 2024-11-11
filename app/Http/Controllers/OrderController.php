@@ -801,10 +801,10 @@ class OrderController extends AppBaseController
             foreach ($orders as $order) {
                 $orderId = $order->id;
                 if ($order && isset($order->receiver) && !empty($order->receiver->receiver_phone) && !empty($order->receiver->receiver_name)) {
-                    $response = $this->zaloService->sendZNS($order);
-                    if (isset($response['error']) && $response['error'] == ZaloConfig::SUCCESS_CODE) {
+                    $response = $this->zaloService->sendZNS($order, true);
+                    if ($response && $response['error'] == ZaloConfig::SUCCESS_CODE) {
                         array_push($success, $order->order_code);
-                    } else {
+                    } else if ($response) {
                         array_push($errors, $order->order_code . ': ' .  $response['message']);
                     }
                 } else {

@@ -6,6 +6,7 @@ use App\OrderLog;
 use GuzzleHttp\Client;
 use App\ZaloConfig;
 use App\Services\OrderLogService;
+use phpDocumentor\Reflection\PseudoTypes\False_;
 
 class ZaloService
 {
@@ -32,9 +33,9 @@ class ZaloService
         $this->orderLogService = new OrderLogService(new OrderLog());
     }
 
-    public function sendZNS($order)
+    public function sendZNS($order, $isSend = false)
     {
-        if (!str_contains($order->note, $this->textSendSMS)) {
+        if (!str_contains($order->note, $this->textSendSMS) && !$isSend) {
             return;
         }
         $phone = $order->receiver->receiver_phone;
