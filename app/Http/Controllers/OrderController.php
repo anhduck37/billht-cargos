@@ -10,6 +10,7 @@ use App\Receiver;
 use App\Repositories\OrderRepository;
 use App\Http\Controllers\AppBaseController;
 use App\Http\Requests\OrderFormRequestLevelPosman;
+use App\Jobs\SendOrderEmsJob;
 use App\Jobs\SendOrderViettelPostJob;
 use App\Jobs\SendSMSJob;
 use App\Jobs\UploadGoogleDriveJob;
@@ -27,6 +28,7 @@ use Response;
 use App\Models\Order;
 use App\OrderHistory;
 use App\OrderImage;
+use App\Services\EmsService;
 use App\Services\GoogleDriveService;
 use App\Services\OrderHistoryService;
 use App\Services\OrderImageService;
@@ -500,12 +502,18 @@ class OrderController extends AppBaseController
                                 if ($partnerCode) {
                                     if ($partnerCode == Order::CODE_VIETTEL_POST) {
                                         $infoService = app(OrderService::class)->getKeyService($sheet->getCell('J' . $row)->getValue());
-                                        $serviceField = trim($sheet->getCell('J' . $row)->getValue());
+                                        // $serviceField = trim($sheet->getCell('J' . $row)->getValue());
                                         // $serviceViettel = isset(Service::VIETTEL_POST_SERVICE_ADD[$serviceField]) ? $serviceField : (Service::VIETTEL_POST_SERVICE[$infoService['service_key']] ?? null);
                                         // dispatch(new SendOrderViettelPostJob($order, $serviceViettel));
                                         $serviceViettel = Service::VIETTEL_POST_SERVICE[$infoService['service_key']] ?? null;
-                                        $sendOrderViettelPost = new SendOrderViettelPostJob($order, $serviceViettel);
-                                        $sendOrderViettelPost->handle();
+                                        dispatch(new SendOrderViettelPostJob($order, $serviceViettel));
+                                        // $sendOrderViettelPost = new SendOrderViettelPostJob($order, $serviceViettel);
+                                        // $sendOrderViettelPost->handle();
+                                    }
+                                    if ($partnerCode == Order::CODE_EMS) {
+                                        // dispatch(new SendOrderEmsJob($order));
+                                        $sendOrderEms = new SendOrderEmsJob($order);
+                                        $sendOrderEms->handle();
                                     }
                                 }
                                 app(OrderTrackingService::class)->create($order, $request->all());
@@ -865,5 +873,45 @@ class OrderController extends AppBaseController
             Flash::error($e->getMessage());
         }
         return route('orders.index');
+    }
+
+    public function createEms(Request $request)
+    {
+        $orderIds = $request->order_ids;
+        if (empty($orderIds)) {
+            Flash::error('Bạn vui lòng chọn vận đơn');
+            return route('orders.index');
+        }
+        try {
+            $orders = Order::whereIn('id', $orderIds)->get();
+            foreach ($orders as $order) {
+                dispatch(new SendOrderEmsJob($order));
+                // $sendOrderEms = new SendOrderEmsJob($order);
+                // $result = $sendOrderEms->handle();
+            }
+            Flash::success('Vận đơn đã được thêm vào danh sách chờ đẩy lên EMS. Kiểm tra tại đây <a target="_blank" style="color: white" href="https://ht-cargos.com/vtp">Link</a>');
+        } catch (Exception $e) {
+            Flash::error($e->getMessage());
+        }
+        return route('orders.index');
+    }
+
+    public function createOrderEms($id)
+    {
+        $order = Order::findOrFail($id);
+        // check đơn trùng trên viettel
+        if ($order->order_partner_code) {
+            Flash::error('Vận đơn đã có trên ' . (Order::MAP_MESSAGE_NOTI[$order->partner_code] ?? '') . '.');
+            return back();
+        }
+        // check đơn trùng trên viettel
+        $sendOrderEms = new SendOrderEmsJob($order);
+        $result = $sendOrderEms->handle();
+        if ($result['code'] == EmsService::STATUS_SUCCESS) {
+            Flash::success('Tạo vận đơn sang EMS thành công.');
+        } else {
+            Flash::error('Xảy ra lỗi tạo vận đơn sang EMS: Kiểm tra tại đây <a target="_blank" style="color: white" href="https://ht-cargos.com/vtp">Link</a> - ' . ($result['message'] ?? ''));
+        }
+        return back();
     }
 }

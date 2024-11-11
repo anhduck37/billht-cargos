@@ -10,6 +10,7 @@ class City extends Model
         'city_name',
         'city_code',
         'language',
+        'ems_code'
     ];
     protected $table = 'citys';
 

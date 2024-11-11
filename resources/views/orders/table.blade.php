@@ -286,6 +286,20 @@
                     },
                 });
             })
+            $('#createEms').on('click', function () {
+                $.ajax({
+                    type: "POST",
+                    url: '/order/create-ems',
+                    data: {'order_ids': dataPrint},
+                    beforeSend: function() {
+                        $('#createEms').attr("disabled", true)
+                        $('#createEms').html(`Tạo vận đơn Ems <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
+                    },
+                    success: function (res) {
+                        window.location.href = res;
+                    },
+                });
+            })
             $('#sendZaloZNS').on('click', function () {
                 $.ajax({
                     type: "POST",

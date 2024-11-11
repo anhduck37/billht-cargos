@@ -291,6 +291,8 @@ class ViettelPostService
         $str = preg_replace("/(Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ)/", 'U', $str);
         $str = preg_replace("/(Ỳ|Ý|Ỵ|Ỷ|Ỹ)/", 'Y', $str);
         $str = preg_replace("/(Đ)/", 'D', $str);
+        $str = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $str);
+        $str = preg_replace('/[^\x20-\x7E]/', '', $str);
         return $str;
     }
 }

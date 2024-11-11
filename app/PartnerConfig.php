@@ -13,6 +13,7 @@ class PartnerConfig extends Model
     ];
 
     const CODE_VIETTEL_POST = 'VIETTEL_POST';
+    const CODE_EMS = 'EMS';
     const STATUS_VIETTEL_POST = [
         -100 => 'Đơn hàng mới được tạo, chưa được phê duyệt',
         -108 => 'Đơn hàng gửi tại bưu điện',
@@ -57,11 +58,11 @@ class PartnerConfig extends Model
         200 => Order::DELIVERY_STATUS_RETURN,
         202 => Order::DELIVERY_STATUS_RETURN,
         300 => Order::DELIVERY_STATUS_RETURN,
-        320 => Order::DELIVERY_STATUS_RETURN, 
+        320 => Order::DELIVERY_STATUS_RETURN,
         400 => Order::DELIVERY_STATUS_RETURN,
-        500 => Order::DELIVERY_STATUS_PERSON_CHARGE, 
+        500 => Order::DELIVERY_STATUS_PERSON_CHARGE,
         506 => Order::DELIVERY_STATUS_PERSON_CHARGE,
-        570 => Order::DELIVERY_STATUS_PERSON_CHARGE, 
+        570 => Order::DELIVERY_STATUS_PERSON_CHARGE,
         508 => Order::DELIVERY_STATUS_PERSON_CHARGE,
         509 => Order::DELIVERY_STATUS_PERSON_CHARGE,
         550 => Order::DELIVERY_STATUS_PERSON_CHARGE,
