@@ -82,12 +82,12 @@ class EmsService
             "from_address" => $senderAddress,
             "to_name" => $order->receiver->receiver_name ?? 0,
             "to_phone" => $order->receiver->receiver_phone,
-            // "to_province" => $order->receiver->city->ems_code ?? 0,
-            // "to_district" => $order->receiver->district->ems_code ?? 0,
-            // "to_ward" => $order->receiver->ward->ems_code ?? 0,
-            "to_province" => 17,
-            "to_district" => 1754,
-            "to_ward" => 17542,
+            "to_province" => $order->receiver->city->ems_code ?? 0,
+            "to_district" => $order->receiver->district->ems_code ?? 0,
+            "to_ward" => $order->receiver->ward->ems_code ?? 0,
+            // "to_province" => 17,
+            // "to_district" => 1754,
+            // "to_ward" => 17542,
             "to_address" => $receiverAddress,
             "product_name" => $order->note,
             "total_amount" => 0,
@@ -100,6 +100,72 @@ class EmsService
         return $data;
     }
 
+    public function createWebhook($link)
+    {
+        $path = '/api/v1/metadata/webhook?merchant_token=' . $this->api_key;
+        $this->headers['Accept'] = 'application/javascript';
+
+        $client = new Client([
+            'headers' => $this->headers
+        ]);
+
+        $response = $client->post(
+            $this->url . $path,
+            [
+                'body' => json_encode([
+                    'link' => $link
+                ])
+            ]
+        );
+
+        $result = json_decode($response->getBody()->getContents(), true);
+        return $result;
+    }
+
+    public function updateWebhook($link, $status = 1)
+    {
+        $path = '/api/v1/metadata/webhook';
+        $this->headers['Accept'] = 'application/javascript';
+
+        $client = new Client([
+            'headers' => $this->headers
+        ]);
+
+        $response = $client->put(
+            $this->url . $path,
+            [
+                'query' => [
+                    'link' => $link,
+                    'merchant_token' => $this->api_key,
+                    'status' => $status
+                ]
+            ]
+        );
+
+        $result = json_decode($response->getBody()->getContents(), true);
+        return $result;
+    }
+
+    public function webhookTracking($data)
+    {
+        app(LogFileService::class)->writeLog('ems', json_encode($data));
+        // $dataWebhook = isset($data['DATA']['ORDER_NUMBER']) ? $data['DATA'] : null;
+        // if (!$dataWebhook) return;
+
+        // $order = Order::where('order_partner_code', $dataWebhook['ORDER_NUMBER'])->first();
+
+        // if (!$order) {
+        //     return;
+        // }
+
+        // $dataTracking = $this->formatDataWebhook($order, $dataWebhook);
+        // PartnerTracking::create($dataTracking);
+        // if (isset(PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']])) {
+        //     $order->delivery_status = PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']];
+        //     $order->save();
+        // }
+        // return;
+    }
 
     public function getGroupId($address)
     {
