@@ -30,8 +30,15 @@
                         </div>
                     </div>
                     {!! Form::close() !!}
-                    @if($viettel_post)
-                        @include('tracking.viettel_post', ['viettel_post' => $viettel_post, 'order' => $order])
+                    @if($data_tracking)
+                        @switch($order->partner_code)
+                            @case(\App\Models\Order::CODE_VIETTEL_POST)
+                                @include('tracking.viettel_post', ['viettel_post' => $data_tracking, 'order' => $order])
+                                @break
+                            @case(\App\Models\Order::CODE_EMS)
+                                @include('tracking.ems', ['data_tracking' => $data_tracking, 'order' => $order])
+                                @break
+                        @endswitch
                     @elseif($mickey_tracking && (!empty($mickey_tracking['table']) || !empty($mickey_tracking['table1'])))
                         @include('tracking.mickey', ['mickey_tracking' => $mickey_tracking, 'order' => $order])
                     @else

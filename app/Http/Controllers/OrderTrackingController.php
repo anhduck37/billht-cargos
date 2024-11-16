@@ -28,7 +28,7 @@ class OrderTrackingController extends Controller
         $delivery_status = 0;
         $order = null;
         $mickey_tracking = null;
-        $viettel_post = null;
+        $data_tracking = null;
         if ($order_code) {
             // $order_trackings = OrderTracking::join('orders', 'orders.id', '=', 'order_trackings.order_id')
             // ->where('orders.invoice_code', $order_code)->orWhere('order_trackings.order_code', $order_code)
@@ -42,9 +42,11 @@ class OrderTrackingController extends Controller
                 ->first();
         }
         if ($order || $order_code) {
-            if (isset($order) && (isset($order->order_partner_code) || ($order->partner_code == Order::CODE_VIETTEL_POST))) {
-                $viettel_post = PartnerTracking::where('order_id', $order->id)->orderBy('id', 'DESC')->get();
-                $viettel_post = $viettel_post->isEmpty() ? null : $viettel_post;
+            if (
+                isset($order) && (isset($order->order_partner_code) || (isset(Order::MAP_MESSAGE_NOTI_PARTNER[$order->partner_code])))
+            ) {
+                $data_tracking = PartnerTracking::where('order_id', $order->id)->orderBy('id', 'DESC')->get();
+                $data_tracking = $data_tracking->isEmpty() ? null : $data_tracking;
             } else {
                 $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
             }
@@ -64,7 +66,7 @@ class OrderTrackingController extends Controller
             'delivery_status' => $delivery_status,
             'order' => $order,
             'mickey_tracking' => $mickey_tracking,
-            'viettel_post' => $viettel_post
+            'data_tracking' => $data_tracking
         ]);
     }
 }

@@ -509,11 +509,10 @@ class OrderController extends AppBaseController
                                         dispatch(new SendOrderViettelPostJob($order, $serviceViettel));
                                         // $sendOrderViettelPost = new SendOrderViettelPostJob($order, $serviceViettel);
                                         // $sendOrderViettelPost->handle();
-                                    }
-                                    if ($partnerCode == Order::CODE_EMS) {
-                                        // dispatch(new SendOrderEmsJob($order));
-                                        $sendOrderEms = new SendOrderEmsJob($order);
-                                        $sendOrderEms->handle();
+                                    } else if ($partnerCode == Order::CODE_EMS) {
+                                        dispatch(new SendOrderEmsJob($order));
+                                        // $sendOrderEms = new SendOrderEmsJob($order);
+                                        // $sendOrderEms->handle();
                                     }
                                 }
                                 app(OrderTrackingService::class)->create($order, $request->all());
@@ -901,7 +900,7 @@ class OrderController extends AppBaseController
         $order = Order::findOrFail($id);
         // check đơn trùng trên viettel
         if ($order->order_partner_code) {
-            Flash::error('Vận đơn đã có trên ' . (Order::MAP_MESSAGE_NOTI[$order->partner_code] ?? '') . '.');
+            Flash::error('Vận đơn đã có trên ' . (Order::MAP_MESSAGE_NOTI_PARTNER[$order->partner_code] ?? '') . '.');
             return back();
         }
         // check đơn trùng trên viettel

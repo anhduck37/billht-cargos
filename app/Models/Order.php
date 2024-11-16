@@ -58,7 +58,7 @@ class Order extends Model
     ];
     const CODE_VIETTEL_POST = 'VTP';
     const CODE_EMS = 'EMS';
-    const MAP_MESSAGE_NOTI = [
+    const MAP_MESSAGE_NOTI_PARTNER = [
         self::CODE_VIETTEL_POST => 'Viettel Post',
         self::CODE_EMS => 'EMS'
     ];

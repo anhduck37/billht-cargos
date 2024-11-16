@@ -89,12 +89,12 @@ class EmsService
             // "to_district" => 1754,
             // "to_ward" => 17542,
             "to_address" => $receiverAddress,
-            "product_name" => $order->note,
+            "product_name" => Order::MAP_ORDER_TYPE[$order->type] ?? $order->note,
             "total_amount" => 0,
             "total_quantity" => $order->quantity,
             "total_weight" => $order->weight,
             "description" => $order->note,
-            "size" => $order->width . 'x' . $order->height . 'x' . $order->long,
+            "size" => ($order->width ?? 0) . 'x' . ($order->height ?? 0) . 'x' . ($order->long ?? 0),
             "service" => 1
         ];
         return $data;
@@ -149,22 +149,39 @@ class EmsService
     public function webhookTracking($data)
     {
         app(LogFileService::class)->writeLog('ems', json_encode($data));
-        // $dataWebhook = isset($data['DATA']['ORDER_NUMBER']) ? $data['DATA'] : null;
-        // if (!$dataWebhook) return;
+        if (!$data) return;
 
-        // $order = Order::where('order_partner_code', $dataWebhook['ORDER_NUMBER'])->first();
+        $order = Order::where('order_partner_code', $data['tracking_code'])->first();
 
-        // if (!$order) {
-        //     return;
-        // }
+        if (!$order) {
+            return;
+        }
 
-        // $dataTracking = $this->formatDataWebhook($order, $dataWebhook);
-        // PartnerTracking::create($dataTracking);
+        $dataTracking = $this->formatDataWebhook($order, $data);
+        PartnerTracking::create($dataTracking);
         // if (isset(PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']])) {
         //     $order->delivery_status = PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']];
         //     $order->save();
         // }
-        // return;
+        return;
+    }
+
+    private function formatDataWebhook($order, $data)
+    {
+        $mapData = [
+            'order_id' => $order->id ?? 0,
+            'order_partner_code' => $data['tracking_code'] ?? null,
+            'order_statusdate' => $data['datetime'] ?? null,
+            'order_status' => $data['status_code'] ?? null,
+            'status_name' => $data['status_name'] ?? null,
+            'note' => $data['note'] ?? null,
+            'money_conllection' => $data['money_collect'] ?? null,
+            'money_feecod' => $data['main_fee'] ?? null,
+            'product_weight' => $data['total_weight'] ?? null,
+            'location_currently' => $data['locate'] ?? null,
+            'money_totalfee' => $data['total_fee'] ?? null,
+        ];
+        return $mapData;
     }
 
     public function getGroupId($address)
