@@ -105,6 +105,9 @@
                                 <button style="width: 100%" id="createViettelPost" type="button" class="btn btn-primary">Tạo vận đơn Viettel Post</button>
                             </div>
                             <div class="col mb-1">
+                                <button style="width: 100%" id="createEms" type="button" class="btn btn-primary">Tạo vận đơn Ems</button>
+                            </div>
+                            <div class="col mb-1">
                                 <button style="width: 100%" id="sendZaloZNS" type="button" class="btn btn-primary">Gửi Zalo</button>
                             </div>
                             @endif

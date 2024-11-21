@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 Route::get('/', function () {
     return redirect('/orders');
 });
@@ -30,16 +31,16 @@ Route::get('/', function () {
 Auth::routes();
 Route::post('/register', 'Auth\RegisterController@create');
 
-Route::middleware(['checkLevel'])->group(function() {
+Route::middleware(['checkLevel'])->group(function () {
     Route::resource('users', 'UserController');
     Route::resource('partners', 'PartnerController');
 });
 Route::middleware(['auth'])->group(function () {
-//    Route::get('/profile', 'ProfileController@index');
-//    Route::any('/profile/password', 'ProfileController@changePass');
-//    Route::get('user/{id}', 'UserController@showFormPassword')->name('users.showFormPassword');
-//    Route::post('user/{id}','UserController@updatePassword' )->name('users.updatePassword');
-//    Route::get('user/{id}/info', 'UserController@show')->name('users.showInfo');
+    //    Route::get('/profile', 'ProfileController@index');
+    //    Route::any('/profile/password', 'ProfileController@changePass');
+    //    Route::get('user/{id}', 'UserController@showFormPassword')->name('users.showFormPassword');
+    //    Route::post('user/{id}','UserController@updatePassword' )->name('users.updatePassword');
+    //    Route::get('user/{id}/info', 'UserController@show')->name('users.showInfo');
     Route::resource('orders', 'OrderController');
     Route::post('orders/import', 'OrderController@import')->name('orders.import');
     Route::get('fileDemo', 'OrderController@fileDownload')->name('fileDemo');
@@ -53,5 +54,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/create-viettel-post', 'OrderController@createViettelPost');
     Route::post('/order/send-zalo-zns', 'OrderController@sendZaloZNS');
     Route::get('/order/create-order-viettel/{id}', 'OrderController@createOrderViettelPost')->name('orders.createViettelPost');
+
+    Route::post('/order/create-ems', 'OrderController@createEms');
+    Route::get('/order/create-order-ems/{id}', 'OrderController@createOrderEms')->name('orders.createEms');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');
