@@ -63,7 +63,8 @@ class Order extends Model
         self::CODE_EMS => 'EMS'
     ];
     const MAP_CODE_PARTNER = [
-        self::CODE_VIETTEL_POST => 'EE'
+        self::CODE_VIETTEL_POST => 'EE',
+        self::CODE_EMS => 'E'
     ];
     const ORDER_OK = 1;
     const ORDER_RETURN = 2;
