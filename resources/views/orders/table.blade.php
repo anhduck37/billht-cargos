@@ -120,7 +120,7 @@
                     <a class="printIcon" data-toggle="modal" data-target="#openModalPrint" data-id="{{$order->id}}" ><i style="color: #0ca362;" class="fa fa-print fa-2x"></i></a>
 
                             <a href="{{ route('orders.edit', [$order->id]) }}"><i style="color: blue;" class="far fa-edit fa-2x"></i></a>
-                    @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && $order->delivery_status == \App\Models\Order::DELIVERY_STATUS_PROCESSING) )
+                    @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && in_array($order->delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_BLANK])) )
                             <a class="delete" data-id="{{$order->id}}"><i style="color: red;" class="far fa-trash-alt fa-2x"></i>
                             </a>
                             {!! Form::open(['route' => ['orders.destroy', $order->id], 'method' => 'delete', 'class' => ['removeOrder'.$order->id],'style' => 'display: none']) !!}

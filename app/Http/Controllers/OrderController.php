@@ -265,7 +265,7 @@ class OrderController extends AppBaseController
         if ($order) {
             if (
                 in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])
-                || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && $order->delivery_status == Order::DELIVERY_STATUS_PROCESSING)
+                || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && in_array($order->delivery_status, [Order::DELIVERY_STATUS_PROCESSING, Order::DELIVERY_STATUS_BLANK]))
             ) {
                 Order::where('id', $id)->delete();
                 Flash::success('Xóa vận đơn thành công');
