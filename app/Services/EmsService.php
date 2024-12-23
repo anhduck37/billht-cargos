@@ -159,10 +159,10 @@ class EmsService
 
         $dataTracking = $this->formatDataWebhook($order, $data);
         PartnerTracking::create($dataTracking);
-        // if (isset(PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']])) {
-        //     $order->delivery_status = PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']];
-        //     $order->save();
-        // }
+        if (isset(PartnerConfig::MAP_STATUS_EMS[$data['status_code']])) {
+            $order->delivery_status = PartnerConfig::MAP_STATUS_EMS[$data['status_code']];
+            $order->save();
+        }
         return;
     }
 
