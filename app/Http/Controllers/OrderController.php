@@ -263,9 +263,17 @@ class OrderController extends AppBaseController
     {
         $order = Order::where('id', $id)->first();
         if ($order) {
-            Order::where('id', $id)->delete();
-            Flash::success('Xóa vận đơn thành công');
-            return back();
+            if (
+                in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF])
+                || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && $order->delivery_status == Order::DELIVERY_STATUS_PROCESSING)
+            ) {
+                Order::where('id', $id)->delete();
+                Flash::success('Xóa vận đơn thành công');
+                return back();
+            } else {
+                Flash::error('Bạn không có quyền xóa vận đơn');
+                return back();
+            }
         }
         Flash::error('Vận đơn không tồn tại');
         return back();

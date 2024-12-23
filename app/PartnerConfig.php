@@ -68,4 +68,11 @@ class PartnerConfig extends Model
         550 => Order::DELIVERY_STATUS_PERSON_CHARGE,
         501 => Order::DELIVERY_STATUS_OK
     ];
+
+    const MAP_STATUS_EMS = [
+        1 => Order::DELIVERY_STATUS_PROCESSING,
+        3 => Order::DELIVERY_STATUS_RECEIVED,
+        5 => Order::DELIVERY_STATUS_PERSON_CHARGE,
+        7 => Order::DELIVERY_STATUS_OK
+    ];
 }

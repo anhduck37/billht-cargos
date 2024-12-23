@@ -14,48 +14,49 @@ use Maatwebsite\Excel\Events\AfterSheet;
 class OrderExport implements FromCollection, WithHeadings, WithEvents
 {
     /**
-    * @return \Illuminate\Support\Collection
-    */
+     * @return \Illuminate\Support\Collection
+     */
     public $form_filter;
 
-    public function __construct($form_filter) {
+    public function __construct($form_filter)
+    {
         $this->form_filter = $form_filter;
     }
 
     public function collection()
     {
         $orders = Order::with(['services']);
-        if(isset($this->form_filter['start_date']) && isset($this->form_filter['end_date'])) {
+        if (isset($this->form_filter['start_date']) && isset($this->form_filter['end_date'])) {
             $start_date = app(OrderService::class)->explodeDate($this->form_filter['start_date']);
             $end_date = app(OrderService::class)->explodeDate($this->form_filter['end_date']);
             $orders->where('orders.order_date', '>=', $start_date)->where('orders.order_date', '<=', $end_date);
         }
 
-        if(isset($this->form_filter['order_code_from']) && isset($this->form_filter['order_code_to'])) {
+        if (isset($this->form_filter['order_code_from']) && isset($this->form_filter['order_code_to'])) {
             $prefix_code = config('order_manager.prefix_code');
-            $order_id_from = (int)str_replace($prefix_code,'', $this->form_filter['order_code_from']);
-            $order_id_to = (int)str_replace($prefix_code,'',$this->form_filter['order_code_to']);
-            $orders->where('orders.id', '>=', $order_id_from)->where('orders.id', '<=',  $order_id_to)->where('order_code', 'LIKE', $prefix_code.'%');
+            $order_id_from = (int)str_replace($prefix_code, '', $this->form_filter['order_code_from']);
+            $order_id_to = (int)str_replace($prefix_code, '', $this->form_filter['order_code_to']);
+            $orders->where('orders.id', '>=', $order_id_from)->where('orders.id', '<=',  $order_id_to)->where('order_code', 'LIKE', $prefix_code . '%');
         }
 
-        if(isset($this->form_filter['search'])) {
+        if (isset($this->form_filter['search'])) {
             $orders->join('senders', 'senders.id', '=', 'orders.sender_id')
                 ->join('receivers', 'receivers.id', '=', 'orders.receiver_id')
-                ->where(function($q) {
-                    $q->orWhere('senders.sender_name', 'LIKE','%' . $this->form_filter['search'] . '%')
-                      ->orWhere('senders.sender_phone', 'LIKE','%' . $this->form_filter['search'] . '%')
-                      ->orWhere('senders.address', 'LIKE','%' . $this->form_filter['search'] . '%')
-                      ->orWhere('receivers.receiver_name', 'LIKE','%' . $this->form_filter['search'] . '%')
-                      ->orWhere('receivers.receiver_phone', 'LIKE','%' . $this->form_filter['search'] . '%')
-                      ->orWhere('receivers.address', 'LIKE','%' . $this->form_filter['search'] . '%')
-                      ->orWhere('orders.order_code', 'LIKE','%' . $this->form_filter['search'] . '%');
+                ->where(function ($q) {
+                    $q->orWhere('senders.sender_name', 'LIKE', '%' . $this->form_filter['search'] . '%')
+                        ->orWhere('senders.sender_phone', 'LIKE', '%' . $this->form_filter['search'] . '%')
+                        ->orWhere('senders.address', 'LIKE', '%' . $this->form_filter['search'] . '%')
+                        ->orWhere('receivers.receiver_name', 'LIKE', '%' . $this->form_filter['search'] . '%')
+                        ->orWhere('receivers.receiver_phone', 'LIKE', '%' . $this->form_filter['search'] . '%')
+                        ->orWhere('receivers.address', 'LIKE', '%' . $this->form_filter['search'] . '%')
+                        ->orWhere('orders.order_code', 'LIKE', '%' . $this->form_filter['search'] . '%');
                 });
         }
-        if(isset($this->form_filter['delivery_status'])) {
+        if (isset($this->form_filter['delivery_status'])) {
             $orders->where('orders.delivery_status', $this->form_filter['delivery_status']);
         }
 
-        if(in_array(auth()->user()->level, [User::LEVEL_USER])) {
+        if (in_array(auth()->user()->level, [User::LEVEL_USER])) {
             $orders->where('orders.user_id', auth()->user()->id);
         }
 
@@ -66,14 +67,14 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
             $dataService = [];
             $dataServiceAdd = [];
             foreach ($services as $service) {
-                if(array_key_exists($service->type, Service::SERVICE_MAP) && $service->type == Service::SERVICE_DOMESTIC) {
+                if (array_key_exists($service->type, Service::SERVICE_MAP) && $service->type == Service::SERVICE_DOMESTIC) {
                     $data = Service::SERVICE_MAP[$service->type]['value'];
-                    if(array_key_exists($service->service, $data) ){
+                    if (array_key_exists($service->service, $data)) {
                         $dataService[] = $data[$service->service];
                     }
-                }else if(array_key_exists($service->type, Service::SERVICE_MAP)) {
+                } else if (array_key_exists($service->type, Service::SERVICE_MAP)) {
                     $data = Service::SERVICE_MAP[$service->type]['value'];
-                    if(array_key_exists($service->service, $data) ){
+                    if (array_key_exists($service->service, $data)) {
                         $dataServiceAdd[] = $data[$service->service];
                     }
                 }
@@ -87,10 +88,12 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
                 '5' => isset($item->receiver) ? $item->receiver->receiver_name : '',
                 '6' => isset($item->receiver) ? $item->receiver->address : '',
                 '7' => isset($item->receiver) ? $item->receiver->receiver_phone : '',
-                '8' => $item->weight,
-                '9' => implode(', ', $dataService),
-                '10' => implode(', ', $dataServiceAdd),
-                '11' => $item->note,
+                '8' => Order::DELIVERY_MAP[$item->delivery_status] ?? '',
+                '9' => Order::PAYMENT_METHOD_MAP[$item->payment_method] ?? '',
+                '10' => $item->weight,
+                '11' => implode(', ', $dataService),
+                '12' => implode(', ', $dataServiceAdd),
+                '13' => $item->note,
             );
         }
         return (collect($order));
@@ -107,6 +110,8 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
             'Tên người nhận',
             'Địa chỉ người nhận',
             'SĐT người nhận',
+            'Trạng thái',
+            'hình thức thanh toán',
             'Trọng lượng (gram)',
             'Mã dịch vụ',
             'Dịch vụ cộng thêm',
@@ -117,7 +122,7 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class    => function(AfterSheet $event) {
+            AfterSheet::class    => function (AfterSheet $event) {
                 $event->sheet->getDelegate()->getStyle('1')->getFont()->setBold(true);
                 $event->sheet->getDelegate()->getRowDimension('1')->setRowHeight(40);
                 $event->sheet->getDelegate()->getColumnDimension('A')->setWidth(15);
@@ -127,12 +132,14 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
                 $event->sheet->getDelegate()->getColumnDimension('E')->setWidth(15);
                 $event->sheet->getDelegate()->getColumnDimension('F')->setWidth(15);
                 $event->sheet->getDelegate()->getColumnDimension('G')->setWidth(15);
-                $event->sheet->getDelegate()->getColumnDimension('H')->setWidth(75);
+                $event->sheet->getDelegate()->getColumnDimension('H')->setWidth(25);
                 $event->sheet->getDelegate()->getColumnDimension('I')->setWidth(15);
-                $event->sheet->getDelegate()->getColumnDimension('J')->setWidth(20);
+                $event->sheet->getDelegate()->getColumnDimension('J')->setWidth(15);
                 $event->sheet->getDelegate()->getColumnDimension('K')->setWidth(15);
-                $event->sheet->getDelegate()->getColumnDimension('L')->setWidth(25);
-                $event->sheet->getDelegate()->getColumnDimension('M')->setWidth(25);
+                $event->sheet->getDelegate()->getColumnDimension('L')->setWidth(20);
+                $event->sheet->getDelegate()->getColumnDimension('M')->setWidth(15);
+                $event->sheet->getDelegate()->getColumnDimension('N')->setWidth(25);
+                $event->sheet->getDelegate()->getColumnDimension('O')->setWidth(25);
                 $event->sheet->getDelegate()->getStyle('A1:L1')
                     ->getAlignment()
                     ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
