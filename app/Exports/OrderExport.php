@@ -94,6 +94,7 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
                 '11' => implode(', ', $dataService),
                 '12' => implode(', ', $dataServiceAdd),
                 '13' => $item->note,
+                '14' => $item->signator
             );
         }
         return (collect($order));
@@ -115,7 +116,8 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
             'Trọng lượng (gram)',
             'Mã dịch vụ',
             'Dịch vụ cộng thêm',
-            'Nội dung'
+            'Nội dung',
+            'Ký nhận '
         ];
     }
 
@@ -140,7 +142,8 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
                 $event->sheet->getDelegate()->getColumnDimension('M')->setWidth(15);
                 $event->sheet->getDelegate()->getColumnDimension('N')->setWidth(25);
                 $event->sheet->getDelegate()->getColumnDimension('O')->setWidth(25);
-                $event->sheet->getDelegate()->getStyle('A1:L1')
+                $event->sheet->getDelegate()->getColumnDimension('P')->setWidth(25);
+                $event->sheet->getDelegate()->getStyle('A1:O1')
                     ->getAlignment()
                     ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
             },
