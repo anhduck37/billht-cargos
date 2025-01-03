@@ -34,8 +34,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('update_delivery_status --type=1')->everyMinute();
-        $schedule->command('update_delivery_status --type=7')->everyMinute();
+        // $schedule->command('update_delivery_status --type=1')->everyMinute();
+        // $schedule->command('update_delivery_status --type=7')->everyMinute();
         $schedule->command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
         $schedule->command('zalo_refresh_token')->dailyAt('00:00');
         $schedule->command('viettel_post_refresh_token')->dailyAt('00:00');
@@ -48,7 +48,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
