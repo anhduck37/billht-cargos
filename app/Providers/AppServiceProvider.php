@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use File;
+use DB;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        DB::listen(function ($query) {
+            File::append(
+                storage_path('/logs/query.log'),
+                '[' . date('Y-m-d H:i:s') . '] time : ' . $query->time . " ms . " . PHP_EOL . $query->sql . ' [' . implode(', ', $query->bindings) . ']' . PHP_EOL . PHP_EOL
+            );
+        });
     }
 }
