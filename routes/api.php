@@ -26,3 +26,14 @@ Route::group(['prefix' => 'webhook'], function () {
     Route::any('/viettel-post', 'WebhookController@viettelPost');
     Route::any('/ems', 'WebhookController@ems');
 });
+
+Route::group([], function () {
+    Route::post('/auth/login', 'AuthController@login');
+    Route::middleware(['auth:api_jwt'])->group(function () {
+        Route::group(['prefix' => 'order'], function () {
+            Route::get('/detail/{order_code}', 'OrderController@detail');
+            Route::get('/tracking/{order_code}', 'OrderTrackingController@list');
+        });
+        Route::post('/auth/refresh', 'AuthController@refresh');
+    });
+});
