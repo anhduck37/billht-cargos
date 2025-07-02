@@ -5,8 +5,9 @@ namespace App;
 use App\Models\Order;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use Notifiable;
     public $table = 'users';
@@ -52,7 +53,8 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token',
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -74,4 +76,13 @@ class User extends Authenticatable
         return array_key_exists($this->status, self::STATUS_MAP) ? self::STATUS_MAP[$this->status] : "";
     }
 
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }

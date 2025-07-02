@@ -46,6 +46,10 @@ return [
             'provider' => 'user',
             'hash' => false,
         ],
+        'api_jwt' => [
+            'driver' => 'jwt',
+            'provider' => 'user',
+        ],
     ],
 
     /*

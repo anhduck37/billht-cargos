@@ -19,7 +19,8 @@ class OrderTracking extends Model
         'signator'
     ];
 
-    public function order() {
+    public function order()
+    {
         return $this->hasOne(Order::class, 'id', 'order_id');
     }
     public function getDeliveryStatusName($key)
@@ -27,7 +28,8 @@ class OrderTracking extends Model
         return (array_key_exists($key, Order::DELIVERY_MAP)) ? Order::DELIVERY_MAP[$key] : '';
     }
 
-    public function location() {
+    public function location()
+    {
         return $this->hasOne(City::class, 'id', 'city_id');
     }
 }
