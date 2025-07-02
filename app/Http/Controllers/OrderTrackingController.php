@@ -32,7 +32,14 @@ class OrderTrackingController extends Controller
         $orders = [];
         if ($request->search && !$order_code) {
             $pageSize = config('order_manager.page_size');
-            $orders = Order::join('senders', 'senders.id', '=', 'orders.sender_id')
+            $orders = Order::with([
+                'sender.city',
+                'sender.ward',
+                'sender.district',
+                'receiver.city',
+                'receiver.ward',
+                'receiver.district'
+            ])->join('senders', 'senders.id', '=', 'orders.sender_id')
                 ->join('receivers', 'receivers.id', '=', 'orders.receiver_id');
             if (isset($request->search)) {
                 $orders->where(function ($q) use ($request) {
