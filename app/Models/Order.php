@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\OrderHistory;
 use App\OrderImage;
 use App\OrderTracking;
 use App\Partner;
@@ -182,6 +183,18 @@ class Order extends Model
         return $this->join('services', 'services.order_id', '=', 'orders.id')->where('services.order_id', $order_id)->select('services.service')->get()->pluck('service')->toArray();
     }
 
+    public function getService($order)
+    {
+        $services = [];
+        if (empty($order->services)) {
+            return $services;
+        }
+        foreach ($order->services as $service) {
+            array_push($services, $service->service);
+        }
+        return $services;
+    }
+
     public function image()
     {
         return $this->hasOne(OrderImage::class, 'order_id', 'id');
@@ -201,5 +214,12 @@ class Order extends Model
                 'person_charge',
                 'signator'
             ]);
+    }
+
+    public function order_print()
+    {
+        return $this->hasOne(OrderHistory::class, 'order_id', 'id')
+            ->where('type_order', OrderHistory::TYPE_ORDER_PRINT)
+            ->orderBy('created_at', 'desc');
     }
 }

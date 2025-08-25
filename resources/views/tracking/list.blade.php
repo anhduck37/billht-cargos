@@ -17,7 +17,7 @@
 
         @foreach($orders as $key => $order)
             <tr>
-                <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->serviceArray($order->id))}}" value="{{$order->id}}" type="checkbox" /></th>
+                <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->getService($order))}}" value="{{$order->id}}" type="checkbox" /></th>
                 <th>{{ ((int)$orders->perPage() * ($orders->currentPage() - 1)) + ($key + 1)}}</th>
                 <td>{{$order->converDate($order->order_date)}}</td>
                 <th scope="row">
