@@ -44,8 +44,8 @@ class UpdateDeliveryStatusPrintCommand extends Command
         $delivery_status_update = Order::DELIVERY_STATUS_PERSON_CHARGE;
         $subDay = config('update_delivery_status.day_ago_update_bill');
         $time = Carbon::now()->subDay($subDay);
-        $startTime = $time->format('Y-m-d H:i');
-        $endTime = $time->addMinutes(10)->format('Y-m-d H:i');
+        $endTime = $time->format('Y-m-d H:i');
+        $startTime = $time->subMinutes(2)->format('Y-m-d H:i');
         echo $startTime . ' - ' . $endTime . "\n";
         Order::join('order_historys', function ($q) {
             $q->on('order_historys.order_id', '=', 'orders.id')
