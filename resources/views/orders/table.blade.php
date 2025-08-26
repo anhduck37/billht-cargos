@@ -50,7 +50,7 @@
 
         @foreach($orders as $key => $order)
             <tr>
-                <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->serviceArray($order->id))}}" value="{{$order->id}}" type="checkbox" /></th>
+                <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->getService($order))}}" value="{{$order->id}}" type="checkbox" /></th>
                 <th>{{ ((int)$orders->perPage() * ($orders->currentPage() - 1)) + ($key + 1)}}</th>
                 <td>{{$order->converDate($order->order_date)}}</td>
                 <th scope="row">
@@ -74,6 +74,9 @@
                     <div><label>Xã / Phường: <b>{{isset($order->sender) && isset($order->sender->ward) ? $order->sender->ward->ward_name : ''}}</b></label></div>
                     <div><label>Địa chỉ: <b>{{isset($order->sender) ? $order->sender->address : ''}}</b></label></div> -->
                     <div><b>{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</b></div>
+                    @if($order->order_print)
+                        <div class="mt-2"><label type="button" class="btn btn-outline-success btn-sm">Đã in</label></div>
+                    @endif
                 </td>
                 <td style="max-width: 450px">
                     <div><label>Tên người nhận: <b>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</b></label></div>

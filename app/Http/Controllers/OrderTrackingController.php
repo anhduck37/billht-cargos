@@ -7,6 +7,7 @@ use App\OrderTracking;
 use App\PartnerTracking;
 use App\Services\MickeyService;
 use App\Services\ViettelPostService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Flash;
 
@@ -31,6 +32,8 @@ class OrderTrackingController extends Controller
         $data_tracking = null;
         $orders = [];
         if ($request->search && !$order_code) {
+            $monthsAgo = Carbon::now()->subMonths(config('order_manager.months_ago_to_get_bill'));
+            $firstMonthAgo = $monthsAgo->startOfMonth();
             $pageSize = config('order_manager.page_size');
             $orders = Order::with([
                 'sender.city',
@@ -40,7 +43,11 @@ class OrderTrackingController extends Controller
                 'receiver.ward',
                 'receiver.district'
             ])->join('senders', 'senders.id', '=', 'orders.sender_id')
-                ->join('receivers', 'receivers.id', '=', 'orders.receiver_id');
+                ->join('receivers', 'receivers.id', '=', 'orders.receiver_id')
+                ->where(function ($q) use ($firstMonthAgo) {
+                    $q->where('orders.created_at', '>=', $firstMonthAgo)
+                        ->orWhere('orders.updated_at', '>=', $firstMonthAgo);
+                });
             if (isset($request->search)) {
                 $orders->where(function ($q) use ($request) {
                     $q->orWhere('senders.sender_name', 'LIKE', '%' . $request->search . '%')

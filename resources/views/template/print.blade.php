@@ -134,7 +134,7 @@
                                 <div class="row">
                                     @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_DOMESTIC]['value'] as $key => $item )
                                     <div class="col-md-4" style="margin-left: 20px">
-                                            <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
+                                            <input type="checkbox" @if(in_array($key, $order->getService($order))) checked @endif class="form-check-input">
                                             <label for="check1">{{$item}}</label>
                                     </div>
                                     @endforeach
@@ -145,7 +145,7 @@
                                 <div class="row">
                                     @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_INTERNATIONAL]['value'] as $key => $item )
                                         <div class="col-md-12" style="margin-left: 20px">
-                                            <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
+                                            <input type="checkbox" @if(in_array($key, $order->getService($order))) checked @endif class="form-check-input">
                                             <label>{{$item}}</label>
                                         </div>
                                     @endforeach
@@ -175,7 +175,7 @@
                                 <div class="row">
                                     @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_EXTRA]['value'] as $key => $item )
                                         <div class="col-md-3" style="margin-left: 20px">
-                                            <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
+                                            <input type="checkbox" @if(in_array($key, $order->getService($order))) checked @endif class="form-check-input">
                                             <label>{{$item}}</label>
                                         </div>
                                     @endforeach
@@ -317,7 +317,7 @@
                                         <div class="row">
                                             @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_DOMESTIC]['value'] as $key => $item )
                                                 <div class="col-md-4" style="margin-left: 20px">
-                                                    <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
+                                                    <input type="checkbox" @if(in_array($key, $order->getService($order))) checked @endif class="form-check-input">
                                                     <label for="check1">{{$item}}</label>
                                                 </div>
                                             @endforeach
@@ -328,7 +328,7 @@
                                         <div class="row">
                                             @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_INTERNATIONAL]['value'] as $key => $item )
                                                 <div class="col-md-12" style="margin-left: 20px">
-                                                    <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
+                                                    <input type="checkbox" @if(in_array($key, $order->getService($order))) checked @endif class="form-check-input">
                                                     <label>{{$item}}</label>
                                                 </div>
                                             @endforeach
@@ -357,7 +357,7 @@
                                         <div class="row">
                                             @foreach(\App\Service::SERVICE_MAP[\App\Service::SERVICE_EXTRA]['value'] as $key => $item )
                                                 <div class="col-md-3" style="margin-left: 20px">
-                                                    <input type="checkbox" @if(in_array($key, $order->serviceArray($order->id))) checked @endif class="form-check-input">
+                                                    <input type="checkbox" @if(in_array($key, $order->getService($order))) checked @endif class="form-check-input">
                                                     <label>{{$item}}</label>
                                                 </div>
                                             @endforeach

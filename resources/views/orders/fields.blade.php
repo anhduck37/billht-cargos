@@ -341,7 +341,7 @@
                   <h4>{!! $service['name'] !!}</h4>
                     @foreach($service['value'] as $key => $item)
                     <div class="form-check">
-                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order_service[{{$type}}][]" value="{{$key}}" @if(in_array($key, $order->serviceArray($order->id))) checked @endif type="checkbox" class="form-check-input">
+                        <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order_service[{{$type}}][]" value="{{$key}}" @if(in_array($key, $order->getService($order))) checked @endif type="checkbox" class="form-check-input">
                         <label class="form-check-label">{{$item}}</label>
                     </div>
                     @endforeach
@@ -356,7 +356,7 @@
             <h4>{!! $service['name'] !!}</h4>
             @foreach($service['value'] as $key => $item)
             <div class="form-check">
-                <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order_service[{{$type}}][]" value="{{$key}}" @if(in_array($key, $order->serviceArray($order->id))) checked @endif type="checkbox" class="form-check-input">
+                <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order_service[{{$type}}][]" value="{{$key}}" @if(in_array($key, $order->getService($order))) checked @endif type="checkbox" class="form-check-input">
                 <label class="form-check-label">{{$item}}</label>
             </div>
             @endforeach

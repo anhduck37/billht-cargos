@@ -21,5 +21,8 @@ class OrderHistory extends Model
     const TYPE_ORDER_CREATE = 1;
     const TYPE_ORDER_UPDATE = 2;
 
+    const TYPE_ORDER_PRINT = 3;
+
     const IS_TOTAL_ORDER = 1;
+    const NOT_TOTAL_ORDER = 0;
 }

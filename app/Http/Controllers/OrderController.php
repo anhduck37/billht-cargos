@@ -35,6 +35,7 @@ use App\Services\OrderImageService;
 use App\Services\SendSMSService;
 use App\Services\ZaloService;
 use App\ZaloConfig;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -74,6 +75,8 @@ class OrderController extends AppBaseController
     public function index(Request $request)
     {
         $formFilter = $request->all();
+        $monthsAgo = Carbon::now()->subMonths(config('order_manager.months_ago_to_get_bill'));
+        $firstMonthAgo = $monthsAgo->startOfMonth();
         $pageSize = config('order_manager.page_size');
         $orders = Order::with([
             'sender.city',
@@ -81,9 +84,15 @@ class OrderController extends AppBaseController
             'sender.district',
             'receiver.city',
             'receiver.ward',
-            'receiver.district'
+            'receiver.district',
+            'order_print',
+            'services'
         ])->join('senders', 'senders.id', '=', 'orders.sender_id')
-            ->join('receivers', 'receivers.id', '=', 'orders.receiver_id');
+            ->join('receivers', 'receivers.id', '=', 'orders.receiver_id')
+            ->where(function ($q) use ($firstMonthAgo) {
+                $q->where('orders.created_at', '>=', $firstMonthAgo)
+                    ->orWhere('orders.updated_at', '>=', $firstMonthAgo);
+            });
         if (isset($formFilter['search'])) {
             $orders->where(function ($q) use ($formFilter) {
                 $q->orWhere('senders.sender_name', 'LIKE', '%' . $formFilter['search'] . '%')
@@ -288,7 +297,7 @@ class OrderController extends AppBaseController
 
     public function update(OrderFormRequestLevelPosman $request, $id)
     {
-        $is_total_order = 0;
+        $is_total_order = OrderHistory::NOT_TOTAL_ORDER;
         $senderForm = $request->sender;
         $receiverForm = $request->receiver;
         $orderForm = $request->order;
@@ -606,6 +615,7 @@ class OrderController extends AppBaseController
             $orderData = [];
         }
         $level = $request->number;
+        app(OrderHistoryService::class)->insertManyOrderHistory($orderData, OrderHistory::TYPE_ORDER_PRINT);
         return response()->json([
             'orders' => $orderData,
             'level' => $level,
