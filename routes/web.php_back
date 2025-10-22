@@ -3,7 +3,6 @@
 use App\Models\Order;
 use App\Services\ZaloService;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\GoogleOAuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,8 +14,7 @@ use App\Http\Controllers\GoogleOAuthController;
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::get('/google/oauth2/start', [GoogleOAuthController::class, 'start']);
-Route::get('/google/oauth2/callback', [GoogleOAuthController::class, 'callback']);
+
 Route::get('/', function () {
     return redirect('/orders');
 });
