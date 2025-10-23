@@ -1,0 +1,6 @@
+[08-Aug-2023 16:41:25 Asia/Ho_Chi_Minh] PHP Warning:  require_once(/wp-config.php): failed to open stream: No such file or directory in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 51
+[08-Aug-2023 16:41:25 Asia/Ho_Chi_Minh] PHP Fatal error:  require_once(): Failed opening required '/wp-config.php' (include_path='.:/opt/alt/php74/usr/share/pear') in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 51
+[23-Aug-2023 10:20:59 Asia/Ho_Chi_Minh] PHP Notice:  A non well formed numeric value encountered in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 81
+[23-Aug-2023 10:20:59 Asia/Ho_Chi_Minh] PHP Notice:  A non well formed numeric value encountered in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 156
+[23-Aug-2023 10:21:04 Asia/Ho_Chi_Minh] PHP Notice:  A non well formed numeric value encountered in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 81
+[23-Aug-2023 10:21:04 Asia/Ho_Chi_Minh] PHP Notice:  A non well formed numeric value encountered in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 156
