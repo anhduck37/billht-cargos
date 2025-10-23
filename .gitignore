@@ -1,4 +1,4 @@
 .env
 vendor
 public/uploads
-app/Services/google/*
+app/Services/google
