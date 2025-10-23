@@ -21988,3 +21988,24 @@ html:not([dir='rtl']) .noUi-horizontal .noUi-handle
 #snowflakeContainer{position:absolute;left:0px;top:0px;}
     .snowflake{padding-left:15px;font-size:14px;line-height:24px;position:fixed;color:#ebebeb;user-select:none;z-index:1000;-moz-user-select:none;-ms-user-select:none;-khtml-user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
     .snowflake:hover {cursor:default}
+
+/*css button chi tiet tracking*/
+.btn-outline-orange {
+  display: inline-block;
+  padding: 6px 14px;
+  color: #f57c00;                 /* Màu chữ cam */
+  border: 2px solid #f57c00;      /* Viền cam */
+  background-color: #fff;         /* Nền trắng */
+  border-radius: 6px;             /* Bo góc mềm */
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-outline-orange:hover {
+  background-color: #f57c00;      /* Đổi nền sang cam */
+  color: #fff !important;         /* Chữ trắng */
+  border-color: #f57c00;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(245, 124, 0, 0.3);
+}

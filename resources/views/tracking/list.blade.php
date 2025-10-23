@@ -24,7 +24,12 @@
                     <a href="{{ route('orders.edit', [$order->id]) }}">
                     <div class="media align-items-center">
                         <div class="media-body">
-                            <span class="mb-0 text-sm">{{$order->order_code}}</span>
+                            <span class="mb-0 text-sm">
+                            <a href="#" onclick="return false;" style="color:#5e72e4; text-decoration:none; cursor:default;">
+                                {{ $order->order_code }}
+                            </a>
+                             </span>
+
                         </div>
                     </div>
                     </a>
@@ -57,9 +62,14 @@
                             @endif
                         </label></div>
                 </td>
-                <td class="text-center" style="min-width: 110px">
-                    <a href="{{ route('tracking', ['order_code' => $order->order_code]) }}">Chi tiết</a>
-                </td>
+                    <td class="text-center" style="min-width: 110px">
+                        <a href="{{ route('tracking', ['order_code' => $order->order_code]) }}" 
+                           class="btn-outline-orange">
+                           <i class="fa fa-eye"></i> Chi tiết
+                        </a>
+                    </td>
+
+
             </tr>
         @endforeach
         </tbody>

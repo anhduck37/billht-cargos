@@ -1,0 +1,29 @@
+#!/bin/bash
+
+# Kiểm tra xem người dùng có nhập phiên bản không
+if [ -z "$1" ]; then
+    echo "Lỗi: Bạn chưa chọn phiên bản."
+    echo "Cách dùng: switch-php [7.4|8.1]"
+    exit 1
+fi
+
+# Gán đường dẫn dựa trên lựa chọn
+if [ "$1" = "7.4" ]; then
+    PHP_PATH="/usr/local/lsws/lsphp74/bin/php"
+elif [ "$1" = "8.1" ]; then
+    PHP_PATH="/usr/local/lsws/lsphp81/bin/php"
+else
+    echo "Lỗi: Phiên bản '$1' không được hỗ trợ."
+    echo "Phiên bản có sẵn: 7.4, 8.1"
+    exit 1
+fi
+
+echo "Đang chuyển phiên bản PHP CLI mặc định sang $1..."
+
+# Xóa symlink cũ và tạo symlink mới
+# Lệnh 'ln -sf' sẽ (f)orce - ghi đè link cũ một cách an toàn
+sudo ln -sf $PHP_PATH /usr/bin/php
+
+echo "Hoàn tất!"
+echo "Phiên bản hiện tại:"
+php -v
