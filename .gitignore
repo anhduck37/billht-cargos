@@ -1,4 +1,5 @@
 .env
 vendor
 public/uploads
-app/Services/google
+app/Services/google/client_secret.json
+app/Services/google/token.json
