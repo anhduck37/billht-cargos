@@ -129,6 +129,20 @@ class GoogleDriveService
         );
 
         $this->setFile($file);
+
+        try {
+            $permission = new Drive\Permission([
+                'type' => 'anyone', // Cấp quyền cho "bất kỳ ai"
+                'role' => 'reader', // Với vai trò là "người xem"
+            ]);
+            
+            // Áp dụng quyền này cho file vừa tạo
+            $this->googleDrive->permissions->create($file->id, $permission);
+            
+        } catch (Exception $e) {
+
+        }
+        
         return $this;
     }
 
@@ -146,4 +160,15 @@ class GoogleDriveService
     public function getFolder() { return $this->folder; }
     public function setFile($file) { $this->file = $file; return $this; }
     public function getFile() { return $this->file; }
+
+    public function getClient() 
+    {
+        return $this->googleClient;
+    }
+
+    public function getDrive()
+    {
+        return $this->googleDrive;
+    }
+    
 }
