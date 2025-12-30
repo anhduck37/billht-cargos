@@ -612,7 +612,7 @@
                 crop_height: 1280,
                 force_flash: false,
                 image_fromat: 'jpeg',
-                jpeg_quality: 100,
+                jpeg_quality: 85, // Giảm từ 100 xuống 85 để giảm kích thước file
                 constraints: {
                     facingMode: 'environment'
                 }

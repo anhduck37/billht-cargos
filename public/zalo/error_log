@@ -4,3 +4,4 @@
 [23-Aug-2023 10:20:59 Asia/Ho_Chi_Minh] PHP Notice:  A non well formed numeric value encountered in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 156
 [23-Aug-2023 10:21:04 Asia/Ho_Chi_Minh] PHP Notice:  A non well formed numeric value encountered in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 81
 [23-Aug-2023 10:21:04 Asia/Ho_Chi_Minh] PHP Notice:  A non well formed numeric value encountered in /home/linhrebe/ht-cargos.com/tinnhanzalo/index.php on line 156
+[08-Dec-2025 14:36:20 Asia/Ho_Chi_Minh] PHP Warning:  mysqli::__construct(): (HY000/1045): Access denied for user 'billhtcargoscom_NDZkYzU1ODA2YTI0OG_username'@'localhost' (using password: YES) in /home/wepkbmc/bill.ht-cargos.com/public/zalo/index.php on line 53

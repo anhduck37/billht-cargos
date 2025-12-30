@@ -46,9 +46,9 @@
  <?php
         // Thay đổi các thông tin kết nối dựa trên cấu hình của bạn
         $servername = "localhost";
-        $username = "billhtcargoscom_NDZkYzU1ODA2YTI0OG_username";
+        $username = "wepkbmc_billht";
         $password = "NDZkYzU1ODA2YTI0OGRlOGFiZWU0YWE4ZjE1";
-        $dbname = "billhtcargoscom_NDZkYzU1ODA2YTI0OG_dbname";
+        $dbname = "wepkbmc_billht";
 
         $conn = new mysqli($servername, $username, $password, $dbname);
 

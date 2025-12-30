@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     //    Route::post('user/{id}','UserController@updatePassword' )->name('users.updatePassword');
     //    Route::get('user/{id}/info', 'UserController@show')->name('users.showInfo');
     Route::resource('orders', 'OrderController');
+    Route::post('orders/{id}/upload-image', 'OrderController@uploadImage')->name('orders.upload-image');
     Route::post('orders/import', 'OrderController@import')->name('orders.import');
     Route::get('fileDemo', 'OrderController@fileDownload')->name('fileDemo');
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');

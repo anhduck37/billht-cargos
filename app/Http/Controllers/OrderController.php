@@ -37,6 +37,7 @@ use App\Services\ZaloService;
 use App\ZaloConfig;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as ExceptionMail;
@@ -303,6 +304,36 @@ class OrderController extends AppBaseController
         $orderForm = $request->order;
         $order_service = isset($request->order_service) ? $request->order_service : [];
         $fileName = null;
+        
+        // XỬ LÝ UPLOAD ẢNH TRƯỚC KHI BẮT ĐẦU TRANSACTION (nếu có upload mới)
+        // Nếu ảnh đã được upload qua AJAX, fileName sẽ được truyền qua request
+        if (isset($request->uploaded_image_file)) {
+            $fileName = $request->uploaded_image_file;
+        } elseif (isset($request->image_data)) {
+            // Fallback: Nếu chưa upload qua AJAX, upload ngay tại đây (nhưng vẫn tách khỏi transaction)
+            try {
+                $order = $this->orderRepository->find($id);
+                $user = auth()->user();
+                if ($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
+                    return abort(403);
+                }
+                
+                $fileName = $this->upload(
+                    $request->image_data,
+                    $request->type_image,
+                    isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code,
+                    OrderImage::SAVE_SERVER,
+                    $order,
+                    $request->image_remove
+                );
+            } catch (\Exception $e) {
+                Log::error('Lỗi upload ảnh trong update: ' . $e->getMessage());
+                Flash::error($e->getMessage());
+                return back();
+            }
+        }
+        
+        // BẮT ĐẦU TRANSACTION SAU KHI UPLOAD ẢNH XONG (nếu có)
         DB::beginTransaction();
         try {
             $order = $this->orderRepository->find($id);
@@ -312,21 +343,17 @@ class OrderController extends AppBaseController
             }
             $order_old = $order;
             if ($order) {
-                if (isset($request->image_data)) {
-                    $fileName = $this->upload(
-                        $request->image_data,
-                        $request->type_image,
-                        isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code,
-                        OrderImage::SAVE_SERVER,
-                        $order,
-                        $request->image_remove
-                    );
-                } else if ($request->image_remove) {
-                    if ($order->image->type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
+                // Xử lý xóa ảnh nếu cần (không có upload mới và không có fileName từ AJAX)
+                if (!isset($request->image_data) && !isset($request->uploaded_image_file) && $request->image_remove) {
+                    if ($order->image && $order->image->type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
                         // $this->googleDriveService->deleteFile($order->image->file_id);
                     }
-                    $order->image->delete();
+                    if ($order->image) {
+                        $order->image->delete();
+                    }
                 }
+                
+                // Nếu có fileName từ upload (qua AJAX hoặc fallback), đánh dấu là total order
                 if (isset($fileName)) {
                     $is_total_order = OrderHistory::IS_TOTAL_ORDER;
                     // $orderForm['delivery_status'] = Order::DELIVERY_STATUS_OK;
@@ -399,9 +426,26 @@ class OrderController extends AppBaseController
             DB::commit();
             Flash::success('Cập nhật vận đơn thành công.');
             return back();
-        } catch (Exception $e) {
-            Flash::error('Xảy ra lỗi khi cập nhật vận đơn');
+        } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Lỗi cập nhật vận đơn: ' . $e->getMessage(), [
+                'order_id' => $id,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // Hiển thị thông báo lỗi chi tiết hơn
+            $errorMessage = 'Xảy ra lỗi khi cập nhật vận đơn';
+            if (strpos($e->getMessage(), 'Kích thước') !== false || 
+                strpos($e->getMessage(), 'ảnh') !== false ||
+                strpos($e->getMessage(), 'image') !== false) {
+                $errorMessage = $e->getMessage();
+            } elseif (strpos($e->getMessage(), 'timeout') !== false || 
+                      strpos($e->getMessage(), 'Connection') !== false) {
+                $errorMessage = 'Kết nối bị gián đoạn. Vui lòng kiểm tra kết nối mạng và thử lại.';
+            }
+            
+            Flash::error($errorMessage);
         }
         return redirect()->route('orders.index');
     }
@@ -738,41 +782,146 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
+    /**
+     * Upload ảnh riêng biệt qua AJAX (tách khỏi transaction DB để tối ưu performance)
+     */
+    public function uploadImage(Request $request, $id)
+    {
+        try {
+            $order = $this->orderRepository->find($id);
+            $user = auth()->user();
+            
+            if ($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+            
+            if (!isset($request->image_data)) {
+                return response()->json(['error' => 'Không có dữ liệu ảnh'], 400);
+            }
+            
+            $orderForm = $request->all();
+            $order_code = isset($orderForm['invoice_code']) ? $orderForm['invoice_code'] : $order->order_code;
+            
+            $fileName = $this->upload(
+                $request->image_data,
+                $request->type_image,
+                $order_code,
+                OrderImage::SAVE_SERVER,
+                $order,
+                false
+            );
+            
+            return response()->json([
+                'success' => true,
+                'file_name' => $fileName,
+                'message' => 'Upload ảnh thành công'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Lỗi upload ảnh qua AJAX: ' . $e->getMessage(), [
+                'order_id' => $id,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function upload($image_data, $type_image, $order_code, $type_save, $order, $is_remove = false)
     {
         $dataOrderImage = [];
-        if ($type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
-            $fileImage = $this->orderImageService->setUp($image_data, $type_image, $order_code);
-            $fileName = $fileImage->getFileName();
-            $data = $this->googleDriveService->createFile($fileName, $fileImage->getContentFile(), $fileImage->getMimeType());
-            $dataOrderImage['google_drive_id'] = $data->getFolder()->id;
-            $dataOrderImage['file_id'] = $data->getFile()->id;
-            $dataOrderImage['url'] = config('google_drive.url') . $data->getFile()->id;
-        } else {
-            $folderPath = public_path() . "/uploads/";
-            $fileName = $order_code . '.jpeg';
-            if (File::exists($folderPath . $fileName)) {
-                unlink($folderPath . $fileName);
-            }
-            if ($type_image == OrderImage::TYPE_IMAGE_FILE) {
-                $fileName = $order_code . '.' . $image_data->getClientOriginalExtension();
-                $image_data->move($folderPath, $fileName);
+        try {
+            if ($type_save == OrderImage::SAVE_GOOGLE_DRIVE) {
+                $fileImage = $this->orderImageService->setUp($image_data, $type_image, $order_code);
+                $fileName = $fileImage->getFileName();
+                $data = $this->googleDriveService->createFile($fileName, $fileImage->getContentFile(), $fileImage->getMimeType());
+                $dataOrderImage['google_drive_id'] = $data->getFolder()->id;
+                $dataOrderImage['file_id'] = $data->getFile()->id;
+                $dataOrderImage['url'] = config('google_drive.url') . $data->getFile()->id;
             } else {
-                $image_parts = explode(";base64,", $image_data);
-                $image_type_aux = explode("image/", $image_parts[0]);
-                $image_type = $image_type_aux[1];
-                $image_base64 = base64_decode($image_parts[1]);
-                $file = $folderPath . $fileName;
-                file_put_contents($file, $image_base64);
+                $folderPath = public_path() . "/uploads/";
+                
+                // Đảm bảo thư mục tồn tại
+                if (!File::isDirectory($folderPath)) {
+                    File::makeDirectory($folderPath, 0755, true);
+                }
+                
+                $fileName = $order_code . '.jpeg';
+                if (File::exists($folderPath . $fileName)) {
+                    unlink($folderPath . $fileName);
+                }
+                
+                if ($type_image == OrderImage::TYPE_IMAGE_FILE) {
+                    // Validate file size (max 10MB)
+                    if ($image_data->getSize() > 10 * 1024 * 1024) {
+                        throw new \Exception('Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 10MB.');
+                    }
+                    $fileName = $order_code . '.' . $image_data->getClientOriginalExtension();
+                    $image_data->move($folderPath, $fileName);
+                } else {
+                    // Xử lý base64 image với error handling
+                    if (empty($image_data) || !is_string($image_data)) {
+                        throw new \Exception('Dữ liệu ảnh không hợp lệ.');
+                    }
+                    
+                    // Validate base64 string format
+                    if (strpos($image_data, ';base64,') === false) {
+                        throw new \Exception('Định dạng ảnh không hợp lệ.');
+                    }
+                    
+                    $image_parts = explode(";base64,", $image_data);
+                    if (count($image_parts) < 2) {
+                        throw new \Exception('Định dạng ảnh base64 không hợp lệ.');
+                    }
+                    
+                    $image_type_aux = explode("image/", $image_parts[0]);
+                    if (count($image_type_aux) < 2) {
+                        throw new \Exception('Loại ảnh không được hỗ trợ.');
+                    }
+                    
+                    $image_type = $image_type_aux[1];
+                    
+                    // Validate base64 data size (max 10MB base64 = ~7.5MB actual)
+                    $base64_data = $image_parts[1];
+                    if (strlen($base64_data) > 13 * 1024 * 1024) { // ~10MB khi decode
+                        throw new \Exception('Kích thước ảnh quá lớn. Vui lòng chụp lại với chất lượng thấp hơn.');
+                    }
+                    
+                    // Decode base64 với error handling
+                    $image_base64 = @base64_decode($base64_data, true);
+                    if ($image_base64 === false) {
+                        throw new \Exception('Không thể giải mã dữ liệu ảnh. Vui lòng thử lại.');
+                    }
+                    
+                    // Validate decoded data
+                    if (empty($image_base64)) {
+                        throw new \Exception('Dữ liệu ảnh sau khi giải mã rỗng.');
+                    }
+                    
+                    $file = $folderPath . $fileName;
+                    $result = @file_put_contents($file, $image_base64);
+                    if ($result === false) {
+                        throw new \Exception('Không thể lưu ảnh. Vui lòng kiểm tra quyền ghi file.');
+                    }
+                }
+                dispatch(new UploadGoogleDriveJob($order));
             }
-            dispatch(new UploadGoogleDriveJob($order));
+            $dataOrderImage['image'] = $fileName;
+            $dataOrderImage['order_id'] = $order->id;
+            $dataOrderImage['type_upload'] = $type_image;
+            $dataOrderImage['type_save'] = $type_save;
+            $this->orderImageService->createOrUpdate($order->id, $dataOrderImage, $is_remove);
+            return $fileName;
+        } catch (\Exception $e) {
+            Log::error('Lỗi upload ảnh: ' . $e->getMessage(), [
+                'order_id' => $order->id ?? null,
+                'order_code' => $order_code,
+                'type_image' => $type_image
+            ]);
+            throw $e;
         }
-        $dataOrderImage['image'] = $fileName;
-        $dataOrderImage['order_id'] = $order->id;
-        $dataOrderImage['type_upload'] = $type_image;
-        $dataOrderImage['type_save'] = $type_save;
-        $this->orderImageService->createOrUpdate($order->id, $dataOrderImage, $is_remove);
-        return $fileName;
     }
 
     public function sendSMS(Request $request)
