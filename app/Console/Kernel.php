@@ -37,7 +37,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('update_delivery_status --type=1')->everyMinute();
         // $schedule->command('update_delivery_status --type=7')->everyMinute();
         $schedule->command('update_delivery_status_print')->everyMinute();
-        // $schedule->command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
+        $schedule->command('queue:work --stop-when-empty')->everyMinute()->withoutOverlapping();
         $schedule->command('zalo_refresh_token')->dailyAt('00:00');
         $schedule->command('viettel_post_refresh_token')->dailyAt('00:00');
     }

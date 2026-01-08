@@ -20,9 +20,21 @@
                     <div class="card-body mt-3">
                         <div class="row">
                             <div class="form-group col-md-5" style="margin-bottom: 0rem">
-                                <label>Vui lòng nhập sdt, tên, mã vận đơn, ví dụ: HE000001</label>
-                                <!-- {!! Form::label( 'Vui lòng nhập mã vận đơn. Ví dụ: HE000001' ) !!} -->
-                                {!! Form::text('search', request('search', ''), ['class' => 'form-control', 'id' => 'search']) !!}
+                                <div class="mb-2">
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="type_order_code" name="search_type" class="custom-control-input" value="order_code" {{ !request()->has('search') ? 'checked' : '' }}>
+                                        <label class="custom-control-label" for="type_order_code">Mã vận đơn</label>
+                                    </div>
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="type_search" name="search_type" class="custom-control-input" value="search" {{ request()->has('search') ? 'checked' : '' }}>
+                                        <label class="custom-control-label" for="type_search">Số điện thoại, Tên</label>
+                                    </div>
+                                </div>
+                                @php
+                                    $searchValue = request('order_code') ?? request('search');
+                                    $inputName = request()->has('search') ? 'search' : 'order_code';
+                                @endphp
+                                {!! Form::text($inputName, $searchValue, ['class' => 'form-control', 'id' => 'search_input', 'placeholder' => 'Nhập thông tin tìm kiếm...']) !!}
                             </div>
                             <div class="form-group col-md-3 custorm-margin">
                                 {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'margin-bottom: -83px;']) !!}
@@ -168,9 +180,32 @@
     <script type="text/javascript">
 
         $(function() {
-            $('#order_code').on('change', function() {
-                $('#order_code').val(this.value.toUpperCase())
+            // Function to update input name and placeholder
+            function updateSearchInput() {
+                var searchType = $('input[name="search_type"]:checked').val();
+                var $input = $('#search_input');
+                $input.attr('name', searchType);
+                
+                if (searchType === 'order_code') {
+                    $input.attr('placeholder', 'Ví dụ: HE000001');
+                } else {
+                    $input.attr('placeholder', 'Nhập số điện thoại hoặc tên...');
+                }
+            }
+
+            // Listen for changes on radio buttons
+            $('input[name="search_type"]').change(updateSearchInput);
+
+            // Handle uppercase for order code input
+            $('#search_input').on('input', function() {
+                var searchType = $('input[name="search_type"]:checked').val();
+                if (searchType === 'order_code') {
+                    $(this).val($(this).val().toUpperCase());
+                }
             });
+            
+            // Initialize placeholder
+            updateSearchInput();
         })
     </script>
 @endsection
