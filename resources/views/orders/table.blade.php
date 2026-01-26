@@ -1,145 +1,208 @@
-<div class="table-responsive mt-2">
-    <div class="card-header border-0">
+<!-- Modern Card List Layout for Orders -->
+<div class="orders-card-list mt-4">
+    <div class="card-header border-0 mb-3">
         <div class="row align-items-center">
             <div class="col">
                 <h2 class="mb-0">Quản lý vận đơn</h2>
             </div>
-{{--            <div class="col text-right">--}}
-{{--                <a class="btn btn-primary float-right"--}}
-{{--                   href="{{ route('orders.create') }}">--}}
-{{--                    Tạo vận đơn--}}
-{{--                </a>--}}
-{{--            </div>--}}
         </div>
     </div>
-{{--    <div class="table-wrapper-scroll-y my-custom-scrollbar">--}}
-    <table class="table align-items-center">
-        <thead style="background-color: #f6821f; color: white" class="thead-light">
-        <tr>
-            <td class="text-center">
-                <input id="checkedAll" type="checkbox" />
-            </td>
-            <td>STT</td>
-            <td>Ngày gửi</td>
-            <td>Mã vận đơn</td>
-            {{--  @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                <td>Mã vận đơn</td>
-            @endif  --}}
-            <td>Người gửi</td>
-            <td>Người nhận</td>
-            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-            <td>Người phụ trách</td>
-            @endif
-{{--            <th>Phòng ban</th>--}}
-            <!-- <th>Trạng thái vận đơn</th> -->
-            <td>Trạng thái</td>
-            <td>Ký nhận</td>
-{{--            <td>Phương thức thanh toán</td>--}}
-{{--            <th>Ngày vận chuyển</th>--}}
-{{--            <td>Đối tác vận chuyển</td>--}}
-            <!-- <th>Trọng lượng</th>
-            <th>Chiều cao</th>
-            <th>Chiều dài</th> -->
-            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-            <td>Người tạo</td>
-            @endif
-            <td class="text-center" colspan="2">Hành động</td>
-        </tr>
-        </thead>
-        <tbody>
-
-        @foreach($orders as $key => $order)
-            <tr>
-                <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->getService($order))}}" value="{{$order->id}}" type="checkbox" /></th>
-                <th>{{ ((int)$orders->perPage() * ($orders->currentPage() - 1)) + ($key + 1)}}</th>
-                <td>{{$order->converDate($order->order_date)}}</td>
-                <th scope="row">
-                    <a href="{{ route('orders.edit', [$order->id]) }}">
-                    <div class="media align-items-center">
-                        <div class="media-body">
-                            <span class="mb-0 text-sm">{{$order->order_code}}</span>
-                        </div>
-                    </div>
-                    </a>
-                </th>
-                {{--  @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                    <th>{{$order->invoice_code}}</th>
-                @endif  --}}
-                <td>
-                    <div><label>Tên người gửi: <b>{{isset($order->sender) ? $order->sender->sender_name : ''}}</b> </label></div>
-                    <div><label>Số điện thoại: <b>{{isset($order->sender) ? $order->sender->sender_phone : ''}}</b></label></div>
-{{--                    <div><label>Email: <b>{{isset($order->sender) ? $order->sender->sender_email : ''}}</b></label></div>--}}
-                    <div><label>Tỉnh / Thành phố: </label> <br> <b>{{isset($order->sender) && isset($order->sender->city) ? $order->sender->city->city_name : ''}}</b></div>
-                    <!-- <div><label>Huyện / Quận: <b>{{isset($order->sender)&& isset($order->sender->district)  ? $order->sender->district->district_name : ''}}</b></label></div>
-                    <div><label>Xã / Phường: <b>{{isset($order->sender) && isset($order->sender->ward) ? $order->sender->ward->ward_name : ''}}</b></label></div>
-                    <div><label>Địa chỉ: <b>{{isset($order->sender) ? $order->sender->address : ''}}</b></label></div> -->
-                    <div><b>{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</b></div>
-                    @if($order->order_print)
-                        <div class="mt-2"><label type="button" class="btn btn-outline-success btn-sm">Đã in</label></div>
+    
+    <!-- Desktop Table View -->
+    <div class="d-none d-lg-block">
+        <div class="table-responsive orders-table">
+            <table class="table align-items-center">
+                <thead style="background-color: #f6821f; color: white" class="thead-light">
+                <tr>
+                    <td class="text-center">
+                        <input id="checkedAll" type="checkbox" />
+                    </td>
+                    <td>STT</td>
+                    <td>Ngày gửi</td>
+                    <td>Mã vận đơn</td>
+                    <td>Người gửi</td>
+                    <td>Người nhận</td>
+                    <td>Trạng thái</td>
+                    <td>Ký nhận</td>
+                    @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                    <td>Người tạo</td>
                     @endif
-                </td>
-                <td style="max-width: 450px">
-                    <div><label>Tên người nhận: <b>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</b></label></div>
-                    <div><label>Số điện thoại: <b>{{isset($order->receiver) ? $order->receiver->receiver_phone : ''}}</b></label></div>
-{{--                    <div><label>Email: <b>{{isset($order->receiver) ? $order->receiver->receiver_email : ''}}</b></label></div>--}}
-                    <div>
-                        <label>
-                            @if(isset($order->receiver))
-                            Địa chỉ: <span style="white-space: pre-line">@if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif</span>
+                    <td class="text-center">Hành động</td>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($orders as $key => $order)
+                    <tr>
+                        <th class="text-center"><input class="printOrder" data-service="{{implode(',',$order->getService($order))}}" value="{{$order->id}}" type="checkbox" /></th>
+                        <th>{{ ((int)$orders->perPage() * ($orders->currentPage() - 1)) + ($key + 1)}}</th>
+                        <td>{{$order->converDate($order->order_date)}}</td>
+                        <th scope="row">
+                            <a href="{{ route('orders.edit', [$order->id]) }}">
+                            <div class="media align-items-center">
+                                <div class="media-body">
+                                    <span class="mb-0 text-sm font-weight-bold">{{$order->order_code}}</span>
+                                </div>
+                            </div>
+                            </a>
+                        </th>
+                        <td style="max-width: 200px; font-size: 0.85rem;">
+                            <div style="white-space: normal; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><label style="font-size: 0.8rem;">Tên: <b>{{isset($order->sender) ? $order->sender->sender_name : ''}}</b></label></div>
+                            <div><label style="font-size: 0.8rem;">SĐT: <b>{{isset($order->sender) ? $order->sender->sender_phone : ''}}</b></label></div>
+                            <div><label style="font-size: 0.8rem;">Tỉnh/TP: <b>{{isset($order->sender) && isset($order->sender->city) ? $order->sender->city->city_name : ''}}</b></label></div>
+                            <div><b style="font-size: 0.75rem;">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</b></div>
+                            @if($order->order_print)
+                                <div class="mt-1"><span class="badge badge-success" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">Đã in</span></div>
+                            @endif
+                        </td>
+                        <td style="max-width: 250px; font-size: 0.85rem;">
+                            <div style="white-space: normal; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><label style="font-size: 0.8rem;">Tên: <b>{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</b></label></div>
+                            <div><label style="font-size: 0.8rem;">SĐT: <b>{{isset($order->receiver) ? $order->receiver->receiver_phone : ''}}</b></label></div>
+                            <div style="font-size: 0.75rem; white-space: normal; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                <label>
+                                    @if(isset($order->receiver))
+                                    @if($order->receiver->address)
+                                        <b>{{implode(', ', array_slice(explode(',', $order->receiver->address), 0, 2))}}</b>
+                                    @endif
+                                    @if(isset($order->receiver->ward))
+                                    <b>{{ $order->receiver->ward->ward_name }}</b>
+                                    @endif
+                                    @if(isset($order->receiver->district))
+                                    <b>{{ $order->receiver->district->district_name }}</b>
+                                    @endif
+                                    @if(isset($order->receiver->city))
+                                    <b>{{$order->receiver->city->city_name}}</b>
+                                    @endif
+                                    @endif
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {{ $order->delivery_status == \App\Models\Order::DELIVERY_STATUS_OK ? '' : 'badge-info' }}" 
+                                  style="{{ $order->delivery_status == \App\Models\Order::DELIVERY_STATUS_OK ? 'color: #000000; background-color: rgb(246 130 31 / 66%);' : '' }}">
+                                {{$order->order_delivery_name}}
+                            </span>
+                        </td>
+                        <td>{{$order->signator}}</td>
+                        @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                        <td style="font-size: 0.8rem;">{{isset($order->user) ? $order->user->email : ''}}</td>
+                        @endif
+                        <td class="text-center" style="min-width: 120px; white-space: nowrap;">
+                            <a class="printIcon" data-toggle="modal" data-target="#openModalPrint" data-id="{{$order->id}}" title="In"><i style="color: #0ca362; font-size: 1.2rem; margin: 0 0.25rem;" class="fa fa-print"></i></a>
+                            <a href="{{ route('orders.edit', [$order->id]) }}" title="Chỉnh sửa"><i style="color: #ff9a56; font-size: 1.2rem; margin: 0 0.25rem;" class="far fa-edit"></i></a>
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && in_array($order->delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_BLANK])) )
+                                <a class="delete" data-id="{{$order->id}}" title="Xóa"><i style="color: #f5576c; font-size: 1.2rem; margin: 0 0.25rem;" class="far fa-trash-alt"></i></a>
+                                {!! Form::open(['route' => ['orders.destroy', $order->id], 'method' => 'DELETE', 'class' => ['removeOrder'.$order->id],'style' => 'display: none']) !!}
+                                @csrf
+                                {!! Form::close() !!}
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Mobile Card View -->
+    <div class="d-lg-none orders-list">
+        @foreach($orders as $key => $order)
+        <div class="order-card">
+            <div class="order-card-left-border"></div>
+            <div class="order-card-content">
+                <div class="order-card-header">
+                    <div class="order-card-header-left">
+                        <input class="printOrder" data-service="{{implode(',',$order->getService($order))}}" value="{{$order->id}}" type="checkbox" />
+                        <span class="order-code">{{$order->order_code}}</span>
+                    </div>
+                    <div class="order-card-header-right">
+                        <span class="order-status-badge" style="{{ $order->delivery_status == \App\Models\Order::DELIVERY_STATUS_OK ? 'color: #000000; background-color: rgb(246 130 31 / 66%);' : '' }}">{{$order->order_delivery_name}}</span>
+                    </div>
+                </div>
+                
+                <div class="order-card-body">
+                    <div class="order-info-row">
+                        <span class="order-info-label">Ngày gửi:</span>
+                        <span class="order-info-value">{{$order->converDate($order->order_date)}}</span>
+                    </div>
+                    <div class="order-info-row">
+                        <span class="order-info-label">Người gửi:</span>
+                        <span class="order-info-value" style="white-space: normal; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{isset($order->sender) ? $order->sender->sender_name : ''}}</span>
+                    </div>
+                    <div class="order-info-row">
+                        <span class="order-info-label">SĐT gửi:</span>
+                        <span class="order-info-value">{{isset($order->sender) ? $order->sender->sender_phone : ''}}</span>
+                    </div>
+                    <div class="order-info-row">
+                        <span class="order-info-label">Người nhận:</span>
+                        <span class="order-info-value" style="white-space: normal; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{isset($order->receiver) ? $order->receiver->receiver_name : ''}}</span>
+                    </div>
+                    <div class="order-info-row">
+                        <span class="order-info-label">SĐT nhận:</span>
+                        <span class="order-info-value">{{isset($order->receiver) ? $order->receiver->receiver_phone : ''}}</span>
+                    </div>
+                    @if(isset($order->receiver) && $order->receiver->address)
+                    <div class="order-info-row">
+                        <span class="order-info-label">Địa chỉ:</span>
+                        <span class="order-info-value" style="font-size: 0.85rem; white-space: normal; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            @if($order->receiver->address)
+                                {{implode(', ', array_slice(explode(',', $order->receiver->address), 0, 2))}}
+                            @endif
                             @if(isset($order->receiver->ward))
-                            <b>{{ $order->receiver->ward->ward_name.',' }}</b><br>
+                            {{ $order->receiver->ward->ward_name }}
                             @endif
                             @if(isset($order->receiver->district))
-                            <b>{{ $order->receiver->district->district_name.',' }}</b><br>
+                            {{ $order->receiver->district->district_name }}
                             @endif
                             @if(isset($order->receiver->city))
-                            <b>{{$order->receiver->city->city_name}}</b><br>
+                            {{$order->receiver->city->city_name}}
                             @endif
-                            @endif
-                        </label></div>
-                </td>
-                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                <td>{{isset($order->getPersonCharge) ? $order->getPersonCharge->name : ''}}</td>
-                @endif
-{{--                <td>{{$order->department}}</td>--}}
-                <!-- <td>{{$order->order_status_name}}</td> -->
-                <td>{{$order->order_delivery_name}}</td>
-                <td>{{$order->signator}}</td>
-{{--                <td>{{$order->payment_method_name}}</td>--}}
-{{--                <td>{{$order->delivery_date}}</td>--}}
-{{--                <td>{{isset($order->getPartner) ? $order->getPartner->name : ''}}</td>--}}
-                <!-- <td>{{$order->weight}}</td>
-                <td>{{$order->height}}</td>
-                <td>{{$order->width}}</td> -->
-                @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                <td>{{isset($order->user) ? $order->user->email : ''}}</td>
-                @endif
-                <td class="text-center" style="min-width: 110px">
-{{--                    <div class="dropdown">--}}
-{{--                        <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">--}}
-{{--                            <i class="fas fa-ellipsis-v"></i>--}}
-{{--                        </a>--}}
-{{--                        <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">--}}
-                    <a class="printIcon" data-toggle="modal" data-target="#openModalPrint" data-id="{{$order->id}}" ><i style="color: #0ca362;" class="fa fa-print fa-2x"></i></a>
-
-                            <a href="{{ route('orders.edit', [$order->id]) }}"><i style="color: blue;" class="far fa-edit fa-2x"></i></a>
-                    @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && in_array($order->delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_BLANK])) )
-                            <a class="delete" data-id="{{$order->id}}"><i style="color: red;" class="far fa-trash-alt fa-2x"></i>
-                            </a>
-                            {!! Form::open(['route' => ['orders.destroy', $order->id], 'method' => 'delete', 'class' => ['removeOrder'.$order->id],'style' => 'display: none']) !!}
-                            {!! Form::close() !!}
+                        </span>
+                    </div>
                     @endif
-{{--                        </div>--}}
-{{--                    </div>--}}
-                </td>
-            </tr>
+                    @if($order->signator)
+                    <div class="order-info-row">
+                        <span class="order-info-label">Ký nhận:</span>
+                        <span class="order-info-value">{{$order->signator}}</span>
+                    </div>
+                    @endif
+                    @if($order->order_print)
+                    <div class="order-info-row">
+                        <span class="badge badge-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">Đã in</span>
+                    </div>
+                    @endif
+                </div>
+                
+                <div class="order-card-footer">
+                    <a href="{{ route('orders.edit', [$order->id]) }}" class="btn-view">
+                        <i class="far fa-eye"></i>
+                        <span>Xem</span>
+                    </a>
+                    <a href="{{ route('orders.edit', [$order->id]) }}" class="btn-edit">
+                        <i class="far fa-edit"></i>
+                        <span>Sửa</span>
+                    </a>
+                    <a class="printIcon btn-view" data-toggle="modal" data-target="#openModalPrint" data-id="{{$order->id}}" style="background: #e8f5e9; color: #0ca362;">
+                        <i class="fa fa-print"></i>
+                        <span>In</span>
+                    </a>
+                    @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && in_array($order->delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_BLANK])) )
+                        <a class="delete btn-edit" data-id="{{$order->id}}" style="background: #ffebee; color: #f5576c;">
+                            <i class="far fa-trash-alt"></i>
+                            <span>Xóa</span>
+                        </a>
+                        {!! Form::open(['route' => ['orders.destroy', $order->id], 'method' => 'DELETE', 'class' => ['removeOrder'.$order->id],'style' => 'display: none']) !!}
+                        @csrf
+                        {!! Form::close() !!}
+                    @endif
+                </div>
+            </div>
+        </div>
         @endforeach
-        </tbody>
-    </table>
-{{--        </div>--}}
+    </div>
 </div>
+
 @section('javascript')
-    <script type="text/javascript" src="{{ asset('js/render-print.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/render-print.js') }}?v={{time()}}"></script>
     <script type="text/javascript">
         let paramFilters = {!! json_encode(request()->all()) !!};
         $(function() {
@@ -197,14 +260,6 @@
             $('.printIcon').on('click', function (e) {
                 let orderId = $(this).attr('data-id');
                 dataPrint = [orderId]
-                // $.ajax({
-                //     type: "POST",
-                //     url: '/template/render',
-                //     data: {'order': [orderId]},
-                //     success: function (res) {
-                //         print(res)
-                //     },
-                // });
             })
 
             $('#deleteMany').on('click', function () {
@@ -341,9 +396,3 @@
         }
     </script>
 @endsection
-
-<style>
-    .table td, .table th {
-        white-space: normal !important;
-    }
-</style>
