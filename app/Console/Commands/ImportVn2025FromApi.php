@@ -24,15 +24,14 @@ class ImportVn2025FromApi extends Command
         $this->info('Bắt đầu tải dữ liệu địa danh 2025 từ API...');
         
         $client = new Client([
-            'base_uri' => 'https://api.tracuudiachi.io.vn/api/v1/',
+            'base_uri' => 'https://partner.viettelpost.vn/v2/categories/',
             'timeout'  => 30.0,
-            'verify' => false, // Bypass SSL if needed
+            'verify' => false,
         ]);
 
         try {
-            // Lấy danh sách Tỉnh mới
             $this->info('Đang lấy danh sách Tỉnh/TP mới...');
-            $response = $client->request('GET', 'new-provinces', ['query' => ['icpp' => 100]]);
+            $response = $client->request('GET', 'listProvinceById?provinceId=-1');
             $data = json_decode($response->getBody(), true);
             
             $provinces = $data['data'] ?? [];
@@ -42,10 +41,12 @@ class ImportVn2025FromApi extends Command
             }
 
             $bar = $this->output->createProgressBar(count($provinces));
+            $vpProvinceMap = [];
             
             foreach ($provinces as $prov) {
-                $provinceName = $prov['name'];
-                $provinceCode = $prov['code'];
+                $provinceName = $prov['PROVINCE_NAME'];
+                $provinceCode = $prov['PROVINCE_CODE'];
+                $vpProvId = $prov['PROVINCE_ID'];
                 
                 $normalizedName = $addressService->normalizeName($provinceName);
 
@@ -57,57 +58,67 @@ class ImportVn2025FromApi extends Command
                         'is_active' => 1
                     ]
                 );
-
-                // Lấy danh sách Xã của Tỉnh này
-                $this->fetchWardsForProvince($client, $addressService, $newProvince, $provinceCode);
                 
+                $vpProvinceMap[$vpProvId] = $newProvince->id;
                 $bar->advance();
             }
-
             $bar->finish();
+            
+            $this->info("\nĐang lấy danh sách Quận/Huyện để map Tỉnh...");
+            $districtResponse = $client->request('GET', 'listDistrict?provinceId=-1');
+            $districtData = json_decode($districtResponse->getBody(), true);
+            $districts = $districtData['data'] ?? [];
+            
+            $vpDistrictMap = []; // DISTRICT_ID -> vpProvId
+            foreach ($districts as $d) {
+                $vpDistrictMap[$d['DISTRICT_ID']] = $d['PROVINCE_ID'];
+            }
+
+            $this->info("\nĐang lấy danh sách Phường/Xã mới...");
+            $wardResponse = $client->request('GET', 'listWards?districtId=-1');
+            $wardData = json_decode($wardResponse->getBody(), true);
+            $wards = $wardData['data'] ?? [];
+            
+            $wardBar = $this->output->createProgressBar(count($wards));
+            foreach ($wards as $w) {
+                $vpDistId = $w['DISTRICT_ID'];
+                $wardName = $w['WARDS_NAME'];
+                $wardCode = $w['WARDS_ID'];
+                
+                if (!isset($vpDistrictMap[$vpDistId])) {
+                    $wardBar->advance();
+                    continue;
+                }
+                $vpProvId = $vpDistrictMap[$vpDistId];
+                
+                if (!isset($vpProvinceMap[$vpProvId])) {
+                    $wardBar->advance();
+                    continue;
+                }
+                
+                $myProvId = $vpProvinceMap[$vpProvId];
+                $normalizedName = $addressService->normalizeName($wardName);
+
+                NewWard::updateOrCreate(
+                    [
+                        'new_province_id' => $myProvId,
+                        'official_code' => $wardCode
+                    ],
+                    [
+                        'name' => $wardName,
+                        'normalized_name' => $normalizedName,
+                        'is_active' => 1
+                    ]
+                );
+                
+                $wardBar->advance();
+            }
+            $wardBar->finish();
+
             $this->info("\nHoàn tất import địa danh 2025!");
 
         } catch (Exception $e) {
             $this->error('Lỗi khi gọi API: ' . $e->getMessage());
-        }
-    }
-
-    private function fetchWardsForProvince(Client $client, Address2025Service $addressService, NewProvince $province, $provinceCode)
-    {
-        try {
-            $page = 1;
-            do {
-                $response = $client->request('GET', "new-provinces/{$provinceCode}/new-wards", [
-                    'query' => ['icpp' => 100, 'page' => $page]
-                ]);
-                $data = json_decode($response->getBody(), true);
-                
-                $wards = $data['data'] ?? [];
-                
-                foreach ($wards as $w) {
-                    $wardName = $w['name'];
-                    $wardCode = $w['code'];
-                    $normalizedName = $addressService->normalizeName($wardName);
-
-                    NewWard::updateOrCreate(
-                        [
-                            'new_province_id' => $province->id,
-                            'official_code' => $wardCode
-                        ],
-                        [
-                            'name' => $wardName,
-                            'normalized_name' => $normalizedName,
-                            'is_active' => 1
-                        ]
-                    );
-                }
-
-                $totalPages = $data['meta']['totalPages'] ?? 1;
-                $page++;
-            } while ($page <= $totalPages);
-
-        } catch (Exception $e) {
-            $this->error("\nLỗi khi lấy Xã cho tỉnh {$province->name}: " . $e->getMessage());
         }
     }
 }
