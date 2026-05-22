@@ -23,6 +23,11 @@ class ImportVn2025FromApi extends Command
     {
         $this->info('Bắt đầu tải dữ liệu địa danh 2025 từ API...');
         
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        \Illuminate\Support\Facades\DB::table('new_wards')->truncate();
+        \Illuminate\Support\Facades\DB::table('new_provinces')->truncate();
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         $client = new Client([
             'base_uri' => 'https://partner.viettelpost.vn/v2/categories/',
             'timeout'  => 30.0,
