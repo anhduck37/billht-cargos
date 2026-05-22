@@ -17,3 +17,4 @@ npm-debug.log
 yarn-error.log
 EOF
 /deploy_20250514
+/app/Services/google/*
