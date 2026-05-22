@@ -89,17 +89,44 @@ class Address2025Service
         
         // Remove prefixes
         $prefixes = [
-            'thành phố ', 'tp ', 'tp. ', 'tỉnh ',
-            'quận ', 'huyện ', 'thị xã ', 'tx ', 'tx. ',
-            'phường ', 'xã ', 'thị trấn ', 'tt ', 'tt. '
+            'thành phố ', 'tp ', 'tp. ', 'tp.', 'tỉnh ',
+            'quận ', 'huyện ', 'thị xã ', 'tx ', 'tx. ', 'tx.',
+            'phường ', 'xã ', 'thị trấn ', 'tt ', 'tt. ', 'tt.'
         ];
         
         foreach ($prefixes as $prefix) {
             if (mb_strpos($name, $prefix, 0, 'UTF-8') === 0) {
                 $name = mb_substr($name, mb_strlen($prefix, 'UTF-8'), null, 'UTF-8');
+                $name = trim($name);
             }
         }
         
+        // Handle common abbreviations
+        $abbreviations = [
+            'sg' => 'hồ chí minh',
+            'hcm' => 'hồ chí minh',
+            'hcmc' => 'hồ chí minh',
+            'hn' => 'hà nội',
+            'hp' => 'hải phòng',
+            'đn' => 'đà nẵng',
+            'dn' => 'đà nẵng',
+            'vt' => 'bà rịa - vũng tàu',
+            'brvt' => 'bà rịa - vũng tàu',
+            'bd' => 'bình dương',
+            'dnai' => 'đồng nai',
+            'tn' => 'tây ninh',
+            'la' => 'long an',
+            'tg' => 'tiền giang',
+            'ct' => 'cần thơ',
+            'ag' => 'an giang',
+            'kg' => 'kiên giang',
+            'cm' => 'cà mau',
+        ];
+
+        if (array_key_exists($name, $abbreviations)) {
+            $name = $abbreviations[$name];
+        }
+
         // Remove accents and special chars
         $name = Str::slug($name, ' ');
         // Remove extra spaces
