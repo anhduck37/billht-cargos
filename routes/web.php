@@ -36,6 +36,9 @@ Route::post('/register', 'Auth\RegisterController@create');
 Route::middleware(['checkLevel'])->group(function () {
     Route::resource('users', 'UserController');
     Route::resource('partners', 'PartnerController');
+    Route::get('orders/create-new', 'OrderController@createNew')->name('orders.createNew');
+    Route::resource('orders', 'OrderController');
+    Route::get('/order-historys', 'OrderHistoryController@index')->name('order_historys.index');
 });
 Route::middleware(['auth'])->group(function () {
     //    Route::get('/profile', 'ProfileController@index');
@@ -43,9 +46,12 @@ Route::middleware(['auth'])->group(function () {
     //    Route::get('user/{id}', 'UserController@showFormPassword')->name('users.showFormPassword');
     //    Route::post('user/{id}','UserController@updatePassword' )->name('users.updatePassword');
     //    Route::get('user/{id}/info', 'UserController@show')->name('users.showInfo');
+    Route::get('orders/create-new', 'OrderController@createNew')->name('orders.createNew');
     Route::resource('orders', 'OrderController');
     Route::post('orders/{id}/upload-image', 'OrderController@uploadImage')->name('orders.upload-image');
     Route::post('orders/import', 'OrderController@import')->name('orders.import');
+    Route::post('orders/import-old', 'OrderController@importOld')->name('orders.importOld');
+    Route::post('orders/import-new', 'OrderController@importNew')->name('orders.importNew');
     Route::get('fileDemo', 'OrderController@fileDownload')->name('fileDemo');
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');
     Route::get('order/export', 'OrderController@export')->name('orders.export');
@@ -60,5 +66,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/order/create-ems', 'OrderController@createEms');
     Route::get('/order/create-order-ems/{id}', 'OrderController@createOrderEms')->name('orders.createEms');
+    Route::get('/order-partner-logs', 'OrderPartnerLogController@index')->name('order_partner_logs.index');
+    Route::get('/order/status-change', 'OrderStatusChangeController@index')->name('order_status_changes.index');
+    Route::post('/order/status-change/import', 'OrderStatusChangeController@import')->name('order_status_changes.import');
+    Route::get('/order/status-change/template', 'OrderStatusChangeController@template')->name('order_status_changes.template');
 });
 Route::get('/order/tracking', 'OrderTrackingController@tracking')->name('tracking');

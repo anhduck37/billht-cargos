@@ -58,7 +58,11 @@
                     <div class="card-body">
                         {!! Form::open(['route' => ['orders.update', $order->id], 'method' => 'PATCH', 'enctype' => 'multipart/form-data']) !!}
                         @csrf
-                        @include('orders.fields')
+                        @if(isset($order) && (($order->sender && $order->sender->address_scheme === 'new') || ($order->receiver && $order->receiver->address_scheme === 'new')))
+                            @include('orders.fields_new', ['update' => true])
+                        @else
+                            @include('orders.fields')
+                        @endif
 
                         <div class="card-footer text-center">
                         	@if(auth()->user()->level != \App\User::LEVEL_USER)
@@ -145,7 +149,7 @@
     </div>
 @endsection
 @section('js')
-    <script type="text/javascript" src="{{ asset('js/render-print.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/render-print.js') }}?v={{ time() }}"></script>
     <script type="text/javascript">
         $(function() {
             $.ajaxSetup({

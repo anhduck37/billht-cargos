@@ -1,6 +1,9 @@
 <?php
 
 return [
-    'api_key' => env('EMS_API_KEY', '574f7f0b1820182a2f193d3515e85632'),
-    'url' => env('EMS_URL', 'http://ws.ems.com.vn')
+    'api_key' => env('EMS_API_KEY', ''),
+    'url' => env('EMS_URL', 'http://uat.emsone.com.vn'),
+    'access_key' => env('EMS_ACCESS_KEY', ''),
+    'secret_key' => env('EMS_SECRET_KEY', ''),
+    'crm_code' => env('EMS_CRM_CODE', ''),
 ];

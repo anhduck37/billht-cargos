@@ -70,6 +70,9 @@
                     </div>
                     <div class="card-footer text-right">
                         <div class="row">
+                            <div class="col mb-1">
+                                <a style="width: 100%" href="{{route('orders.createNew')}}" class="btn btn-warning">Tạo đơn mới 2025</a>
+                            </div>
                             <div class="col mb-1" >
                                 {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'width: 100%']) !!}
                             </div>
@@ -115,12 +118,16 @@
                     </div>
 
                     {!! Form::close() !!}
-                    @include('orders.table')
+                    @if(auth()->user()->level != \App\User::LEVEL_POSTMAN || request('search') || request('order_date') || request('delivery_status'))
+                        @include('orders.table')
+                    @endif
 
                 </div>
-                <div class="align-content-center" style="margin-top: 20px">
-                    {!! $orders->appends(request()->query())->links() !!}
-                </div>
+                @if(auth()->user()->level != \App\User::LEVEL_POSTMAN || request('search') || request('order_date') || request('delivery_status'))
+                    <div class="align-content-center" style="margin-top: 20px">
+                        {!! $orders->appends(request()->query())->links() !!}
+                    </div>
+                @endif
 
                 <!-- Modal Email -->
                 <div class="modal fade" id="openModalEmail" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

@@ -55,7 +55,8 @@ class Order extends Model
         'type',
         'partner_code',
         'collection',
-        'long'
+        'long',
+        'push_error',
     ];
     const CODE_VIETTEL_POST = 'VTP';
     const CODE_EMS = 'EMS';
@@ -92,6 +93,7 @@ class Order extends Model
     const DELIVERY_STATUS_RECEIVED = 5;
 
     const DELIVERY_MAP = [
+        self::DELIVERY_STATUS_BLANK => 'Mới tạo',
         self::DELIVERY_STATUS_PROCESSING => 'Chấp nhận gửi',
         self::DELIVERY_STATUS_OK => 'Giao thành công',
         self::DELIVERY_STATUS_RETURN => 'Đi khỏi bưu cục',
@@ -144,7 +146,7 @@ class Order extends Model
 
     public function getOrderDeliveryNameAttribute($attribute)
     {
-        return array_key_exists($this->delivery_status, self::DELIVERY_MAP) ? self::DELIVERY_MAP[$this->delivery_status] : '';
+        return array_key_exists((int)$this->delivery_status, self::DELIVERY_MAP) ? self::DELIVERY_MAP[(int)$this->delivery_status] : '';
     }
     public function sender()
     {
@@ -212,7 +214,10 @@ class Order extends Model
                 'delivery_status',
                 'city_id',
                 'person_charge',
-                'signator'
+                'signator',
+                'status_text',
+                'created_at',
+                'updated_at'
             ]);
     }
 

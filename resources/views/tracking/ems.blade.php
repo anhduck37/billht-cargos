@@ -17,7 +17,14 @@
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Trạng thái</td>
-                <td class="custom-size">{{$data_tracking[0]['status_name'] ?? $order->order_status}}</td>
+                <td class="custom-size">
+                    @php
+                        // Fallback mapping cho EMS nếu status_name trống
+                        $emsStatusMap = ['W'=>'Nhập bưu cục', 'P'=>'Đã lấy hàng', 'S'=>'Đang vận chuyển', 'T'=>'Đang phát hàng', 'F'=>'Phát không thành công', 'G'=>'Phát thành công', 'H'=>'Đã thu tiền', 'I'=>'Đã trả tiền', 'U'=>'Chờ chuyển hoàn', 'V'=>'Đang chuyển hoàn', 'Z'=>'Chuyển hoàn thành công', 'C'=>'Đã hủy'];
+                        $mappedName = $emsStatusMap[$data_tracking[0]['order_status'] ?? ''] ?? $order->order_status;
+                    @endphp
+                    {{$data_tracking[0]['status_name'] ?? $mappedName}}
+                </td>
             </tr>
             <tr>
                 <td class="custom-weight custom-size">Ngày giờ</td>
@@ -69,11 +76,14 @@
                         <td class="viettel-post-title" colspan="3">{{$item['STATUS_NAME']}}</td>
                     </tr> --}}
 
-                    {{-- @foreach($item['TRACKINGS'] as $tracking) --}}
-
                         <tr>
                             <td class="custom-size">{{$item['order_statusdate'] ?? ''}}</td>
-                            <td class="custom-size">{{$item['status_name'] ?? ''}}</th>
+                            <td class="custom-size">
+                                @php
+                                    $rowMappedName = $emsStatusMap[$item['order_status'] ?? ''] ?? $item['order_status'];
+                                @endphp
+                                {{$item['status_name'] ?? $rowMappedName}}
+                            </td>
                             <td class="custom-size"><span style="white-space: pre-line">{{preg_replace("/\([^)]*\)/", "", ($item['note'] ?? ''))}}</span></td>
                         </tr>
                     {{-- @endforeach --}}

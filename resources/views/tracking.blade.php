@@ -99,10 +99,10 @@
                                     <table class="table align-items-center">
                                         <thead style="background-color: #f6821f; color: white" class="thead-light">
                                         <tr>
+                                            <td>Ngày tháng</td>
                                             <td>Mã vận đơn</td>
                                             {{--  <td>Mã vận đơn</td>  --}}
                                             <td>Trạng thái vận đơn</td>
-                                            <td>Người gửi</td>
                                             <td>Người nhận</td>
                                             <td>Địa chỉ</td>
                                             <td>Người ký nhận</td>
@@ -113,6 +113,7 @@
                                         <tbody>
                                         @foreach($order_trackings as $item)
                                             <tr>
+                                                <td>{{ isset($item->updated_at) ? \Carbon\Carbon::parse($item->updated_at)->format('d/m/Y H:i') : '' }}</td>
                                                 <th scope="row">
                                                     <div class="media align-items-center">
                                                         <div class="media-body">
@@ -127,8 +128,7 @@
                                                         </div>
                                                     </div>
                                                 </th>  --}}
-                                                <td>{{$item->getDeliveryStatusName($item->delivery_status)}}</td>
-                                                <td><span style="white-space:pre-line">{{isset($item->order) && isset($item->order->sender) ? $item->order->sender->sender_name : ''}}</span></td>
+                                                <td>{{ $item->status_text ?: $item->getDeliveryStatusName($item->delivery_status) }}</td>
                                                 <td>{{isset($item->order) && isset($item->order->receiver) ? $item->order->receiver->receiver_name : ''}}</td>
                                                 <td><span style="white-space:pre-line">{{isset($item->order->receiver) && isset($item->order->receiver) ? $item->order->receiver->address : ''}}</span></td>
                                                 <td>{{$item->signator}}</td>

@@ -1,0 +1,27 @@
+BC HÀ NỘI | Đã đến TTKT BƯU CỤC HÀ NỘI
+BC TÂN BÌNH | Đã đến TTKT BƯU CỤC TÂN BÌNH
+HÀ NỘI | Đã đến TTKT Hà Nội
+HẢI PHÒNG	|	Đã đến TTKT Hải Phòng
+VĨNH PHÚC	|	Đã đến TTKT Vĩnh Phúc
+NGHỆ AN	|	Đã đến TTKT Nghệ An
+HUẾ	|	Đã đến TTKT Huế
+ĐÀ NẴNG	|	Đã đến TTKT Đà Nẵng
+HCM	|	Đã đến TTKT HCM
+BÌNH DƯƠNG	|	Đã đến TTKT Phường Bình Dương
+VŨNG TÀU	|	Đã đến TTKT Phường Vũng Tàu
+ĐỒNG NAI	|	Đã đến TTKT Đồng Nai
+BÌNH PHƯỚC	|	Đã đến TTKT Phường Bình Phước
+TÂY NINH	|	Đã đến TTKT Tây Ninh
+LONG AN	|	Đã đến TTKT Phường Long An
+BẾN TRE	|	Đã đến TTKT Phường Bến Tre
+VĨNH LONG	|	Đã đến TTKT Vĩnh Long
+TRÀ VINH	|	Đã đến TTKT Phường Trà Vinh
+AN GIANG	|	Đã đến TTKT An Giang
+KIÊN GIANG	|	Đã đến TTKT Phường Rạch Giá
+CẦN THƠ	|	Đã đến TTKT Cần Thơ
+HẬU GIANG	|	Đã đến TTKT Cần Thơ II - Hậu Giang
+SÓC TRĂNG	|	Đã đến TTKT Phường Sóc Trăng
+CÀ MAU	|	Đã đến TTKT Cà Mau
+BẠC LIÊU	|	Đã đến TTKT Phường Bạc Liêu
+ĐỒNG THÁP	|	Đã đến TTKT Đồng Tháp
+TIỀN GIANG	|	Đã đến TTKT Phường Mỹ Tho

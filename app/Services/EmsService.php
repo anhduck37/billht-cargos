@@ -19,131 +19,179 @@ class EmsService
         'Content-Type' => 'application/json'
     ];
     public $url;
-    private $api_key;
-    private $service_viettel;
-    public $params;
+    private $access_key;
+    private $secret_key;
 
-    const STATUS_SUCCESS = 'success';
-    const STATUS_ERROR = 'error';
+    const STATUS_SUCCESS = '00';
+    const STATUS_ERROR = '01';
 
     public function __construct()
     {
-        $this->url = config('ems.url');
-        $this->api_key = config('ems.api_key');
-        $this->params['merchant_token'] = $this->api_key;
+        $this->url = config('ems.url', 'http://uat.emsone.com.vn/Execute');
+        $this->access_key = config('ems.access_key');
+        $this->secret_key = config('ems.secret_key');
+        
+        $this->headers['Authorization'] = 'Bearer ' . $this->access_key;
+    }
+
+    public function executeRequest($code, $dataPayload)
+    {
+        $dataJson = json_encode($dataPayload, JSON_UNESCAPED_UNICODE);
+        
+        $signatureString = $code . $dataJson . $this->secret_key;
+        $signature = hash('sha256', $signatureString);
+
+        $body = [
+            'Code' => $code,
+            'Data' => $dataJson,
+            'Signature' => $signature
+        ];
+
+        $client = new Client([
+            'headers' => $this->headers,
+            'timeout' => 30, // Tăng thêm timeout
+        ]);
+
+        try {
+            $response = $client->post(
+                $this->url,
+                [
+                    'body' => json_encode($body, JSON_UNESCAPED_UNICODE)
+                ]
+            );
+
+            $result = json_decode($response->getBody()->getContents(), true);
+            // Chuẩn hóa kết quả trả về
+            if (isset($result['Code'])) {
+                $result['code'] = $result['Code'];
+            }
+            if (isset($result['Data'])) {
+                $result['data'] = $result['Data'];
+            }
+            if (isset($result['Message'])) {
+                $result['message'] = $result['Message'];
+            }
+            
+            // Xử lý json decode cái Data string nếu nó hợp lệ
+            if (isset($result['data']) && is_string($result['data'])) {
+                $decodedData = json_decode($result['data'], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $result['data'] = $decodedData;
+                }
+            }
+
+            return $result;
+
+        } catch (\Exception $e) {
+            \Log::error('EMS API Error: ' . $e->getMessage());
+            return [
+                'code' => self::STATUS_ERROR,
+                'message' => 'Lỗi kết nối API EMS: ' . $e->getMessage()
+            ];
+        }
     }
 
     public function createOrder($order)
     {
-        $path = '/api/v1/orders/create-v2?merchant_token=' . $this->api_key;
-        $client = new Client([
-            'headers' => $this->headers
-        ]);
         $formatData = $this->formatDataBody($order);
+        
+        $result = $this->executeRequest("PARTNER_ORDER_ADD", $formatData);
 
-        $response = $client->post(
-            $this->url . $path,
-            [
-                'body' => json_encode($formatData)
-            ]
-        );
-
-        $result = json_decode($response->getBody()->getContents(), true);
         $orderPartnerLog = new OrderPartnerLog();
-        $status = OrderPartnerLog::STATUS_FAILD;
-        if ($result['code'] == self::STATUS_SUCCESS) {
-            $status = OrderPartnerLog::STATUS_SUCCESS;
-            $order->order_partner_code = $result['data']['tracking_code'] ?? null;
+        $statusLog = OrderPartnerLog::STATUS_FAILD;
+        
+        if (isset($result['code']) && $result['code'] === self::STATUS_SUCCESS) {
+            $statusLog = OrderPartnerLog::STATUS_SUCCESS;
+            $order->order_partner_code = $result['data']['ShippingCode'] ?? ($result['data']['EMSOneCode'] ?? null);
             $order->partner_code = Order::CODE_EMS;
             $order->save();
         }
-        $orderPartnerLog->order_id = $order->id;
-        $orderPartnerLog->status = $status;
+        
+        $orderPartnerLog->order_id = $order->id ?? 0;
+        $orderPartnerLog->status = $statusLog;
         $orderPartnerLog->partner_code = PartnerConfig::CODE_EMS;
-        $orderPartnerLog->payload = json_encode($formatData);
-        $orderPartnerLog->response = json_encode($result);
+        $orderPartnerLog->payload = json_encode([
+            'Code' => 'PARTNER_ORDER_ADD',
+            'Data' => json_encode($formatData, JSON_UNESCAPED_UNICODE)
+        ], JSON_UNESCAPED_UNICODE);
+        
+        $orderPartnerLog->response = json_encode($result, JSON_UNESCAPED_UNICODE);
         $orderPartnerLog->user_id = auth()->user()->id ?? 0;
         $orderPartnerLog->save();
+        
         return $result;
     }
 
     public function formatDataBody($order)
     {
-        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward->ward_name ?? '') . ' ' . ($order->sender->city->city_name ?? '');
-        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward->ward_name ?? '') . ' ' . ($order->receiver->city->city_name ?? '');
+        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward->ward_name ?? '') . ' ' . ($order->sender->district->district_name ?? '') . ' ' . ($order->sender->city->city_name ?? '');
+        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward->ward_name ?? '') . ' ' . ($order->receiver->district->district_name ?? '') . ' ' . ($order->receiver->city->city_name ?? '');
+        
         $data = [
-            "order_code" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
-            "inventory_name" => $this->getGroupId($order->address ?? $senderAddress),
-            "from_name" => $order->sender->sender_name ?? '',
-            "from_phone" => $order->sender->sender_phone ?? '',
-            // "from_province" => $order->sender->city->ems_code ?? 0,
-            // "from_district" => $order->sender->district->ems_code ?? 0,
-            // "from_ward" => $order->sender->district->ems_code ?? 0,
-            "from_address" => $senderAddress,
-            "to_name" => $order->receiver->receiver_name ?? 0,
-            "to_phone" => $order->receiver->receiver_phone,
-            "to_province" => $order->receiver->city->ems_code ?? 0,
-            "to_district" => $order->receiver->district->ems_code ?? 0,
-            "to_ward" => $order->receiver->ward->ems_code ?? 0,
-            // "to_province" => 17,
-            // "to_district" => 1754,
-            // "to_ward" => 17542,
-            "to_address" => $receiverAddress,
-            "product_name" => Order::MAP_ORDER_TYPE[$order->type] ?? $order->note,
-            "total_amount" => 0,
-            "total_quantity" => $order->quantity,
-            "total_weight" => $order->weight,
-            "description" => $order->note,
-            "size" => ($order->width ?? 0) . 'x' . ($order->height ?? 0) . 'x' . ($order->long ?? 0),
-            "service" => 1
+            "CrmOrPaypostCode" => config('ems.crm_code', ''),
+            "CustomerToken" => config('ems.crm_code', ''),
+            "OrderCode" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
+            "OrderName" => Order::MAP_ORDER_TYPE[$order->type] ?? $order->note,
+            "OrderValue" => $order->total ?? 0,
+            "OrderQuantity" => $order->quantity ?? 1,
+            "Note" => $order->note ?? '',
+            "Message" => $order->note ?? '',
+            "Channel" => "WEB",
+            "IsTransport" => "Y",
+            "IsSendTransport" => "Y",
+            "WareHouseID" => 0,
+            
+            "BuyerInfo" => [
+                "FullName" => $order->receiver->receiver_name ?? '',
+                "MobileNumber" => $order->receiver->receiver_phone ?? '',
+                "ProvinceID" => (int)($order->receiver->city->ems_code ?? 0),
+                "DistrictID" => (int)($order->receiver->district->ems_code ?? 0),
+                "WardID" => (int)($order->receiver->ward->ems_code ?? 0),
+                "Street" => $receiverAddress,
+                "IsUpdate" => "N"
+            ],
+            
+            "SenderInfo" => [
+                "FullName" => $order->sender->sender_name ?? '',
+                "MobileNumber" => $order->sender->sender_phone ?? '',
+                "ProvinceID" => (int)($order->sender->city->ems_code ?? 0),
+                "DistrictID" => (int)($order->sender->district->ems_code ?? 0),
+                "WardID" => (int)($order->sender->ward->ems_code ?? 0),
+                "Street" => $senderAddress
+            ],
+            
+            "ReceiverInfo" => [
+                "FullName" => $order->receiver->receiver_name ?? '',
+                "MobileNumber" => $order->receiver->receiver_phone ?? '',
+                "ProvinceID" => (int)($order->receiver->city->ems_code ?? 0),
+                "DistrictID" => (int)($order->receiver->district->ems_code ?? 0),
+                "WardID" => (int)($order->receiver->ward->ems_code ?? 0),
+                "Street" => $receiverAddress
+            ],
+            
+            "TransportInfo" => [
+                "TransportMainServiceID" => 21, // Mặc định CPN TMĐT Nhanh
+                "TransportExtraServiceID" => "",
+                "CollectionType" => 1, // Thu gom tận nơi = 1, Gửi tại bưu cục = 2
+                "TotalCOD" => $order->collection ?? 0,
+                "TransportPayer" => 1 // 1: Shop trả, 2: Người nhận trả
+            ]
         ];
+        
+        // Validation size/weight
+        $weight = (int)($order->weight ?? 0);
+        if ($weight > 0) $data["TransportInfo"]["TransportWeight"] = $weight;
+        
+        $length = (int)($order->long ?? 0);
+        if ($length > 0) $data["TransportInfo"]["TransportSizeLength"] = $length;
+        
+        $width = (int)($order->width ?? 0);
+        if ($width > 0) $data["TransportInfo"]["TransportSizeWidth"] = $width;
+        
+        $height = (int)($order->height ?? 0);
+        if ($height > 0) $data["TransportInfo"]["TransportSizeHeight"] = $height;
+
         return $data;
-    }
-
-    public function createWebhook($link)
-    {
-        $path = '/api/v1/metadata/webhook?merchant_token=' . $this->api_key;
-        $this->headers['Accept'] = 'application/javascript';
-
-        $client = new Client([
-            'headers' => $this->headers
-        ]);
-
-        $response = $client->post(
-            $this->url . $path,
-            [
-                'body' => json_encode([
-                    'link' => $link
-                ])
-            ]
-        );
-
-        $result = json_decode($response->getBody()->getContents(), true);
-        return $result;
-    }
-
-    public function updateWebhook($link, $status = 1)
-    {
-        $path = '/api/v1/metadata/webhook';
-        $this->headers['Accept'] = 'application/javascript';
-
-        $client = new Client([
-            'headers' => $this->headers
-        ]);
-
-        $response = $client->put(
-            $this->url . $path,
-            [
-                'query' => [
-                    'link' => $link,
-                    'merchant_token' => $this->api_key,
-                    'status' => $status
-                ]
-            ]
-        );
-
-        $result = json_decode($response->getBody()->getContents(), true);
-        return $result;
     }
 
     public function webhookTracking($data)
@@ -161,8 +209,31 @@ class EmsService
         PartnerTracking::create($dataTracking);
         if (isset(PartnerConfig::MAP_STATUS_EMS[$data['status_code']])) {
             $order->delivery_status = PartnerConfig::MAP_STATUS_EMS[$data['status_code']];
-            $order->save();
+        } else {
+            // Nếu mã trạng thái không có trong MAP, dựa vào từ khóa trong status_name
+            $statusName = mb_strtolower($data['status_name'] ?? '', 'UTF-8');
+            
+            if (strpos($statusName, 'phát thành công') !== false || strpos($statusName, 'giao thành công') !== false) {
+                $order->delivery_status = Order::DELIVERY_STATUS_OK;
+            } elseif (strpos($statusName, 'đang phát') !== false || strpos($statusName, 'đang vận chuyển') !== false) {
+                $order->delivery_status = Order::DELIVERY_STATUS_PERSON_CHARGE;
+            } elseif (strpos($statusName, 'chấp nhận') !== false || strpos($statusName, 'nhập bưu cục') !== false) {
+                $order->delivery_status = Order::DELIVERY_STATUS_PROCESSING;
+            } elseif (strpos($statusName, 'hoàn') !== false || strpos($statusName, 'hủy') !== false) {
+                $order->delivery_status = Order::DELIVERY_STATUS_RETURN;
+            }
         }
+        
+        $statusDesc = $data['status_name'] ?? $data['status_code'] ?? 'Cập nhật trạng thái';
+        $historyData = [
+            'action_desc' => 'Webhook EMS: ' . $statusDesc,
+        ];
+        if (isset($data['note']) && !empty($data['note'])) {
+            $historyData['message'] = $data['note'];
+        }
+        app(\App\Services\OrderHistoryService::class)->createOrderHistory(null, $order, null, \App\OrderHistory::NOT_TOTAL_ORDER, \App\OrderHistory::TYPE_ORDER_UPDATE, 'SYNC', $historyData, $data['tracking_code'], 'EMS');
+
+        $order->save();
         return;
     }
 
@@ -226,53 +297,5 @@ class EmsService
         $str = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $str);
         $str = preg_replace('/[^\x20-\x7E]/', '', $str);
         return $str;
-    }
-
-    public function getCities()
-    {
-        $path = '/api/v1/address/province';
-        $client = new Client([
-            'headers' => $this->headers
-        ]);
-        $response = $client->get(
-            $this->url . $path,
-            [
-                'query' => $this->params
-            ]
-        );
-        $result = json_decode($response->getBody()->getContents(), true);
-        return $result['data'] ?? [];
-    }
-
-    public function getDistrict()
-    {
-        $path = '/api/v1/address/district';
-        $client = new Client([
-            'headers' => $this->headers
-        ]);
-        $response = $client->get(
-            $this->url . $path,
-            [
-                'query' => $this->params
-            ]
-        );
-        $result = json_decode($response->getBody()->getContents(), true);
-        return $result['data'] ?? [];
-    }
-
-    public function getWard()
-    {
-        $path = '/api/v1/address/ward';
-        $client = new Client([
-            'headers' => $this->headers
-        ]);
-        $response = $client->get(
-            $this->url . $path,
-            [
-                'query' => $this->params
-            ]
-        );
-        $result = json_decode($response->getBody()->getContents(), true);
-        return $result['data'] ?? [];
     }
 }

@@ -43,6 +43,24 @@ class SendOrderViettelPostJob implements ShouldQueue
         }
         
         $viettelPostService = new ViettelPostService($this->service_viettel);
-        return $viettelPostService->createOrder($this->order);
+        $result = $viettelPostService->createOrder($this->order);
+
+        // Reload order để tránh stale data
+        $this->order->refresh();
+
+        if (!empty($result['data'])) {
+            // Push thành công → xóa lỗi cũ nếu có
+            if ($this->order->push_error) {
+                $this->order->push_error = null;
+                $this->order->save();
+            }
+        } else {
+            // Push thất bại → ghi lỗi chi tiết vào DB
+            $errors = $result['message'] ?? 'Push VTP thất bại (không có chi tiết lỗi)';
+            $this->order->push_error = '[VTP] ' . $errors;
+            $this->order->save();
+        }
+
+        return $result;
     }
 }

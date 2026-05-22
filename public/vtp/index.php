@@ -119,38 +119,62 @@ while ($row = $result->fetch_assoc()) {
     
     // Lấy order number từ cả hai trường hợp có thể
     $order_number = isset($payload["ORDER_NUMBER"]) ? $payload["ORDER_NUMBER"] : 
-                   (isset($payload["order_code"]) ? $payload["order_code"] : null);
+                   (isset($payload["order_code"]) ? $payload["order_code"] : 
+                   (isset($payload["OrderCode"]) ? $payload["OrderCode"] : null));
     
     // Lấy sender name từ cả hai trường hợp có thể
     $sender_name = isset($payload["SENDER_FULLNAME"]) ? $payload["SENDER_FULLNAME"] : 
-                  (isset($payload["from_name"]) ? $payload["from_name"] : null);
+                  (isset($payload["from_name"]) ? $payload["from_name"] : 
+                  (isset($payload["SenderInfo"]) && isset($payload["SenderInfo"]["SenderName"]) ? $payload["SenderInfo"]["SenderName"] : null));
     
     $order_id = $row["order_id"];
 
     $truncated_name = strlen($row["response"]) > 85 ? substr($row["response"], 0, 85) . "..." : $row["response"];
     $status_text = ($row["status"] == 1) ? "Thành công" : "Thất bại";
-    if (strpos($row["response"], "[SENDER_ADDRESS]") !== false) {
-        $response_text = "<b style='color: red;'>Sai hoặc thiếu địa chỉ người gửi - VTP</b>";
-    } elseif (strpos($row["response"], "ORDER_NUMBER") !== false) {
-        $response_text = "Thành công - VTP";            
-    } elseif (strpos($row["response"], "[RECEIVER_PHONE]") !== false) {
-        $response_text = "<b style='color: red;'>Sai hoặc thiếu số điện thoại người nhận - VTP</b>";
-    } elseif (strpos($row["response"], "[SENDER_PHONE]") !== false) {
-        $response_text = "<b>Sai hoặc thiếu số điện thoại người gửi - VTP</b>";
-    } elseif (strpos($row["response"], "[RECEIVER_ADDRESS]") !== false) {
-        $response_text = "Sai hoặc thiếu địa chỉ người nhận - VTP";
-    } elseif (strpos($row["response"], "Incorrect data: ORDER_SERVICE") !== false) {
-        $response_text = "<b>Thiếu trọng lượng - VTP</b>";
-    } elseif (strpos($row["response"], "Price does not apply to this itinerary") !== false) {
-        $response_text = "<b>Dịch vụ VTK không áp dụng cho gửi nội tỉnh - VTP</b>";
-    } elseif (strpos($row["response"], "success") !== false) {
-        $response_text = "Thành Công - EMS";
-    } elseif (strpos($row["response"], "026") !== false) {
-        $response_text = "Tỉnh/Thành phố người nhận không hợp lệ!";
-    } elseif (strpos($row["response"], "011") !== false) {
-        $response_text = "<b style='color: red;'>EMS - SĐT hoặc địa chỉ người gửi không được để trống</b>";                           
+    
+    $partnerText = strtoupper($row["partner_code"]);
+    if ($partnerText == 'VIETTEL_POST') $partnerText = 'VTP';
+    if (empty($partnerText)) $partnerText = 'UNK';
+
+    if ($row["status"] == 1 || strpos($row["response"], "ORDER_NUMBER") !== false || strpos($row["response"], "success") !== false) {
+        $response_text = "<b style='color: #0ca362;'>Thành công - $partnerText</b>";
     } else {
-        $response_text = $truncated_name;
+        $errors = '';
+        $resData = json_decode($row["response"], true);
+
+        // Map cứng một số mã lỗi phổ biến
+        if (strpos($row["response"], "[SENDER_ADDRESS]") !== false) $errors = "Sai hoặc thiếu địa chỉ người gửi";
+        elseif (strpos($row["response"], "[RECEIVER_PHONE]") !== false) $errors = "Sai/thiếu SĐT người nhận";
+        elseif (strpos($row["response"], "[SENDER_PHONE]") !== false) $errors = "Sai/thiếu SĐT người gửi";
+        elseif (strpos($row["response"], "[RECEIVER_ADDRESS]") !== false) $errors = "Sai/thiếu địa chỉ người nhận";
+        elseif (strpos($row["response"], "ORDER_SERVICE") !== false) $errors = "Thiếu trọng lượng";
+        elseif (strpos($row["response"], "Price does not apply") !== false) $errors = "Dịch vụ gửi không phù hợp nội tỉnh";
+        elseif (strpos($row["response"], "026") !== false) $errors = "Tỉnh/Thành phố người nhận không hợp lệ";
+        elseif (strpos($row["response"], "011") !== false) $errors = "SĐT hoặc địa chỉ gửi không được trống";
+        
+        // Cố gắng parse chi tiết lỗi từ json response (đặc biệt là EMS)
+        if (empty($errors)) {
+            if ($row["partner_code"] === 'ems') {
+                if (isset($resData['data']) && is_array($resData['data'])) {
+                    $errItems = [];
+                    foreach ($resData['data'] as $item) {
+                        if (isset($item['Parameter']) && isset($item['Message'])) {
+                            $errItems[] = $item['Parameter'] . ': ' . $item['Message'];
+                        }
+                    }
+                    $errors = implode('; ', $errItems);
+                }
+            }
+            if (empty($errors) && isset($resData['message'])) {
+                $errors = $resData['message'];
+            }
+        }
+
+        if (!empty($errors)) {
+            $response_text = "<b style='color: red;'>[$partnerText] $errors</b>";
+        } else {
+            $response_text = "<b style='color: red;'>Lỗi $partnerText:</b> " . htmlspecialchars($truncated_name);
+        }
     }
     
     // Tạo liên kết cho cột Mã vận đơn

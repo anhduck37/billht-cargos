@@ -41,6 +41,11 @@
                             <div class="media align-items-center">
                                 <div class="media-body">
                                     <span class="mb-0 text-sm font-weight-bold">{{$order->order_code}}</span>
+                                    @if($order->push_error)
+                                    <span data-toggle="tooltip" data-placement="right" title="{{$order->push_error}}" style="color:#dc3545; cursor:pointer;" title="Lỗi đẩy EMS">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                             </a>
@@ -48,7 +53,7 @@
                         <td style="max-width: 200px; font-size: 0.85rem;">
                             <div style="white-space: normal; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><label style="font-size: 0.8rem;">Tên: <b>{{isset($order->sender) ? $order->sender->sender_name : ''}}</b></label></div>
                             <div><label style="font-size: 0.8rem;">SĐT: <b>{{isset($order->sender) ? $order->sender->sender_phone : ''}}</b></label></div>
-                            <div><label style="font-size: 0.8rem;">Tỉnh/TP: <b>{{isset($order->sender) && isset($order->sender->city) ? $order->sender->city->city_name : ''}}</b></label></div>
+                            <div><label style="font-size: 0.8rem;">Tỉnh/TP: <b>{{isset($order->sender) ? $order->sender->city_name : ''}}</b></label></div>
                             <div><b style="font-size: 0.75rem;">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</b></div>
                             @if($order->order_print)
                                 <div class="mt-1"><span class="badge badge-success" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">Đã in</span></div>
@@ -63,14 +68,14 @@
                                     @if($order->receiver->address)
                                         <b>{{implode(', ', array_slice(explode(',', $order->receiver->address), 0, 2))}}</b>
                                     @endif
-                                    @if(isset($order->receiver->ward))
-                                    <b>{{ $order->receiver->ward->ward_name }}</b>
+                                    @if(isset($order->receiver->ward) || $order->receiver->address_scheme === 'new')
+                                    <b>{{ $order->receiver->ward_name }}</b>
                                     @endif
                                     @if(isset($order->receiver->district))
-                                    <b>{{ $order->receiver->district->district_name }}</b>
+                                    <b>{{ $order->receiver->district_name }}</b>
                                     @endif
-                                    @if(isset($order->receiver->city))
-                                    <b>{{$order->receiver->city->city_name}}</b>
+                                    @if(isset($order->receiver->city) || $order->receiver->address_scheme === 'new')
+                                    <b>{{$order->receiver->city_name}}</b>
                                     @endif
                                     @endif
                                 </label>
@@ -89,7 +94,7 @@
                         <td class="text-center" style="min-width: 120px; white-space: nowrap;">
                             <a class="printIcon" data-toggle="modal" data-target="#openModalPrint" data-id="{{$order->id}}" title="In"><i style="color: #0ca362; font-size: 1.2rem; margin: 0 0.25rem;" class="fa fa-print"></i></a>
                             <a href="{{ route('orders.edit', [$order->id]) }}" title="Chỉnh sửa"><i style="color: #ff9a56; font-size: 1.2rem; margin: 0 0.25rem;" class="far fa-edit"></i></a>
-                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && in_array($order->delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_BLANK])) )
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level == \App\User::LEVEL_USER && $order->user_id && in_array((int)$order->delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_BLANK])) )
                                 <a class="delete" data-id="{{$order->id}}" title="Xóa"><i style="color: #f5576c; font-size: 1.2rem; margin: 0 0.25rem;" class="far fa-trash-alt"></i></a>
                                 {!! Form::open(['route' => ['orders.destroy', $order->id], 'method' => 'DELETE', 'class' => ['removeOrder'.$order->id],'style' => 'display: none']) !!}
                                 @csrf
@@ -113,6 +118,11 @@
                     <div class="order-card-header-left">
                         <input class="printOrder" data-service="{{implode(',',$order->getService($order))}}" value="{{$order->id}}" type="checkbox" />
                         <span class="order-code">{{$order->order_code}}</span>
+                        @if($order->push_error)
+                        <span style="color:#dc3545; font-size: 0.8rem; margin-left: 4px;" title="{{$order->push_error}}">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </span>
+                        @endif
                     </div>
                     <div class="order-card-header-right">
                         <span class="order-status-badge" style="{{ $order->delivery_status == \App\Models\Order::DELIVERY_STATUS_OK ? 'color: #000000; background-color: rgb(246 130 31 / 66%);' : '' }}">{{$order->order_delivery_name}}</span>
@@ -147,14 +157,14 @@
                             @if($order->receiver->address)
                                 {{implode(', ', array_slice(explode(',', $order->receiver->address), 0, 2))}}
                             @endif
-                            @if(isset($order->receiver->ward))
-                            {{ $order->receiver->ward->ward_name }}
+                            @if(isset($order->receiver->ward) || $order->receiver->address_scheme === 'new')
+                            {{ $order->receiver->ward_name }}
                             @endif
                             @if(isset($order->receiver->district))
-                            {{ $order->receiver->district->district_name }}
+                            {{ $order->receiver->district_name }}
                             @endif
-                            @if(isset($order->receiver->city))
-                            {{$order->receiver->city->city_name}}
+                            @if(isset($order->receiver->city) || $order->receiver->address_scheme === 'new')
+                            {{$order->receiver->city_name}}
                             @endif
                         </span>
                     </div>
@@ -185,7 +195,7 @@
                         <i class="fa fa-print"></i>
                         <span>In</span>
                     </a>
-                    @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level === \App\User::LEVEL_USER && $order->user_id && in_array($order->delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_BLANK])) )
+                    @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]) || (auth()->user()->level == \App\User::LEVEL_USER && $order->user_id && in_array((int)$order->delivery_status, [\App\Models\Order::DELIVERY_STATUS_PROCESSING, \App\Models\Order::DELIVERY_STATUS_BLANK])) )
                         <a class="delete btn-edit" data-id="{{$order->id}}" style="background: #ffebee; color: #f5576c;">
                             <i class="far fa-trash-alt"></i>
                             <span>Xóa</span>

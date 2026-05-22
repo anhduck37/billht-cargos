@@ -9,10 +9,11 @@ class OrderHistory extends Model
     protected $fillable = [
         'order_id',
         'user_id',
-        // 'order_old',
-        // 'order_new',
-        // 'request',
         'type_order',
+        'action',
+        'data',
+        'tracking_code',
+        'partner_name',
         'user_level',
         'is_total_order'
     ];
@@ -25,4 +26,14 @@ class OrderHistory extends Model
 
     const IS_TOTAL_ORDER = 1;
     const NOT_TOTAL_ORDER = 0;
+
+    public function order()
+    {
+        return $this->belongsTo(\App\Models\Order::class, 'order_id', 'id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(\App\User::class, 'user_id', 'id');
+    }
 }

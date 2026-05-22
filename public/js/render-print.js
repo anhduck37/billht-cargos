@@ -179,7 +179,7 @@ function renderCard(order, data, copyIndex, isBottomCard) {
                                 <div class="col-6">
                                     <h4 class="card-title">Họ tên, địa chỉ người gửi: </h4>
                                     <p class="size-text" >${order.sender && order.sender.sender_name ? order.sender.sender_name : '.....'}</p>
-                                    <p class="size-text" >${order.sender ? (order.sender.address ? order.sender.address + ', ' : '') + (order.sender.ward ? order.sender.ward.ward_name + ', ' : '') + (order.sender.district ? order.sender.district.district_name + ', ' : '') + (order.sender.city ? order.sender.city.city_name : '') : '.....'}</p>
+                                    <p class="size-text" >${order.sender ? formatFullAddress(order.sender) : '.....'}</p>
                                 </div>
                                 <div class="col-6">
                                     <h4 class="card-title">Mã KH </h4>
@@ -244,8 +244,7 @@ function renderCard(order, data, copyIndex, isBottomCard) {
                         <div class="card-body">
                             <h4 class="card-title">Họ tên, địa chỉ người nhận: </h4>
                             <p class="card-text size-text">${order.receiver && order.receiver.receiver_name ? order.receiver.receiver_name : '.....'}</p>
-
-                            <p class="card-text size-text"><small class="text-muted">${order.receiver ? (order.receiver.address ? order.receiver.address + ', ' : '') + (order.receiver.ward ? order.receiver.ward.ward_name + ', ' : '') + (order.receiver.district ? order.receiver.district.district_name + ', ' : '') + (order.receiver.city ? order.receiver.city.city_name : '') : '.....'}</small></p>
+                            <p class="card-text size-text"><small class="text-muted">${order.receiver ? formatFullAddress(order.receiver) : '.....'}</small></p>
 
                             <p class="card-text size-text"><h4 class="card-title">Điện thoại: ${order.receiver && order.receiver.receiver_phone ? order.receiver.receiver_phone : '.....'}</h4></p>
                         </div>
@@ -376,6 +375,29 @@ function renderCard(order, data, copyIndex, isBottomCard) {
     `;
 
     return html;
+}
+
+function formatFullAddress(person) {
+    if (!person) return '.....';
+    
+    // Prioritize the pre-formatted address from the backend accessor
+    if (person.full_address_text) {
+        return person.full_address_text;
+    }
+    
+    let parts = [];
+    if (person.address) parts.push(person.address);
+    
+    // Use accessor if available, fallback to relation, then fallback to empty
+    let ward = person.ward_name || (person.new_ward ? person.new_ward.name : (person.ward ? person.ward.ward_name : ''));
+    let district = person.district_name || (person.district ? person.district.district_name : '');
+    let city = person.city_name || (person.new_province ? person.new_province.name : (person.city ? person.city.city_name : ''));
+    
+    if (ward) parts.push(ward);
+    if (district) parts.push(district);
+    if (city) parts.push(city);
+    
+    return parts.join(', ');
 }
 
 function converDate(date) {

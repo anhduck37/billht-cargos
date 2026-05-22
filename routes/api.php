@@ -20,6 +20,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::middleware([])->group(function () {
     Route::get('/district/{city_id}', 'DistrictController@getDistricts');
     Route::get('/ward/{district_id}', 'WardController@getWards');
+    Route::get('/new-ward/{province_id}', 'WardController@getNewWards');
 });
 
 Route::group(['prefix' => 'webhook'], function () {

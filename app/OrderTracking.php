@@ -16,7 +16,8 @@ class OrderTracking extends Model
         'delivery_status',
         'city_id',
         'person_charge',
-        'signator'
+        'signator',
+        'status_text'
     ];
 
     public function order()

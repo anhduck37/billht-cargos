@@ -1,82 +1,74 @@
-<!-- Created At Field -->
+<!-- Header / General Info -->
 <div class="col-sm-3">
-    {!! Form::label('customer_name', __('order.name')) !!}
-    <p>{{ $order->customer_name }}</p>
+    {!! Form::label('order_code', __('order.invoice_code')) !!}
+    <p>{{ $order->order_code }}</p>
 </div>
 <div class="col-sm-3">
-    {!! Form::label('customer_phone', __('order.phone')) !!}
-    <p>{{ $order->customer_phone }}</p>
-</div>
-<div class="col-sm-3">
-    {!! Form::label('customer_email', __('order.email')) !!}
-    <p>{{ $order->customer_email }}</p>
-</div>
-
-<div class="col-sm-3">
-    {!! Form::label('order_status', __('order.order_status')) !!}
-    <p>{{ $order->status_name }}</p>
-</div>
-<div class="col-sm-3">
-    {!! Form::label('invoice_code', __('order.invoice_code')) !!}
+    {!! Form::label('invoice_code', __('order.tracking_code')) !!}
     <p>{{ $order->invoice_code }}</p>
 </div>
 <div class="col-sm-3">
+    {!! Form::label('order_status', __('order.order_status')) !!}
+    <p>{{ $order->order_status_name }}</p>
+</div>
+<div class="col-sm-3">
     {!! Form::label('delivery_status', __('order.delivery_status')) !!}
-    <p>{{ $order->delivery_name }}</p>
+    <p>{{ $order->order_delivery_name }}</p>
+</div>
+
+<hr class="col-sm-12" />
+
+<!-- Sender Info -->
+<div class="col-sm-6">
+    <h4>Thông tin người gửi</h4>
+    <p><strong>{{ __('order.name') }}:</strong> {{ $order->sender->sender_name ?? 'N/A' }}</p>
+    <p><strong>{{ __('order.phone') }}:</strong> {{ $order->sender->sender_phone ?? 'N/A' }}</p>
+    <p><strong>{{ __('order.email') }}:</strong> {{ $order->sender->sender_email ?? 'N/A' }}</p>
+    <p><strong>Địa chỉ:</strong> {{ isset($order->sender) ? $order->sender->full_address : '' }}</p>
+</div>
+
+<!-- Receiver Info -->
+<div class="col-sm-6">
+    <h4>Thông tin người nhận</h4>
+    <p><strong>{{ __('order.name') }}:</strong> {{ $order->receiver->receiver_name ?? 'N/A' }}</p>
+    <p><strong>{{ __('order.phone') }}:</strong> {{ $order->receiver->receiver_phone ?? 'N/A' }}</p>
+    <p><strong>{{ __('order.email') }}:</strong> {{ $order->receiver->receiver_email ?? 'N/A' }}</p>
+    <p><strong>Địa chỉ:</strong> {{ isset($order->receiver) ? $order->receiver->full_address : '' }}</p>
+</div>
+
+<hr class="col-sm-12" />
+
+<!-- Order Details -->
+<div class="col-sm-3">
+    {!! Form::label('weight', 'Trọng lượng (g)') !!}
+    <p>{{ $order->weight }}</p>
 </div>
 <div class="col-sm-3">
-    {!! Form::label('delivery_date', __('order.delivery_date')) !!}
-    <p>{{ $order->delivery_date }}</p>
-</div>
-<div class="col-sm-3">
-    {!! Form::label('tracking_code', __('order.tracking_code')) !!}
-    <p>{{ $order->tracking_code }}</p>
+    {!! Form::label('dimension', 'Kích thước (DxRxC)') !!}
+    <p>{{ $order->long }} x {{ $order->width }} x {{ $order->height }}</p>
 </div>
 <div class="col-sm-3">
     {!! Form::label('total', __('order.total')) !!}
-    <p>{{ $order->total }}</p>
+    <p>{{ number_format($order->total) }}</p>
+</div>
+<div class="col-sm-3">
+    {!! Form::label('collection', 'Thu hộ (COD)') !!}
+    <p>{{ number_format($order->collection) }}</p>
 </div>
 
 <div class="col-sm-3">
-    {!! Form::label('total_payment', __('order.total_payment')) !!}
-    <p>@if($order->is_paid_profit == \App\Models\order::ORDER_UNPAID_PROFIT)
-
-    @else   
-        {{ ($order->total * $order->percent_commission)/100 }} ( {{ $order->percent_commission }} %  )
-    @endif</p>
+    {!! Form::label('payment_method', 'Thanh toán') !!}
+    <p>{{ $order->payment_method_name }}</p>
 </div>
 <div class="col-sm-3">
-    {!! Form::label('lang', __('order.lang')) !!}
-    <p>{{ $order->lang }}</p>
+    {!! Form::label('quantity', 'Số lượng') !!}
+    <p>{{ $order->quantity }}</p>
 </div>
 <div class="col-sm-3">
     {!! Form::label('created_at', __('order.created_at')) !!}
-    <p>{{ $order->created_at }}</p>
+    <p>{{ $order->created_at->format('H:i d/m/Y') }}</p>
 </div>
-<div class="col-sm-3">
-    {!! Form::label('updated_at', __('order.updated_at')) !!}
-    <p>{{ $order->updated_at }}</p>
-</div>
-<hr/>
-<div class="col-sm-12 mt-4">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>{{ __('orderItem.product') }}</th>
-                <th>{{ __('orderItem.unit_price') }}</th>
-                <th>{{ __('orderItem.quantity') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if($order->orderItem->isNotEmpty())
-                @foreach($order->orderItem as $orderItem)
-                <tr>
-                    <td>{{ $orderItem->product_code }}</td>
-                    <td>{{ $orderItem->unit_price }}</td>
-                    <td>{{ $orderItem->quantity }}</td>
-                </tr>
-                @endforeach
-            @endif
-        </tbody>
-    </table>
+<div class="col-sm-12">
+    {!! Form::label('note', __('order.note')) !!}
+    <p>{{ $order->note }}</p>
 </div>

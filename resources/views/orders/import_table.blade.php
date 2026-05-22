@@ -42,7 +42,7 @@
                 <td>
                     <div><label>Tên người gửi: <b>{{isset($order->sender) ? $order->sender->sender_name : ''}}</b> </label></div>
                     <div><label>Số điện thoại: <b>{{isset($order->sender) ? $order->sender->sender_phone : ''}}</b></label></div>
-                    <div><label>Tỉnh / Thành phố: </label> <br> <b>{{isset($order->sender) && isset($order->sender->city) ? $order->sender->city->city_name : ''}}</b></div>
+                    <div><label>Tỉnh / Thành phố: </label> <br> <b>{{isset($order->sender) ? $order->sender->city_name : ''}}</b></div>
                     <div><b>{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</b></div>
                 </td>
                 <td>
@@ -52,14 +52,14 @@
                         <label>
                             @if(isset($order->receiver))
                             Địa chỉ: @if($order->receiver->address ) @foreach(explode(',', $order->receiver->address) as $item) <b>{{$item.','}}</b><br> @endforeach @endif
-                            @if(isset($order->receiver->ward))
-                            <b>{{ $order->receiver->ward->ward_name.',' }}</b><br>
+                            @if(isset($order->receiver->ward) || $order->receiver->address_scheme === 'new')
+                            <b>{{ $order->receiver->ward_name.',' }}</b><br>
                             @endif
                             @if(isset($order->receiver->district))
-                            <b>{{ $order->receiver->district->district_name.',' }}</b><br>
+                            <b>{{ $order->receiver->district_name.',' }}</b><br>
                             @endif
-                            @if(isset($order->receiver->city))
-                            <b>{{$order->receiver->city->city_name}}</b><br>
+                            @if(isset($order->receiver->city) || $order->receiver->address_scheme === 'new')
+                            <b>{{$order->receiver->city_name}}</b><br>
                             @endif
                             @endif
                         </label></div>
@@ -78,7 +78,7 @@
     </table>
 </div>
 @section('javascript')
-    <script type="text/javascript" src="{{ asset('js/render-print.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/render-print.js') }}?v={{ time() }}"></script>
     <script type="text/javascript">
         $(function() {
             let orders = {!! json_encode($orders) !!};

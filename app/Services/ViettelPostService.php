@@ -37,18 +37,24 @@ class ViettelPostService
     {
         $path = '/v2/user/Login';
         $client = new Client([
-            'headers' => $this->headers
+            'headers' => $this->headers,
+            'timeout' => 30
         ]);
-        $response = $client->post(
-            $this->url . $path,
-            [
-                'body' => json_encode([
-                    'USERNAME' => $this->username,
-                    'PASSWORD' => $this->password,
-                ]),
-            ]
-        );
-        $result = json_decode($response->getBody()->getContents(), true);
+        try {
+            $response = $client->post(
+                $this->url . $path,
+                [
+                    'body' => json_encode([
+                        'USERNAME' => $this->username,
+                        'PASSWORD' => $this->password,
+                    ]),
+                ]
+            );
+            $result = json_decode($response->getBody()->getContents(), true);
+        } catch (\Exception $e) {
+            \Log::error('VTP API Error refreshToken: ' . $e->getMessage());
+            $result = ['error' => true, 'message' => 'Lỗi kết nối Viettel Post: ' . $e->getMessage(), 'data' => []];
+        }
         if (empty($result['data'])) {
             return $result;
         }
@@ -121,16 +127,27 @@ class ViettelPostService
             "MONEY_TOTAL" => 0
         ];
         $client = new Client([
-            'headers' => $this->headers
+            'headers' => $this->headers,
+            'timeout' => 30
         ]);
-        $response = $client->post(
-            $this->url . $path,
-            [
-                'body' => json_encode($formatData)
-            ]
-        );
+        
+        try {
+            $response = $client->post(
+                $this->url . $path,
+                [
+                    'body' => json_encode($formatData)
+                ]
+            );
 
-        $result = json_decode($response->getBody()->getContents(), true);
+            $result = json_decode($response->getBody()->getContents(), true);
+        } catch (\Exception $e) {
+            \Log::error('VTP API Error createOrder: ' . $e->getMessage());
+            $result = [
+                'error' => true,
+                'message' => 'Lỗi kết nối API Viettel Post: ' . $e->getMessage(),
+                'data' => []
+            ];
+        }
         $orderPartnerLog = new OrderPartnerLog();
         $status = OrderPartnerLog::STATUS_FAILD;
         if (!empty($result['data'])) {
@@ -165,6 +182,16 @@ class ViettelPostService
         PartnerTracking::create($dataTracking);
         if (isset(PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']])) {
             $order->delivery_status = PartnerConfig::MAP_STATUS_VIETTEL_POST[$dataWebhook['ORDER_STATUS']];
+            
+            $statusDesc = $dataWebhook['STATUS_NAME'] ?? $dataWebhook['ORDER_STATUS'] ?? 'Cập nhật trạng thái';
+            $historyData = [
+                'action_desc' => 'Webhook VTP: ' . $statusDesc,
+            ];
+            if (isset($dataWebhook['NOTE']) && !empty($dataWebhook['NOTE'])) {
+                $historyData['message'] = $dataWebhook['NOTE'];
+            }
+            app(\App\Services\OrderHistoryService::class)->createOrderHistory(null, $order, null, \App\OrderHistory::NOT_TOTAL_ORDER, \App\OrderHistory::TYPE_ORDER_UPDATE, 'SYNC', $historyData, $dataWebhook['ORDER_NUMBER'], 'VIETTEL_POST');
+
             $order->save();
         }
         return;
@@ -176,15 +203,21 @@ class ViettelPostService
         $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
         $this->headers['token'] = $partnerConfig->token ?? '';
         $client = new Client([
-            'headers' => $this->headers
+            'headers' => $this->headers,
+            'timeout' => 30
         ]);
 
-        $response = $client->get($this->api . $path, [
-            'query' => [
-                'OrderNumber' => $order->order_partner_code
-            ]
-        ]);
-        $result = json_decode($response->getBody()->getContents(), true);
+        try {
+            $response = $client->get($this->api . $path, [
+                'query' => [
+                    'OrderNumber' => $order->order_partner_code
+                ]
+            ]);
+            $result = json_decode($response->getBody()->getContents(), true);
+        } catch (\Exception $e) {
+            \Log::error('VTP API Error tracking: ' . $e->getMessage());
+            $result = [];
+        }
         return $result['data'] ?? null;
     }
 
@@ -240,15 +273,21 @@ class ViettelPostService
         $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
         $this->headers['Token'] = $partnerConfig->token ?? '';
         $client = new Client([
-            'headers' => $this->headers
+            'headers' => $this->headers,
+            'timeout' => 30
         ]);
-        $response = $client->post(
-            $this->url . $path,
-            [
-                'body' => json_encode($formatData)
-            ]
-        );
-        $result = json_decode($response->getBody()->getContents(), true);
+        try {
+            $response = $client->post(
+                $this->url . $path,
+                [
+                    'body' => json_encode($formatData)
+                ]
+            );
+            $result = json_decode($response->getBody()->getContents(), true);
+        } catch (\Exception $e) {
+            \Log::error('VTP API Error getPriceAllNlp: ' . $e->getMessage());
+            $result = [];
+        }
         return $orderService ? ($result['RESULT'][0]['MA_DV_CHINH'] ?? null) : $result;
     }
 
