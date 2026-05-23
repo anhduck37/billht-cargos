@@ -3593,15 +3593,15 @@ fieldset:disabled a.btn
 
 .btn-outline-secondary
 {
-    color: #f7fafc;
-    border-color: #f7fafc;
+    color: #f6821f;
+    border-color: #f6821f;
     background-color: transparent;
     background-image: none;
 }
 .btn-outline-secondary:hover
 {
     color: #212529;
-    border-color: #f7fafc;
+    border-color: #333;
     background-color: #f7fafc;
 }
 .btn-outline-secondary:focus,
@@ -4068,7 +4068,7 @@ fieldset:disabled a.btn
     font-size: .875rem;
     line-height: 1.5;
 
-    padding: .25rem .5rem;
+    padding: 0.85rem 1.5rem;
 
     border-radius: .375rem;
 }

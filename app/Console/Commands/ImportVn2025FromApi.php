@@ -36,18 +36,29 @@ class ImportVn2025FromApi extends Command
 
         try {
             $this->info('Đang lấy danh sách Tỉnh/TP mới...');
-            $response = $client->request('GET', 'new-provinces', ['query' => ['icpp' => 100]]);
-            $data = json_decode($response->getBody(), true);
-            
-            $provinces = $data['data'] ?? [];
-            if (empty($provinces)) {
+            $page = 1;
+            $allProvinces = [];
+            do {
+                $response = $client->request('GET', 'new-provinces', ['query' => ['icpp' => 100, 'page' => $page]]);
+                $data = json_decode($response->getBody(), true);
+                
+                $provinces = $data['data'] ?? [];
+                foreach ($provinces as $p) {
+                    $allProvinces[] = $p;
+                }
+                
+                $totalPages = $data['meta']['totalPages'] ?? 1;
+                $page++;
+            } while ($page <= $totalPages);
+
+            if (empty($allProvinces)) {
                 $this->error('Không lấy được dữ liệu Tỉnh/TP.');
                 return;
             }
 
-            $bar = $this->output->createProgressBar(count($provinces));
+            $bar = $this->output->createProgressBar(count($allProvinces));
             
-            foreach ($provinces as $prov) {
+            foreach ($allProvinces as $prov) {
                 $provinceName = $prov['name'];
                 $provinceCode = $prov['code'];
                 

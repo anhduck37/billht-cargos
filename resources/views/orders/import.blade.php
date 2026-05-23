@@ -45,18 +45,18 @@
                                                 <i class="fas fa-rocket fa-4x text-success mb-3 mb-md-0"></i>
                                             </div>
                                             <div class="col-md-9">
-                                                <h3 class="card-title font-weight-bold text-success mb-2">ƯU TIÊN: Mẫu Mới 2025</h3>
-                                                <p class="text-dark small mb-3">Sử dụng hệ thống địa danh hành chính mới nhất (Tỉnh, Xã). Đảm bảo giao hàng chính xác.</p>
+                                                <h3 class="card-title font-weight-bold text-success mb-2">ƯU TIÊN: Mẫu Mới SAU SÁP NHẬP</h3>
+                                                <p class="text-dark small mb-3">Sử dụng hệ thống địa danh hành chính mới nhất (Tỉnh, Xã).</p>
                                                 
                                                 <div class="bg-white p-3 border rounded shadow-sm mb-4">
-                                                    <p class="mb-1 font-weight-bold small text-muted"><i class="fas fa-map-marker-alt mr-1 text-danger"></i> Định dạng địa chỉ tại Cột F và S:</p>
+                                                    <p class="mb-1 font-weight-bold small text-muted"><i class="fas fa-map-marker-alt mr-1 text-danger"></i> Định dạng địa chỉ người gửi và nhận:</p>
                                                     <div class="d-flex align-items-center bg-light p-2 rounded">
                                                         <code class="flex-grow-1" style="font-size: 0.9rem; color: #1a1a1a;">Số nhà, Tên Xã, Tên Tỉnh</code>
                                                         <span class="badge badge-success ml-2">VD: 123, Xã Kim Chung, Hà Nội</span>
                                                     </div>
                                                 </div>
 
-                                                <button type="submit" name="address_scheme" value="new" class="btn btn-success btn-lg btn-block shadow"><i class="fas fa-check-circle mr-2"></i>XÁC NHẬN NHẬP EXCEL 2025</button>
+                                                <button type="submit" name="address_scheme" value="new" class="btn btn-success btn-lg btn-block shadow"><i class="fas fa-check-circle mr-2"></i>NHẬP FILE MỚI (Xã, Tỉnh)</button>
                                             </div>
                                         </div>
                                     </div>
@@ -71,13 +71,13 @@
                                             <i class="fas fa-history fa-2x text-muted"></i>
                                         </div>
                                         <h5 class="font-weight-bold text-muted">Hệ thống cũ</h5>
-                                        <p class="small text-muted mb-3">Dành cho các file dữ liệu cũ chưa cập nhật địa danh 2025.</p>
+                                        <p class="small text-muted mb-3">Dành cho các file dữ liệu cũ CHƯA SÁP NHẬP.</p>
                                         
                                         <div class="alert alert-light p-2 text-left mb-3" style="font-size: 0.7rem; border: 1px dashed #ced4da;">
-                                            <i class="fas fa-exclamation-triangle mr-1"></i> Không bắt buộc định dạng phẩy.
+                                            <i class="fas fa-exclamation-triangle mr-1"></i> Ví dụ địa chỉ hợp lệ: Số nhà, Tên Xã, Tên Huyện, Tên Tỉnh
                                         </div>
 
-                                        <button type="submit" name="address_scheme" value="old" class="btn btn-outline-secondary btn-sm mt-auto">Dùng mẫu cũ</button>
+                                        <button type="submit" name="address_scheme" value="old" class="btn btn-outline-secondary btn-sm mt-auto">NHẬP FILE CŨ (Xã, Huyện, Tỉnh)</button>
                                     </div>
                                 </div>
                             </div>
