@@ -442,4 +442,34 @@
             a.document.close();
         }
     </script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container .select2-selection--single {
+            height: calc(2.75rem + 2px);
+            border: 1px solid #cad1d7;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            background-color: #fff;
+            box-shadow: none;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: calc(2.75rem + 2px);
+            right: 0.75rem;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 1.5;
+            color: #8898aa;
+            padding-left: 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#sender_province, #sender_ward, #receiver_province, #receiver_ward').select2({
+                placeholder: "Vui lòng chọn...",
+                allowClear: true,
+                width: '100%'
+            });
+        });
+    </script>
 @endsection

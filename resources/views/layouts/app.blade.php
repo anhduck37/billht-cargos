@@ -68,12 +68,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <script type="text/javascript" src="/jsdelivr/jquery.min.js"></script>
 @yield('javascript')
-@yield('js')
 <script type="text/javascript" src="/jsdelivr/moment.min.js"></script>
 <!-- Argon JS -->
 <script src="{{ asset('argon/vendor/jquery/dist/jquery.min.js') }}"></script>
 <script src="{{ asset('argon/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('argon/js/argon.js?v=1.0.0') }}"></script>
 <script type="text/javascript" src="/jsdelivr/daterangepicker.min.js"></script>
+@yield('js')
 </body>
 </html>
