@@ -131,12 +131,21 @@ class EmsService
         $receiverDistrictID = (int)($order->receiver->district->ems_code ?? 0);
         $receiverWardID = (int)($order->receiver->ward->ems_code ?? 0);
 
-        if (($order->address_scheme ?? $order->receiver->address_scheme) === 'new' && isset($order->receiver->new_ward_id)) {
-            $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'EMS');
-            if ($mapping) {
-                $receiverProvinceID = (int)($mapping->partner_province_id ?? $receiverProvinceID);
-                $receiverDistrictID = (int)($mapping->partner_district_id ?? $receiverDistrictID);
-                $receiverWardID = (int)($mapping->partner_ward_id ?? $receiverWardID);
+        if (($order->address_scheme ?? $order->receiver->address_scheme) === 'new') {
+            $newProvince = $order->receiver->newProvince;
+            $newWard = $order->receiver->newWard;
+            
+            $receiverProvinceID = (int)($newProvince->official_code ?? 0);
+            $receiverDistrictID = 0; // Địa chỉ mới không có quận/huyện
+            $receiverWardID = (int)($newWard->official_code ?? 0);
+
+            if (isset($order->receiver->new_ward_id)) {
+                $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'EMS');
+                if ($mapping) {
+                    $receiverProvinceID = (int)($mapping->partner_province_code ?? $receiverProvinceID);
+                    $receiverDistrictID = (int)($mapping->partner_district_code ?? $receiverDistrictID);
+                    $receiverWardID = (int)($mapping->partner_ward_code ?? $receiverWardID);
+                }
             }
         }
 
@@ -144,12 +153,21 @@ class EmsService
         $senderDistrictID = (int)($order->sender->district->ems_code ?? 0);
         $senderWardID = (int)($order->sender->ward->ems_code ?? 0);
 
-        if (($order->address_scheme ?? $order->sender->address_scheme) === 'new' && isset($order->sender->new_ward_id)) {
-            $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->sender->new_ward_id, 'EMS');
-            if ($mapping) {
-                $senderProvinceID = (int)($mapping->partner_province_id ?? $senderProvinceID);
-                $senderDistrictID = (int)($mapping->partner_district_id ?? $senderDistrictID);
-                $senderWardID = (int)($mapping->partner_ward_id ?? $senderWardID);
+        if (($order->address_scheme ?? $order->sender->address_scheme) === 'new') {
+            $newProvince = $order->sender->newProvince;
+            $newWard = $order->sender->newWard;
+            
+            $senderProvinceID = (int)($newProvince->official_code ?? 0);
+            $senderDistrictID = 0;
+            $senderWardID = (int)($newWard->official_code ?? 0);
+
+            if (isset($order->sender->new_ward_id)) {
+                $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->sender->new_ward_id, 'EMS');
+                if ($mapping) {
+                    $senderProvinceID = (int)($mapping->partner_province_code ?? $senderProvinceID);
+                    $senderDistrictID = (int)($mapping->partner_district_code ?? $senderDistrictID);
+                    $senderWardID = (int)($mapping->partner_ward_code ?? $senderWardID);
+                }
             }
         }
 

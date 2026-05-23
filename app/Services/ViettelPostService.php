@@ -84,9 +84,9 @@ class ViettelPostService
         if (($order->address_scheme ?? $order->receiver->address_scheme) === 'new' && isset($order->receiver->new_ward_id)) {
             $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'VTP');
             if ($mapping) {
-                $receiverWard = $mapping->partner_ward_id ?? $receiverWard;
-                $receiverDistrict = $mapping->partner_district_id ?? $receiverDistrict;
-                $receiverProvince = $mapping->partner_province_id ?? $receiverProvince;
+                $receiverWard = $mapping->partner_ward_code ?? $receiverWard;
+                $receiverDistrict = $mapping->partner_district_code ?? $receiverDistrict;
+                $receiverProvince = $mapping->partner_province_code ?? $receiverProvince;
             }
         }
 
