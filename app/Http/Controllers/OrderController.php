@@ -598,7 +598,7 @@ class OrderController extends AppBaseController
                                 'note' => $sheet->getCell('L' . $row)->getValue(),
                                 'user_id' => auth()->user()->id,
                                 'order_status' => Order::ORDER_BLANK,
-                                'delivery_status' => Order::DELIVERY_STATUS_PROCESSING,
+                                'delivery_status' => Order::DELIVERY_STATUS_BLANK,
                                 'quantity' => $sheet->getCell('O' . $row)->getValue() ?? 1,
                                 'address_scheme' => 'new'
                             ];
@@ -788,7 +788,7 @@ class OrderController extends AppBaseController
                                 'note' => $sheet->getCell('L' . $row)->getValue(),
                                 'user_id' => auth()->user()->id,
                                 'order_status' => Order::ORDER_BLANK,
-                                'delivery_status' => Order::DELIVERY_STATUS_PROCESSING,
+                                'delivery_status' => Order::DELIVERY_STATUS_BLANK,
                                 'quantity' => $sheet->getCell('O' . $row)->getValue() ?? 1
                             ];
                             if ($sheet->getCell('H' . $row)->getValue()) {
