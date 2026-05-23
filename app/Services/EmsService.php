@@ -124,9 +124,35 @@ class EmsService
 
     public function formatDataBody($order)
     {
-        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward->ward_name ?? '') . ' ' . ($order->sender->district->district_name ?? '') . ' ' . ($order->sender->city->city_name ?? '');
-        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward->ward_name ?? '') . ' ' . ($order->receiver->district->district_name ?? '') . ' ' . ($order->receiver->city->city_name ?? '');
+        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->district_name ?? '') . ' ' . ($order->sender->city_name ?? '');
+        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward_name ?? '') . ' ' . ($order->receiver->district_name ?? '') . ' ' . ($order->receiver->city_name ?? '');
         
+        $receiverProvinceID = (int)($order->receiver->city->ems_code ?? 0);
+        $receiverDistrictID = (int)($order->receiver->district->ems_code ?? 0);
+        $receiverWardID = (int)($order->receiver->ward->ems_code ?? 0);
+
+        if (($order->address_scheme ?? $order->receiver->address_scheme) === 'new' && isset($order->receiver->new_ward_id)) {
+            $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'EMS');
+            if ($mapping) {
+                $receiverProvinceID = (int)($mapping->partner_province_id ?? $receiverProvinceID);
+                $receiverDistrictID = (int)($mapping->partner_district_id ?? $receiverDistrictID);
+                $receiverWardID = (int)($mapping->partner_ward_id ?? $receiverWardID);
+            }
+        }
+
+        $senderProvinceID = (int)($order->sender->city->ems_code ?? 0);
+        $senderDistrictID = (int)($order->sender->district->ems_code ?? 0);
+        $senderWardID = (int)($order->sender->ward->ems_code ?? 0);
+
+        if (($order->address_scheme ?? $order->sender->address_scheme) === 'new' && isset($order->sender->new_ward_id)) {
+            $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->sender->new_ward_id, 'EMS');
+            if ($mapping) {
+                $senderProvinceID = (int)($mapping->partner_province_id ?? $senderProvinceID);
+                $senderDistrictID = (int)($mapping->partner_district_id ?? $senderDistrictID);
+                $senderWardID = (int)($mapping->partner_ward_id ?? $senderWardID);
+            }
+        }
+
         $data = [
             "CrmOrPaypostCode" => config('ems.crm_code', ''),
             "CustomerToken" => config('ems.crm_code', ''),
@@ -144,9 +170,9 @@ class EmsService
             "BuyerInfo" => [
                 "FullName" => $order->receiver->receiver_name ?? '',
                 "MobileNumber" => $order->receiver->receiver_phone ?? '',
-                "ProvinceID" => (int)($order->receiver->city->ems_code ?? 0),
-                "DistrictID" => (int)($order->receiver->district->ems_code ?? 0),
-                "WardID" => (int)($order->receiver->ward->ems_code ?? 0),
+                "ProvinceID" => $receiverProvinceID,
+                "DistrictID" => $receiverDistrictID,
+                "WardID" => $receiverWardID,
                 "Street" => $receiverAddress,
                 "IsUpdate" => "N"
             ],
@@ -154,9 +180,9 @@ class EmsService
             "SenderInfo" => [
                 "FullName" => $order->sender->sender_name ?? '',
                 "MobileNumber" => $order->sender->sender_phone ?? '',
-                "ProvinceID" => (int)($order->sender->city->ems_code ?? 0),
-                "DistrictID" => (int)($order->sender->district->ems_code ?? 0),
-                "WardID" => (int)($order->sender->ward->ems_code ?? 0),
+                "ProvinceID" => $senderProvinceID,
+                "DistrictID" => $senderDistrictID,
+                "WardID" => $senderWardID,
                 "Street" => $senderAddress
             ],
             

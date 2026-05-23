@@ -74,8 +74,22 @@ class ViettelPostService
         $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
 
         $this->headers['Token'] = $partnerConfig->token ?? '';
-        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward->ward_name ?? '') . ' ' . ($order->sender->city->city_name ?? '');
-        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward->ward_name ?? '') . ' ' . ($order->receiver->city->city_name ?? '');
+        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->city_name ?? '');
+        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward_name ?? '') . ' ' . ($order->receiver->city_name ?? '');
+
+        $receiverWard = $order->receiver->ward->ward_code ?? 0;
+        $receiverDistrict = $order->receiver->district->district_code ?? 0;
+        $receiverProvince = $order->receiver->city->city_code ?? 0;
+        
+        if (($order->address_scheme ?? $order->receiver->address_scheme) === 'new' && isset($order->receiver->new_ward_id)) {
+            $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'VTP');
+            if ($mapping) {
+                $receiverWard = $mapping->partner_ward_id ?? $receiverWard;
+                $receiverDistrict = $mapping->partner_district_id ?? $receiverDistrict;
+                $receiverProvince = $mapping->partner_province_id ?? $receiverProvince;
+            }
+        }
+
         $orderPayment = 1;
         switch ($order->payment_method) {
             case Order::PAYMENT_METHOD_LAST:
@@ -102,9 +116,9 @@ class ViettelPostService
             "RECEIVER_ADDRESS" => $receiverAddress,
             "RECEIVER_PHONE" => $order->receiver->receiver_phone,
             "RECEIVER_EMAIL" => $order->receiver->receiver_email,
-            "RECEIVER_WARD" => $order->receiver->ward->ward_code ?? 0,
-            "RECEIVER_DISTRICT" => $order->receiver->district->district_code ?? 0,
-            "RECEIVER_PROVINCE" => $order->receiver->city->city_code ?? 0,
+            "RECEIVER_WARD" => $receiverWard,
+            "RECEIVER_DISTRICT" => $receiverDistrict,
+            "RECEIVER_PROVINCE" => $receiverProvince,
             "PRODUCT_NAME" => $order->note,
             "PRODUCT_QUANTITY" => $order->quantity,
             "PRODUCT_WEIGHT" => $order->weight,
@@ -256,8 +270,8 @@ class ViettelPostService
     public function getPriceAllNlp($order, $orderService = true)
     {
         $path = '/v2/order/getPriceAllNlp';
-        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward->ward_name ?? '') . ' ' . ($order->sender->city->city_name ?? '');
-        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward->ward_name ?? '') . ' ' . ($order->receiver->city->city_name ?? '');
+        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->city_name ?? '');
+        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward_name ?? '') . ' ' . ($order->receiver->city_name ?? '');
         $formatData = [
             "SENDER_ADDRESS" => $senderAddress,
             "RECEIVER_ADDRESS" => $receiverAddress,
