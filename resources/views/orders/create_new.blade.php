@@ -12,7 +12,7 @@
                     <div class="card-header bg-white border-0">
                         <div class="row align-items-center">
                             <div class="col-md-8 text-left">
-                                <h1 class="text-primary mt-3 mb-0"><i class="fas fa-plus-circle mr-2"></i>Tạo Vận Đơn Mới 2025</h1>
+                                <h1 class="text-primary mt-3 mb-0"><i class="fas fa-plus-circle mr-2"></i>Tạo Vận Đơn Mới</h1>
                                 <p class="text-muted small">Sử dụng hệ thống địa danh hành chính mới nhất (Tỉnh, Xã)</p>
                             </div>
                             <div class="col-md-4 text-right">

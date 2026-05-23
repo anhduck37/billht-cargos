@@ -70,9 +70,9 @@
                     </div>
                     <div class="card-footer text-right">
                         <div class="row">
-                            <div class="col mb-1">
+                            <!-- <div class="col mb-1">
                                 <a style="width: 100%" href="{{route('orders.createNew')}}" class="btn btn-warning">Tạo đơn mới 2025</a>
-                            </div>
+                            </div> -->
                             <div class="col mb-1" >
                                 {!! Form::submit('Tìm kiếm', ['class' => 'btn btn-primary', 'style' => 'width: 100%']) !!}
                             </div>
