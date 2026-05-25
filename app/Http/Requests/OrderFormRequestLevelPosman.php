@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Order;
-use App\Service;
 use App\User;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -38,17 +37,26 @@ public function rules()
             'receiver.receiver_name' => 'required',
             'receiver.receiver_phone' => 'required',
             'receiver.address' => 'required',
-            'sender.city_id' => 'required',
-            // 'sender.district_id' => 'required',
-            // 'sender.ward_id' => 'required',
-            'receiver.city_id' => 'required',
-            'receiver.district_id' => 'required',
-            'receiver.ward_id' => 'required',
-            'order.note' => 'required',
-            'order.type' => 'required',
             // 'order.weight' => 'required'
         ];
-            $rule['order_service.'. Service::SERVICE_DOMESTIC] = 'required';
+
+        if (($formData['sender']['address_scheme'] ?? null) === 'new') {
+            $rule['sender.new_province_id'] = 'required';
+            $rule['sender.new_ward_id'] = 'required';
+        } else {
+            $rule['sender.city_id'] = 'required';
+            // 'sender.district_id' => 'required',
+            // 'sender.ward_id' => 'required',
+        }
+
+        if (($formData['receiver']['address_scheme'] ?? null) === 'new') {
+            $rule['receiver.new_province_id'] = 'required';
+            $rule['receiver.new_ward_id'] = 'required';
+        } else {
+            $rule['receiver.city_id'] = 'required';
+            $rule['receiver.district_id'] = 'required';
+            $rule['receiver.ward_id'] = 'required';
+        }
     }
 
     // Các quy tắc validation khác cho các level khác
@@ -100,11 +108,12 @@ public function rules()
             'sender.city_id.required' => 'Tỉnh / Thành phố  là bắt buộc',
             'sender.district_id.required' => 'Huyện / Quận là bắt buộc',
             'sender.ward_id.required' => 'Xã / Phường là bắt buộc',
-            'order.note.required' => 'Nội dung là bắt buộc',
-            'order.type.required' => 'Loại hàng hóa là bắt buộc',
+            'sender.new_province_id.required' => 'Tỉnh / Thành phố là bắt buộc',
+            'sender.new_ward_id.required' => 'Xã / Phường là bắt buộc',
+            'receiver.new_province_id.required' => 'Tỉnh / Thành phố là bắt buộc',
+            'receiver.new_ward_id.required' => 'Xã / Phường là bắt buộc',
             'order.weight.required' => 'Cân nặng là bắt buộc'
         ];
-            $messages['order_service.'. Service::SERVICE_DOMESTIC.'.required'] = 'Dịch vụ trong nước là bắt buộc';
             return $messages;
     }
 }

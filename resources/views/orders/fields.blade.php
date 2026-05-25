@@ -390,7 +390,7 @@
             </div>
             <div class="col-md-4">
                 <div class="form-group mt-2">
-                    <label>Loại hàng hóa <span style="color: red; font-weight: bold;">(*)</span></label>
+                    <label>Loại hàng hóa</label>
                     <div class="form-control" style="border: none">
                         @foreach(\App\Models\Order::MAP_ORDER_TYPE as $value => $label)
                         <div class="form-check form-check-inline">
@@ -408,7 +408,7 @@
             </div>
         </div>
         <div class="form-group">
-            <label>Nội dung gửi <span style="color: red; font-weight: bold;">(*)</span> (VD: Thư, tên hàng hóa,..)</label>
+            <label>Nội dung gửi (VD: Thư, tên hàng hóa,..)</label>
             <textarea @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order[note]" class="form-control" rows="3">{{old('order.note') ? old('order.note') : $order->note}}</textarea>
             @if ($errors->has('order.note'))
                         <span class="invalid-feedback" style="display: block;" role="alert">
