@@ -49,7 +49,7 @@
                                     @php
                                         $isMickeyOrder = $order->tracking_provider === \App\Models\Order::TRACKING_PROVIDER_MICKEY;
                                         $showPartnerBadge = auth()->user()->level != \App\User::LEVEL_USER && (($order->partner_code && $order->order_partner_code) || $isMickeyOrder);
-                                        $partnerBadgeText = $isMickeyOrder ? 'Mickey' : (\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? '');
+                                        $partnerBadgeText = $isMickeyOrder ? 'Q-CPN' : (\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? '');
                                         $partnerBadgeColor = $isMickeyOrder ? '#2563eb' : ($order->partner_code == \App\Models\Order::CODE_EMS ? '#0f766e' : '#f9731694');
                                     @endphp
                                     @if($showPartnerBadge)
