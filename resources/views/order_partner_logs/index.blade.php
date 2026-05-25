@@ -61,7 +61,9 @@
                             <h3 class="mb-0">Lịch sử đồng bộ vận đơn (VTP / EMS)</h3>
                         </div>
                         <div class="col-4 text-right">
-                            <!-- Placeholder for bulk actions if needed -->
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                                <button type="submit" form="bulkCancelPartnerOrdersForm" class="btn btn-sm btn-danger">Huỷ đồng bộ hàng loạt</button>
+                            @endif
                         </div>
                     </div>
                     
@@ -85,8 +87,8 @@
                             <label for="filter_partner" class="form-control-label mr-2">Đối tác:</label>
                             <select name="filter_partner" id="filter_partner" class="form-control form-control-sm">
                                 <option value="">Tất cả</option>
-                                <option value="viettel_post" {{ request('filter_partner') === 'viettel_post' ? 'selected' : '' }}>Viettel Post</option>
-                                <option value="ems" {{ request('filter_partner') === 'ems' ? 'selected' : '' }}>EMS</option>
+                                <option value="VIETTEL_POST" {{ strtoupper(request('filter_partner', '')) === 'VIETTEL_POST' ? 'selected' : '' }}>Viettel Post</option>
+                                <option value="EMS" {{ strtoupper(request('filter_partner', '')) === 'EMS' ? 'selected' : '' }}>EMS</option>
                             </select>
                         </div>
                         
@@ -98,20 +100,34 @@
                 </div>
 
                 <div class="table-responsive">
+                    {!! Form::open(['route' => array_merge(['order_partner_logs.bulk_cancel'], request()->query()), 'method' => 'POST', 'id' => 'bulkCancelPartnerOrdersForm', 'class' => 'd-none']) !!}
+                        <input type="hidden" name="reason" value="Huy don hang loat tu BillHT">
+                    {!! Form::close() !!}
                     <table class="table align-items-center table-flush">
                         <thead class="thead-light">
                             <tr>
+                                <th scope="col" class="text-center" style="width: 40px;">
+                                    <input type="checkbox" id="checkAllCancelableLogs">
+                                </th>
                                 <th scope="col">Mã vận đơn</th>
                                 <th scope="col">Người gửi</th>
                                 <th scope="col">Đối Tác</th>
                                 <th scope="col">Chi tiết phản hồi</th>
                                 <th scope="col">Thời gian</th>
+                                <th scope="col" class="text-right">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if(count($logs) > 0)
                                 @foreach($logs as $log)
                                     <tr>
+                                        <td class="text-center">
+                                            @if($log->can_cancel)
+                                                <input type="checkbox" class="cancel-log-checkbox" form="bulkCancelPartnerOrdersForm" name="log_ids[]" value="{{ $log->id }}">
+                                            @else
+                                                <input type="checkbox" disabled>
+                                            @endif
+                                        </td>
                                         <td>
                                             @if($log->order_id > 0)
                                                 <a href="{{ route('orders.edit', $log->order_id) }}" target="_blank" class="font-weight-bold">
@@ -139,11 +155,21 @@
                                         <td>
                                             {{ \Carbon\Carbon::parse($log->updated_at)->format('H:i d/m/Y') }}
                                         </td>
+                                        <td class="text-right">
+                                            @if($log->can_cancel)
+                                                {!! Form::open(['route' => array_merge(['order_partner_logs.cancel', $log->id], request()->query()), 'method' => 'POST', 'class' => 'd-inline cancel-partner-order-form']) !!}
+                                                    <input type="hidden" name="reason" value="Huy don tu BillHT">
+                                                    <button type="submit" class="btn btn-sm btn-danger">Huỷ đồng bộ</button>
+                                                {!! Form::close() !!}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="5" class="text-center">Không có dữ liệu logs.</td>
+                                    <td colspan="7" class="text-center">Không có dữ liệu logs.</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -159,4 +185,39 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('javascript')
+<script type="text/javascript">
+    $(function () {
+        $('#checkAllCancelableLogs').on('change', function () {
+            $('.cancel-log-checkbox').prop('checked', $(this).is(':checked'));
+        });
+
+        $('.cancel-log-checkbox').on('change', function () {
+            let total = $('.cancel-log-checkbox').length;
+            let checked = $('.cancel-log-checkbox:checked').length;
+            $('#checkAllCancelableLogs').prop('checked', total > 0 && total === checked);
+        });
+
+        $('#bulkCancelPartnerOrdersForm').on('submit', function (event) {
+            let checked = $('.cancel-log-checkbox:checked').length;
+            if (checked === 0) {
+                alert('Bạn vui lòng chọn ít nhất một log cần huỷ.');
+                event.preventDefault();
+                return;
+            }
+
+            if (!confirm('Bạn có chắc muốn huỷ ' + checked + ' đơn đối tác đã chọn? Sau khi huỷ thành công, mã đối tác sẽ bị xoá để có thể đẩy đơn sang đối tác khác.')) {
+                event.preventDefault();
+            }
+        });
+
+        $('.cancel-partner-order-form').on('submit', function (event) {
+            if (!confirm('Bạn có chắc muốn huỷ đơn đối tác này? Sau khi huỷ thành công, mã đối tác sẽ bị xoá để có thể đẩy đơn sang đối tác khác.')) {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
 @endsection

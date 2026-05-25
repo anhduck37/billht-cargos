@@ -122,6 +122,36 @@ class EmsService
         return $result;
     }
 
+    public function cancelOrder($order, $reasonCancel = null)
+    {
+        $formatData = [
+            'CrmOrPaypostCode' => config('ems.crm_code'),
+            'ShippingCode' => $order->order_partner_code,
+            'ReasonCancel' => $reasonCancel ?: 'Huy don tu BillHT',
+        ];
+
+        $result = $this->executeRequest('PARTNER_ORDER_CANCEL', $formatData);
+        $statusLog = OrderPartnerLog::STATUS_FAILD;
+
+        if (isset($result['code']) && $result['code'] === self::STATUS_SUCCESS) {
+            $statusLog = OrderPartnerLog::STATUS_SUCCESS;
+        }
+
+        $orderPartnerLog = new OrderPartnerLog();
+        $orderPartnerLog->order_id = $order->id ?? 0;
+        $orderPartnerLog->status = $statusLog;
+        $orderPartnerLog->partner_code = PartnerConfig::CODE_EMS;
+        $orderPartnerLog->payload = json_encode([
+            'Code' => 'PARTNER_ORDER_CANCEL',
+            'Data' => json_encode($formatData, JSON_UNESCAPED_UNICODE),
+        ], JSON_UNESCAPED_UNICODE);
+        $orderPartnerLog->response = json_encode($result, JSON_UNESCAPED_UNICODE);
+        $orderPartnerLog->user_id = auth()->user()->id ?? 0;
+        $orderPartnerLog->save();
+
+        return $result;
+    }
+
     public function formatDataBody($order)
     {
         $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->district_name ?? '') . ' ' . ($order->sender->city_name ?? '');

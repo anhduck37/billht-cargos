@@ -48,7 +48,7 @@
                                     @endif
                                     @if(auth()->user()->level != \App\User::LEVEL_USER && $order->partner_code && $order->order_partner_code)
                                     <div class="mt-1">
-                                        <span class="badge badge-info" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</span>
+                                        <span class="badge" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; color: #ffffff; background-color: {{ $order->partner_code == \App\Models\Order::CODE_EMS ? '#0f766e' : '#f9731694' }};">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</span>
                                     </div>
                                     @endif
                                 </div>
@@ -129,7 +129,7 @@
                         @endif
                         @if(auth()->user()->level != \App\User::LEVEL_USER && $order->partner_code && $order->order_partner_code)
                         <div class="mt-1">
-                            <span class="badge badge-info" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</span>
+                            <span class="badge" style="font-size: 0.7rem; padding: 0.25rem 0.5rem; color: #ffffff; background-color: {{ $order->partner_code == \App\Models\Order::CODE_EMS ? '#57afa8db' : '#f97316' }};">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</span>
                         </div>
                         @endif
                     </div>

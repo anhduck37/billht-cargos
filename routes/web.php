@@ -67,6 +67,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/create-ems', 'OrderController@createEms');
     Route::get('/order/create-order-ems/{id}', 'OrderController@createOrderEms')->name('orders.createEms');
     Route::get('/order-partner-logs', 'OrderPartnerLogController@index')->name('order_partner_logs.index');
+    Route::post('/order-partner-logs/bulk-cancel', 'OrderPartnerLogController@bulkCancel')->name('order_partner_logs.bulk_cancel');
+    Route::post('/order-partner-logs/{orderPartnerLog}/cancel', 'OrderPartnerLogController@cancel')->name('order_partner_logs.cancel');
     Route::get('/order/status-change', 'OrderStatusChangeController@index')->name('order_status_changes.index');
     Route::post('/order/status-change/import', 'OrderStatusChangeController@import')->name('order_status_changes.import');
     Route::get('/order/status-change/template', 'OrderStatusChangeController@template')->name('order_status_changes.template');

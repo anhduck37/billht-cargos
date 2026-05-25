@@ -180,6 +180,80 @@ class ViettelPostService
         return $result;
     }
 
+    public function cancelOrder($order, $note = null)
+    {
+        $path = '/v2/order/UpdateOrder';
+        $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
+        $this->headers['Token'] = $partnerConfig->token ?? '';
+
+        $formatData = [
+            'TYPE' => 4,
+            'ORDER_NUMBER' => $order->order_partner_code,
+            'NOTE' => $note ?: 'Huy don tu BillHT',
+        ];
+
+        $client = new Client([
+            'headers' => $this->headers,
+            'timeout' => 30,
+        ]);
+
+        try {
+            $response = $client->post(
+                $this->url . $path,
+                [
+                    'body' => json_encode($formatData, JSON_UNESCAPED_UNICODE),
+                ]
+            );
+            $result = json_decode($response->getBody()->getContents(), true) ?: [];
+            $result['http_status'] = $response->getStatusCode();
+        } catch (\Exception $e) {
+            \Log::error('VTP API Error cancelOrder: ' . $e->getMessage());
+            $result = [
+                'error' => true,
+                'message' => 'Lỗi kết nối API Viettel Post: ' . $e->getMessage(),
+                'data' => [],
+            ];
+        }
+
+        $orderPartnerLog = new OrderPartnerLog();
+        $orderPartnerLog->order_id = $order->id ?? 0;
+        $orderPartnerLog->status = $this->isCancelSuccessful($result) ? OrderPartnerLog::STATUS_SUCCESS : OrderPartnerLog::STATUS_FAILD;
+        $orderPartnerLog->partner_code = PartnerConfig::CODE_VIETTEL_POST;
+        $orderPartnerLog->payload = json_encode($formatData, JSON_UNESCAPED_UNICODE);
+        $orderPartnerLog->response = json_encode($result, JSON_UNESCAPED_UNICODE);
+        $orderPartnerLog->user_id = auth()->user()->id ?? 0;
+        $orderPartnerLog->save();
+
+        return $result;
+    }
+
+    public function isCancelSuccessful($result)
+    {
+        if (!is_array($result) || !empty($result['error'])) {
+            return false;
+        }
+
+        if (isset($result['status']) && is_numeric($result['status']) && (int)$result['status'] >= 400) {
+            return false;
+        }
+
+        if (!empty($result['message'])) {
+            $message = function_exists('mb_strtolower') ? mb_strtolower($result['message'], 'UTF-8') : strtolower($result['message']);
+            if (
+                strpos($message, 'không') !== false ||
+                strpos($message, 'khong') !== false ||
+                strpos($message, 'thất bại') !== false ||
+                strpos($message, 'that bai') !== false ||
+                strpos($message, 'fail') !== false ||
+                strpos($message, 'error') !== false
+            ) {
+                return false;
+            }
+        }
+
+        return isset($result['http_status']) && (int)$result['http_status'] >= 200 && (int)$result['http_status'] < 300;
+    }
+
     public function webhookTracking($data)
     {
         app(LogFileService::class)->writeLog('viettel_post', json_encode($data));

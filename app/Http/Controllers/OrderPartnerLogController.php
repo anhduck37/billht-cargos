@@ -3,29 +3,38 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Order;
 use App\OrderPartnerLog;
+use App\PartnerConfig;
+use App\OrderHistory;
+use App\Services\EmsService;
+use App\Services\OrderHistoryService;
+use App\Services\ViettelPostService;
+use App\User;
 use Carbon\Carbon;
+use Flash;
+use Illuminate\Support\Facades\DB;
 
 class OrderPartnerLogController extends Controller
 {
     public function index(Request $request)
     {
         // Query builder for filtering
-        $query = OrderPartnerLog::query();
+        $query = OrderPartnerLog::with('order');
 
         // Filter by Status
-        if ($request->has('filter_status') && $request->filter_status !== null) {
+        if ($request->has('filter_status') && $request->filter_status !== '') {
             $query->where('status', $request->filter_status);
         }
 
         // Filter by Date
-        if ($request->has('filter_date') && $request->filter_date !== null) {
+        if ($request->has('filter_date') && $request->filter_date !== '') {
             $query->whereDate('updated_at', $request->filter_date);
         }
 
         // Filter by Partner
-        if ($request->has('filter_partner') && $request->filter_partner !== null) {
-            $query->where('partner_code', $request->filter_partner);
+        if ($request->has('filter_partner') && $request->filter_partner !== '') {
+            $query->where('partner_code', strtoupper($request->filter_partner));
         }
 
         // Paginate results
@@ -39,9 +48,9 @@ class OrderPartnerLogController extends Controller
         $errorQuery = OrderPartnerLog::where('status', 0)
                                     ->whereRaw("DATE_FORMAT(updated_at, '%Y-%m') = ?", [$currentMonth]);
 
-        if ($request->has('filter_partner') && $request->filter_partner !== null) {
-            $successQuery->where('partner_code', $request->filter_partner);
-            $errorQuery->where('partner_code', $request->filter_partner);
+        if ($request->has('filter_partner') && $request->filter_partner !== '') {
+            $successQuery->where('partner_code', strtoupper($request->filter_partner));
+            $errorQuery->where('partner_code', strtoupper($request->filter_partner));
         }
 
         $successCount = $successQuery->count();
@@ -50,9 +59,99 @@ class OrderPartnerLogController extends Controller
         // Process the payloads before sending to the view
         foreach ($logs as $log) {
             $log->parsed = $this->parseLogData($log);
+            $log->can_cancel = $this->canCancel($log);
         }
 
         return view('order_partner_logs.index', compact('logs', 'successCount', 'errorCount'));
+    }
+
+    public function cancel(Request $request, OrderPartnerLog $orderPartnerLog)
+    {
+        if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
+            abort(403);
+        }
+
+        $orderPartnerLog->load('order');
+
+        if (!$this->canCancel($orderPartnerLog)) {
+            Flash::error('Không thể huỷ đơn này. Đơn có thể đã bị huỷ, chưa có mã đối tác hoặc log không khớp với đối tác hiện tại.');
+            return redirect()->route('order_partner_logs.index', $request->query());
+        }
+
+        $reason = $request->input('reason', 'Huy don tu BillHT');
+
+        try {
+            $cancelResult = $this->cancelPartnerOrder($orderPartnerLog, $reason);
+            if (!$cancelResult['success']) {
+                Flash::error('Huỷ đơn đối tác thất bại: ' . $cancelResult['message']);
+                return redirect()->route('order_partner_logs.index', $request->query());
+            }
+
+            Flash::success('Huỷ đơn đối tác thành công. Mã đối tác đã được xoá để có thể đẩy đơn sang đối tác khác.');
+        } catch (\Exception $e) {
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
+            Flash::error('Huỷ đơn đối tác thất bại: ' . $e->getMessage());
+        }
+
+        return redirect()->route('order_partner_logs.index', $request->query());
+    }
+
+    public function bulkCancel(Request $request)
+    {
+        if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
+            abort(403);
+        }
+
+        $logIds = array_filter((array)$request->input('log_ids', []));
+        if (empty($logIds)) {
+            Flash::error('Bạn vui lòng chọn log cần huỷ.');
+            return redirect()->route('order_partner_logs.index', $request->query());
+        }
+
+        $reason = $request->input('reason', 'Huy don hang loat tu BillHT');
+        $logs = OrderPartnerLog::with('order')->whereIn('id', $logIds)->get();
+        $successCount = 0;
+        $failedMessages = [];
+        $processedOrderIds = [];
+
+        foreach ($logs as $log) {
+            if ($log->order_id && in_array($log->order_id, $processedOrderIds)) {
+                $failedMessages[] = 'Log #' . $log->id . ': đơn này đã được xử lý trong lần huỷ hàng loạt hiện tại';
+                continue;
+            }
+
+            if (!$this->canCancel($log)) {
+                $failedMessages[] = 'Log #' . $log->id . ': không đủ điều kiện huỷ';
+                continue;
+            }
+
+            try {
+                $cancelResult = $this->cancelPartnerOrder($log, $reason);
+                if ($cancelResult['success']) {
+                    $successCount++;
+                    $processedOrderIds[] = $log->order_id;
+                } else {
+                    $failedMessages[] = 'Log #' . $log->id . ': ' . $cancelResult['message'];
+                }
+            } catch (\Exception $e) {
+                if (DB::transactionLevel() > 0) {
+                    DB::rollBack();
+                }
+                $failedMessages[] = 'Log #' . $log->id . ': ' . $e->getMessage();
+            }
+        }
+
+        if ($successCount > 0) {
+            Flash::success('Huỷ thành công ' . $successCount . ' đơn đối tác. Mã đối tác đã được xoá để có thể đẩy sang đối tác khác.');
+        }
+
+        if (!empty($failedMessages)) {
+            Flash::error('Một số đơn huỷ thất bại: ' . implode('; ', array_slice($failedMessages, 0, 5)) . (count($failedMessages) > 5 ? '; ...' : ''));
+        }
+
+        return redirect()->route('order_partner_logs.index', $request->query());
     }
 
     /**
@@ -73,7 +172,8 @@ class OrderPartnerLogController extends Controller
         // 1. Extract Order Number
         $orderNumber = $payload['ORDER_NUMBER'] ?? 
                       ($payload['order_code'] ?? 
-                      ($payload['OrderCode'] ?? 'N/A'));
+                      ($payload['OrderCode'] ?? 
+                      ($payload['ShippingCode'] ?? 'N/A')));
                       
         // 2. Extract Sender Name
         $senderName = $payload['SENDER_FULLNAME'] ?? 
@@ -107,7 +207,7 @@ class OrderPartnerLogController extends Controller
             
             // Try extracting detailed errors from JSON arrays (especially EMS data struct)
             if (empty($errors)) {
-                if ($log->partner_code === 'ems') {
+                if (strtoupper($log->partner_code) === 'EMS') {
                     if (isset($resData['data']) && is_array($resData['data'])) {
                         $errItems = [];
                         foreach ($resData['data'] as $item) {
@@ -137,5 +237,118 @@ class OrderPartnerLogController extends Controller
             'sender_name' => $senderName,
             'response_html' => $responseText,
         ];
+    }
+
+    private function canCancel($log)
+    {
+        if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
+            return false;
+        }
+
+        if ((int)$log->status !== OrderPartnerLog::STATUS_SUCCESS || !$log->order) {
+            return false;
+        }
+
+        if (!$log->order->order_partner_code || !$log->order->partner_code) {
+            return false;
+        }
+
+        return $this->normalizeLogPartnerCode($log->partner_code) === $log->order->partner_code;
+    }
+
+    private function cancelPartnerOrder($log, $reason)
+    {
+        $order = $log->order;
+        $oldPartnerCode = $order->partner_code;
+        $oldOrderPartnerCode = $order->order_partner_code;
+        $orderOld = clone $order;
+
+        if ($order->partner_code === Order::CODE_EMS) {
+            $result = app(EmsService::class)->cancelOrder($order, $reason);
+            $success = isset($result['code']) && $result['code'] === EmsService::STATUS_SUCCESS;
+        } elseif ($order->partner_code === Order::CODE_VIETTEL_POST) {
+            $viettelPostService = app(ViettelPostService::class);
+            $result = $viettelPostService->cancelOrder($order, $reason);
+            $success = $viettelPostService->isCancelSuccessful($result);
+        } else {
+            return [
+                'success' => false,
+                'message' => 'Đối tác của đơn không được hỗ trợ huỷ.',
+            ];
+        }
+
+        if (!$success) {
+            return [
+                'success' => false,
+                'message' => $this->extractErrorMessage($result),
+            ];
+        }
+
+        DB::beginTransaction();
+
+        $order->order_partner_code = null;
+        $order->partner_code = null;
+        $order->push_error = null;
+        $order->save();
+
+        app(OrderHistoryService::class)->createOrderHistory(
+            $orderOld,
+            $order,
+            null,
+            OrderHistory::NOT_TOTAL_ORDER,
+            OrderHistory::TYPE_ORDER_UPDATE,
+            'CANCEL_PARTNER',
+            [
+                'action_desc' => 'Huỷ đơn đối tác',
+                'partner_code' => $oldPartnerCode,
+                'order_partner_code' => $oldOrderPartnerCode,
+                'reason' => $reason,
+            ],
+            $oldOrderPartnerCode,
+            Order::MAP_MESSAGE_NOTI_PARTNER[$oldPartnerCode] ?? $oldPartnerCode
+        );
+
+        DB::commit();
+
+        return [
+            'success' => true,
+            'message' => 'Huỷ thành công',
+        ];
+    }
+
+    private function normalizeLogPartnerCode($partnerCode)
+    {
+        $partnerCode = strtoupper((string)$partnerCode);
+
+        if ($partnerCode === PartnerConfig::CODE_EMS) {
+            return Order::CODE_EMS;
+        }
+
+        if ($partnerCode === PartnerConfig::CODE_VIETTEL_POST || $partnerCode === 'VIETTEL_POST') {
+            return Order::CODE_VIETTEL_POST;
+        }
+
+        return $partnerCode;
+    }
+
+    private function extractErrorMessage($result)
+    {
+        if (!is_array($result)) {
+            return 'Không rõ lỗi';
+        }
+
+        if (!empty($result['message'])) {
+            return $result['message'];
+        }
+
+        if (!empty($result['Message'])) {
+            return $result['Message'];
+        }
+
+        if (!empty($result['data']) && is_string($result['data'])) {
+            return $result['data'];
+        }
+
+        return 'Đối tác không trả về thông báo lỗi chi tiết.';
     }
 }
