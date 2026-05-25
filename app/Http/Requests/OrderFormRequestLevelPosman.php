@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Order;
 use App\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class OrderFormRequestLevelPosman extends FormRequest
 {
@@ -16,6 +17,28 @@ class OrderFormRequestLevelPosman extends FormRequest
     public function authorize()
     {
         return true;
+    }
+
+    public function withValidator(Validator $validator)
+    {
+        $validator->after(function ($validator) {
+            if (auth()->user()->level != User::LEVEL_POSTMAN) {
+                return;
+            }
+
+            if (!empty($this->input('order_id'))) {
+                return;
+            }
+
+            $invoiceCode = strtoupper(trim((string) $this->input('order.invoice_code')));
+            if (strpos($invoiceCode, 'HE') !== 0) {
+                return;
+            }
+
+            if (!Order::where('order_code', $invoiceCode)->exists()) {
+                $validator->errors()->add('order.invoice_code', 'Mã vận đơn HE phải tồn tại trên hệ thống.');
+            }
+        });
     }
 
     /**
