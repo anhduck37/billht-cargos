@@ -43,6 +43,16 @@
                         </div>
 
                         <div class="form-group mr-2">
+                            <label for="partner" class="form-control-label mr-2">Đối tác:</label>
+                            <select name="partner" id="partner" class="form-control form-control-sm">
+                                <option value="">Tất cả</option>
+                                <option value="VTP" {{ request('partner') === 'VTP' ? 'selected' : '' }}>Viettel</option>
+                                <option value="EMS" {{ request('partner') === 'EMS' ? 'selected' : '' }}>EMS</option>
+                                <option value="MICKEY" {{ request('partner') === 'MICKEY' ? 'selected' : '' }}>Mickey</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group mr-2">
                             <label for="search" class="form-control-label mr-2">Mã vận đơn:</label>
                             <input type="text" name="search" id="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Nhập mã vận đơn...">
                         </div>
@@ -53,7 +63,7 @@
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-sm">Lọc</button>
-                        @if(request()->has('search_date') || request()->has('action') || request()->has('search') || request()->has('email'))
+                        @if(request()->has('search_date') || request()->has('action') || request()->has('partner') || request()->has('search') || request()->has('email'))
                             <a href="{{ route('order_historys.index') }}" class="btn btn-secondary btn-sm ml-1">Làm mới</a>
                         @endif
                     </form>

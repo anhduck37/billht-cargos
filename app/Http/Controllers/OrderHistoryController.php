@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use App\OrderHistory;
 use Illuminate\Http\Request;
 
@@ -39,11 +40,34 @@ class OrderHistoryController extends Controller
             }
         }
 
+        if ($request->has('partner') && $request->partner != null) {
+            $partner = strtoupper($request->partner);
+            $partnerNames = [];
+
+            if ($partner === Order::CODE_VIETTEL_POST || $partner === 'VIETTEL_POST') {
+                $partnerNames = ['VTP', 'VIETTEL_POST', 'Viettel Post'];
+            } elseif ($partner === Order::CODE_EMS) {
+                $partnerNames = ['EMS'];
+            } elseif ($partner === Order::TRACKING_PROVIDER_MICKEY) {
+                $partnerNames = ['MICKEY', 'Mickey', 'QuangCPN (Mickey)'];
+            }
+
+            if (!empty($partnerNames)) {
+                $orderHistorys = $orderHistorys->where(function ($query) use ($partner, $partnerNames) {
+                    $query->whereIn('partner_name', $partnerNames)
+                        ->orWhere('data', 'LIKE', '%"partner_code":"' . $partner . '"%')
+                        ->orWhere('data', 'LIKE', '%"tracking_provider":"' . $partner . '"%');
+                });
+            }
+        }
+
         if ($request->has('search') && $request->search != null) {
-            $orderHistorys = $orderHistorys->whereHas('order', function ($query) use ($request) {
-               $query->where('order_code', 'LIKE', '%' . $request->search . '%')
-                   ->orWhere('tracking_code', 'LIKE', '%' . $request->search . '%');
-            })->orWhere('tracking_code', 'LIKE', '%' . $request->search . '%');
+            $orderHistorys = $orderHistorys->where(function ($query) use ($request) {
+                $query->whereHas('order', function ($orderQuery) use ($request) {
+                    $orderQuery->where('order_code', 'LIKE', '%' . $request->search . '%')
+                        ->orWhere('tracking_code', 'LIKE', '%' . $request->search . '%');
+                })->orWhere('tracking_code', 'LIKE', '%' . $request->search . '%');
+            });
         }
 
         if ($request->has('email') && $request->email != null) {
