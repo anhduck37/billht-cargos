@@ -42,9 +42,14 @@
                                 <div class="media-body">
                                     <span class="mb-0 text-sm font-weight-bold">{{$order->order_code}}</span>
                                     @if($order->push_error)
-                                    <span data-toggle="tooltip" data-placement="right" title="{{$order->push_error}}" style="color:#dc3545; cursor:pointer;" title="Lỗi đẩy EMS">
+                                    <span data-toggle="tooltip" data-placement="right" title="{{$order->push_error}}" style="color:#dc3545; cursor:pointer;">
                                         <i class="fas fa-exclamation-triangle"></i>
                                     </span>
+                                    @endif
+                                    @if(auth()->user()->level != \App\User::LEVEL_USER && $order->partner_code && $order->order_partner_code)
+                                    <div class="mt-1">
+                                        <span class="badge badge-info" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</span>
+                                    </div>
                                     @endif
                                 </div>
                             </div>
@@ -54,9 +59,8 @@
                             <div style="white-space: normal; word-break: break-word; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"><label style="font-size: 0.8rem;">Tên: <b>{{isset($order->sender) ? $order->sender->sender_name : ''}}</b></label></div>
                             <div><label style="font-size: 0.8rem;">SĐT: <b>{{isset($order->sender) ? $order->sender->sender_phone : ''}}</b></label></div>
                             <div><label style="font-size: 0.8rem;">Tỉnh/TP: <b>{{isset($order->sender) ? $order->sender->city_name : ''}}</b></label></div>
-                            <div><b style="font-size: 0.75rem;">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</b></div>
                             @if($order->order_print)
-                                <div class="mt-1"><span class="badge badge-success" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">Đã in</span></div>
+                                <div class="mt-1"><span class="badge badge-success" data-toggle="tooltip" data-placement="right" title="Thời gian in: {{$order->order_print->created_at ? $order->order_print->created_at->format('d/m/Y H:i:s') : ''}}" style="font-size: 0.7rem; padding: 0.3rem 0.6rem;">Đã in</span></div>
                             @endif
                         </td>
                         <td style="max-width: 250px; font-size: 0.85rem;">
@@ -123,6 +127,11 @@
                             <i class="fas fa-exclamation-triangle"></i>
                         </span>
                         @endif
+                        @if(auth()->user()->level != \App\User::LEVEL_USER && $order->partner_code && $order->order_partner_code)
+                        <div class="mt-1">
+                            <span class="badge badge-info" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">{{\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? ''}}</span>
+                        </div>
+                        @endif
                     </div>
                     <div class="order-card-header-right">
                         <span class="order-status-badge" style="{{ $order->delivery_status == \App\Models\Order::DELIVERY_STATUS_OK ? 'color: #000000; background-color: rgb(246 130 31 / 66%);' : '' }}">{{$order->order_delivery_name}}</span>
@@ -177,7 +186,7 @@
                     @endif
                     @if($order->order_print)
                     <div class="order-info-row">
-                        <span class="badge badge-success" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">Đã in</span>
+                        <span class="badge badge-success" data-toggle="tooltip" data-placement="right" title="Thời gian in: {{$order->order_print->created_at ? $order->order_print->created_at->format('d/m/Y H:i:s') : ''}}" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;">Đã in</span>
                     </div>
                     @endif
                 </div>
@@ -216,6 +225,7 @@
     <script type="text/javascript">
         let paramFilters = {!! json_encode(request()->all()) !!};
         $(function() {
+            $('[data-toggle="tooltip"]').tooltip();
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
