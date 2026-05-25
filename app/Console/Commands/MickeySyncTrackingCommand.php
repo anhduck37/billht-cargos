@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 
 class MickeySyncTrackingCommand extends Command
 {
-    protected $signature = 'mickey:sync-tracking {--dry-run} {--limit=}';
+    protected $signature = 'mickey:sync-tracking {--dry-run} {--limit=} {--order-code=}';
 
     protected $description = 'Sync delivery status for orders already detected as Mickey orders';
 
@@ -21,13 +21,24 @@ class MickeySyncTrackingCommand extends Command
         }
 
         $dryRun = (bool)$this->option('dry-run');
+        $orderCode = trim((string)$this->option('order-code'));
         $limit = (int)($this->option('limit') ?: config('tracking.mickey_sync_limit', 300));
 
-        $orders = Order::where('tracking_provider', Order::TRACKING_PROVIDER_MICKEY)
-            ->where('delivery_status', '!=', Order::DELIVERY_STATUS_OK)
-            ->orderBy('updated_at')
-            ->limit($limit)
-            ->get();
+        if ($orderCode !== '') {
+            $orders = Order::where('tracking_provider', Order::TRACKING_PROVIDER_MICKEY)
+                ->where(function ($query) use ($orderCode) {
+                    $query->where('order_code', $orderCode)
+                        ->orWhere('invoice_code', $orderCode);
+                })
+                ->limit(1)
+                ->get();
+        } else {
+            $orders = Order::where('tracking_provider', Order::TRACKING_PROVIDER_MICKEY)
+                ->where('delivery_status', '!=', Order::DELIVERY_STATUS_OK)
+                ->orderBy('updated_at')
+                ->limit($limit)
+                ->get();
+        }
 
         $updated = 0;
 

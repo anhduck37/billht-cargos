@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 
 class MickeyDetectOrdersCommand extends Command
 {
-    protected $signature = 'mickey:detect-orders {--dry-run} {--limit=} {--date-from=} {--date-to=}';
+    protected $signature = 'mickey:detect-orders {--dry-run} {--limit=} {--date-from=} {--date-to=} {--order-code=}';
 
     protected $description = 'Detect orders that have Mickey tracking data and mark tracking_provider as MICKEY';
 
@@ -22,6 +22,7 @@ class MickeyDetectOrdersCommand extends Command
         }
 
         $dryRun = (bool)$this->option('dry-run');
+        $orderCode = trim((string)$this->option('order-code'));
         $limit = (int)($this->option('limit') ?: config('tracking.mickey_detect_limit', 300));
         $dateFrom = $this->option('date-from')
             ? Carbon::parse($this->option('date-from'))->startOfDay()
@@ -30,14 +31,21 @@ class MickeyDetectOrdersCommand extends Command
             ? Carbon::parse($this->option('date-to'))->endOfDay()
             : Carbon::now();
 
-        $orders = Order::whereNull('partner_code')
-            ->whereNull('order_partner_code')
-            ->whereNull('tracking_provider')
-            ->where('delivery_status', '!=', Order::DELIVERY_STATUS_OK)
-            ->whereBetween('order_date', [$dateFrom->format('Y-m-d'), $dateTo->format('Y-m-d')])
-            ->orderBy('id')
-            ->limit($limit)
-            ->get();
+        if ($orderCode !== '') {
+            $orders = Order::where(function ($query) use ($orderCode) {
+                $query->where('order_code', $orderCode)
+                    ->orWhere('invoice_code', $orderCode);
+            })->limit(1)->get();
+        } else {
+            $orders = Order::whereNull('partner_code')
+                ->whereNull('order_partner_code')
+                ->whereNull('tracking_provider')
+                ->where('delivery_status', '!=', Order::DELIVERY_STATUS_OK)
+                ->whereBetween('order_date', [$dateFrom->format('Y-m-d'), $dateTo->format('Y-m-d')])
+                ->orderBy('id')
+                ->limit($limit)
+                ->get();
+        }
 
         $detected = 0;
         $updated = 0;
