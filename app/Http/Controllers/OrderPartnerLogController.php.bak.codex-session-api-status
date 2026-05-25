@@ -8,13 +8,11 @@ use App\OrderPartnerLog;
 use App\PartnerConfig;
 use App\OrderHistory;
 use App\Services\EmsService;
-use App\Services\ApiStatusService;
 use App\Services\OrderHistoryService;
 use App\Services\ViettelPostService;
 use App\User;
 use Carbon\Carbon;
 use Flash;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
 class OrderPartnerLogController extends Controller
@@ -69,87 +67,7 @@ class OrderPartnerLogController extends Controller
             $log->can_cancel = $this->canCancel($log);
         }
 
-        $apiStatuses = app(ApiStatusService::class)->getStatuses();
-
-        return view('order_partner_logs.index', compact('logs', 'successCount', 'errorCount', 'apiStatuses'));
-    }
-
-    public function checkApiStatus(Request $request, $provider, ApiStatusService $apiStatusService)
-    {
-        if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
-            abort(403);
-        }
-
-        try {
-            $status = $apiStatusService->check($provider);
-            if ($status['online']) {
-                Flash::success($status['name'] . ' dang online. Cap nhat luc ' . Carbon::parse($status['checked_at'])->format('H:i d/m/Y') . '.');
-            } else {
-                Flash::error($status['name'] . ' dang offline: ' . $status['message']);
-            }
-        } catch (\Exception $e) {
-            Flash::error('Kiem tra API that bai: ' . $e->getMessage());
-        }
-
-        return redirect()->route('order_partner_logs.index', $request->query());
-    }
-
-    public function runMickeyDetect(Request $request)
-    {
-        if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
-            abort(403);
-        }
-
-        $limit = (int)$request->input('limit', config('tracking.mickey_manual_limit', 20));
-        $this->runMickeyCommandWithFlash(
-            'mickey:detect-orders',
-            $limit,
-            'Quét đơn Mickey thành công',
-            'Quét đơn Mickey thất bại'
-        );
-
-        return redirect()->route('order_partner_logs.index', $request->query());
-    }
-
-    public function runMickeySync(Request $request)
-    {
-        if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
-            abort(403);
-        }
-
-        $limit = (int)$request->input('limit', config('tracking.mickey_manual_limit', 20));
-        $this->runMickeyCommandWithFlash(
-            'mickey:sync-tracking',
-            $limit,
-            'Đồng bộ trạng thái Mickey thành công',
-            'Đồng bộ trạng thái Mickey thất bại'
-        );
-
-        return redirect()->route('order_partner_logs.index', $request->query());
-    }
-
-    private function runMickeyCommandWithFlash($command, $limit, $successMessage, $errorMessage)
-    {
-        try {
-            $exitCode = Artisan::call($command, ['--limit' => $limit]);
-            $summary = $this->getArtisanSummary();
-            $message = $successMessage . '. Limit: ' . $limit . ($summary ? '. ' . $summary : '.');
-
-            if ((int)$exitCode === 0) {
-                Flash::success($message);
-                return;
-            }
-
-            Flash::error($errorMessage . '. Ma loi: ' . $exitCode . ($summary ? '. ' . $summary : '.'));
-        } catch (\Exception $e) {
-            Flash::error($errorMessage . ': ' . $e->getMessage());
-        }
-    }
-
-    private function getArtisanSummary()
-    {
-        $lines = array_values(array_filter(array_map('trim', explode("\n", Artisan::output()))));
-        return $lines ? end($lines) : '';
+        return view('order_partner_logs.index', compact('logs', 'successCount', 'errorCount'));
     }
 
     public function cancel(Request $request, OrderPartnerLog $orderPartnerLog)

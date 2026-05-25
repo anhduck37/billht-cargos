@@ -43,7 +43,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('mickey:detect-orders')->dailyAt('00:30')->withoutOverlapping();
         $schedule->command('mickey:detect-orders')->dailyAt('12:30')->withoutOverlapping();
         $schedule->command('mickey:sync-tracking')->hourly()->withoutOverlapping();
-        $schedule->command('api:check-status')->everyThreeHours()->withoutOverlapping();
     }
 
     /**

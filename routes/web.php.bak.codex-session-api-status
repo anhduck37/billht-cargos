@@ -67,9 +67,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/create-ems', 'OrderController@createEms');
     Route::get('/order/create-order-ems/{id}', 'OrderController@createOrderEms')->name('orders.createEms');
     Route::get('/order-partner-logs', 'OrderPartnerLogController@index')->name('order_partner_logs.index');
-    Route::post('/order-partner-logs/api-status/{provider}/check', 'OrderPartnerLogController@checkApiStatus')->name('order_partner_logs.api_status.check');
-    Route::post('/order-partner-logs/mickey/detect', 'OrderPartnerLogController@runMickeyDetect')->name('order_partner_logs.mickey.detect');
-    Route::post('/order-partner-logs/mickey/sync', 'OrderPartnerLogController@runMickeySync')->name('order_partner_logs.mickey.sync');
     Route::post('/order-partner-logs/bulk-cancel', 'OrderPartnerLogController@bulkCancel')->name('order_partner_logs.bulk_cancel');
     Route::post('/order-partner-logs/{orderPartnerLog}/cancel', 'OrderPartnerLogController@cancel')->name('order_partner_logs.cancel');
     Route::get('/order/status-change', 'OrderStatusChangeController@index')->name('order_status_changes.index');

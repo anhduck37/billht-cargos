@@ -5,6 +5,4 @@ return [
     'mickey_sync_enabled' => env('MICKEY_SYNC_ENABLED', true),
     'mickey_detect_limit' => env('MICKEY_DETECT_LIMIT', 300),
     'mickey_sync_limit' => env('MICKEY_SYNC_LIMIT', 300),
-    'mickey_manual_limit' => env('MICKEY_MANUAL_LIMIT', 20),
-    'api_status_timeout' => env('API_STATUS_TIMEOUT', 10),
 ];

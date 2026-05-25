@@ -57,9 +57,11 @@ class Order extends Model
         'collection',
         'long',
         'push_error',
+        'tracking_provider',
     ];
     const CODE_VIETTEL_POST = 'VTP';
     const CODE_EMS = 'EMS';
+    const TRACKING_PROVIDER_MICKEY = 'MICKEY';
     const MAP_MESSAGE_NOTI_PARTNER = [
         self::CODE_VIETTEL_POST => 'Viettel Post',
         self::CODE_EMS => 'EMS'

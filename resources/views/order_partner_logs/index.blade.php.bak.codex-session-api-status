@@ -54,77 +54,11 @@
 <div class="container-fluid mt--7">
     <div class="row">
         <div class="col">
-            @include('flash::message')
-        </div>
-    </div>
-
-    <div class="row mb-4">
-        <div class="col">
-            <div class="card shadow">
-                <div class="card-header border-0">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center">
-                        <div>
-                            <h3 class="mb-1">Trạng thái API</h3>
-                            <p class="text-muted text-sm mb-0">Hệ thống tự động kiểm tra mỗi 3 giờ. Có thể bấm kiểm tra thủ công khi cần.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="row">
-                        @foreach($apiStatuses as $providerKey => $apiStatus)
-                            <div class="col-xl-4 col-lg-4 col-md-6 mb-3">
-                                <div class="border rounded p-3 h-100">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h5 class="mb-1">{{ $apiStatus['name'] }}</h5>
-                                            @if($apiStatus['online'] === true)
-                                                <span class="badge badge-success">Online</span>
-                                            @elseif($apiStatus['online'] === false)
-                                                <span class="badge badge-danger">Offline</span>
-                                            @else
-                                                <span class="badge badge-secondary">Chưa kiểm tra</span>
-                                            @endif
-                                        </div>
-                                        @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                                            {!! Form::open(['route' => array_merge(['order_partner_logs.api_status.check', $providerKey], request()->query()), 'method' => 'POST', 'class' => 'd-inline']) !!}
-                                                <button type="submit" class="btn btn-sm btn-outline-primary">Check thủ công</button>
-                                            {!! Form::close() !!}
-                                        @endif
-                                    </div>
-                                    <div class="mt-2 text-sm text-muted">
-                                        <div>Lần kiểm tra: {{ !empty($apiStatus['checked_at']) ? \Carbon\Carbon::parse($apiStatus['checked_at'])->format('H:i d/m/Y') : 'Chưa có' }}</div>
-                                        <div>Mã phản hồi: {{ $apiStatus['status_code'] ?: 'N/A' }}</div>
-                                        <div class="text-truncate" title="{{ $apiStatus['message'] }}">Chi tiết: {{ $apiStatus['message'] }}</div>
-                                    </div>
-
-                                    @if($providerKey === 'mickey' && in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                                        <div class="mt-3 d-flex flex-wrap">
-                                            {!! Form::open(['route' => array_merge(['order_partner_logs.mickey.detect'], request()->query()), 'method' => 'POST', 'class' => 'mr-2 mb-2']) !!}
-                                                <input type="hidden" name="limit" value="{{ config('tracking.mickey_manual_limit', 20) }}">
-                                                <button type="submit" class="btn btn-sm btn-warning">Quét đơn</button>
-                                            {!! Form::close() !!}
-                                            {!! Form::open(['route' => array_merge(['order_partner_logs.mickey.sync'], request()->query()), 'method' => 'POST', 'class' => 'mb-2']) !!}
-                                                <input type="hidden" name="limit" value="{{ config('tracking.mickey_manual_limit', 20) }}">
-                                                <button type="submit" class="btn btn-sm btn-info">Đồng bộ trạng thái</button>
-                                            {!! Form::close() !!}
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col">
             <div class="card shadow">
                 <div class="card-header border-0">
                     <div class="row align-items-center">
                         <div class="col-8">
-                            <h3 class="mb-0">Lịch sử đồng bộ vận đơn (VTP / EMS / Mickey)</h3>
+                            <h3 class="mb-0">Lịch sử đồng bộ vận đơn (VTP / EMS)</h3>
                         </div>
                         <div class="col-4 text-right">
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
@@ -163,7 +97,6 @@
                             <a href="{{ route('order_partner_logs.index') }}" class="btn btn-secondary btn-sm ml-1">Làm mới</a>
                         @endif
                     </form>
-
                 </div>
 
                 <div class="table-responsive">

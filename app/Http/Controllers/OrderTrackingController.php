@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\OrderTracking;
 use App\PartnerTracking;
 use App\Services\MickeyService;
+use App\Services\MickeyTrackingSyncService;
 use App\Services\ViettelPostService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -15,11 +16,17 @@ class OrderTrackingController extends Controller
 {
     protected $mickeyService;
     protected $viettelPostService;
+    protected $mickeyTrackingSyncService;
 
-    public function __construct(MickeyService $mickeyService, ViettelPostService $viettelPostService)
+    public function __construct(
+        MickeyService $mickeyService,
+        ViettelPostService $viettelPostService,
+        MickeyTrackingSyncService $mickeyTrackingSyncService
+    )
     {
         $this->mickeyService = $mickeyService;
         $this->viettelPostService = $viettelPostService;
+        $this->mickeyTrackingSyncService = $mickeyTrackingSyncService;
     }
 
     public function tracking(Request $request)
@@ -79,6 +86,9 @@ class OrderTrackingController extends Controller
                     $data_tracking = $data_tracking->isEmpty() ? null : $data_tracking;
                 } else {
                     $mickey_tracking = $this->mickeyService->tracking($order, $order_code);
+                    if ($order && $this->mickeyTrackingSyncService->hasTrackingData($mickey_tracking)) {
+                        $this->mickeyTrackingSyncService->syncOrder($order, $mickey_tracking);
+                    }
                 }
             }
             if (!$order && $order_code && empty($mickey_tracking['table']) && empty($mickey_tracking['table1'])) {

@@ -6,17 +6,24 @@ use App\Services\_Abstract\BaseService;
 use App\Models\Order;
 use App\PartnerTracking;
 use App\Services\MickeyService;
+use App\Services\MickeyTrackingSyncService;
 use App\Services\ViettelPostService;
 
 class OrderTrackinService extends BaseService
 {
     protected $mickeyService;
     protected $viettelPostService;
+    protected $mickeyTrackingSyncService;
 
-    public function __construct(MickeyService $mickeyService, ViettelPostService $viettelPostService)
+    public function __construct(
+        MickeyService $mickeyService,
+        ViettelPostService $viettelPostService,
+        MickeyTrackingSyncService $mickeyTrackingSyncService
+    )
     {
         $this->mickeyService = $mickeyService;
         $this->viettelPostService = $viettelPostService;
+        $this->mickeyTrackingSyncService = $mickeyTrackingSyncService;
     }
 
     public function list($order_code)
@@ -33,8 +40,11 @@ class OrderTrackinService extends BaseService
             $data_trackings = PartnerTracking::where('order_id', $order->id)->orderBy('id', 'DESC')->get();
             $data_trackings = $data_trackings->isEmpty() ? [] : $data_trackings;
         } else {
-            $data_trackings = $this->mickeyService->tracking($order, $order_code);
-            $data_trackings = $data_trackings['table'] ?? [];
+            $mickeyTracking = $this->mickeyService->tracking($order, $order_code);
+            if ($this->mickeyTrackingSyncService->hasTrackingData($mickeyTracking)) {
+                $this->mickeyTrackingSyncService->syncOrder($order, $mickeyTracking);
+            }
+            $data_trackings = $mickeyTracking['table'] ?? [];
         }
 
         if (empty($data_trackings)) {
