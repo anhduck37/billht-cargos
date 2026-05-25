@@ -56,9 +56,12 @@ class OrderPartnerLogController extends Controller
         $successCount = $successQuery->count();
         $errorCount = $errorQuery->count();
 
+        $orderIds = $logs->getCollection()->pluck('order_id')->filter()->unique()->values()->all();
+        $cancelledOrderIds = $this->getCancelledOrderIds($orderIds);
+
         // Process the payloads before sending to the view
         foreach ($logs as $log) {
-            $log->parsed = $this->parseLogData($log);
+            $log->parsed = $this->parseLogData($log, in_array($log->order_id, $cancelledOrderIds));
             $log->can_cancel = $this->canCancel($log);
         }
 
@@ -157,7 +160,7 @@ class OrderPartnerLogController extends Controller
     /**
      * Parses the raw JSON payload and response into formatted strings for the view
      */
-    private function parseLogData($log)
+    private function parseLogData($log, $isCancelledSync = false)
     {
         $payload = json_decode($log->payload, true) ?? [];
         
@@ -186,9 +189,13 @@ class OrderPartnerLogController extends Controller
         if ($partnerText == 'VIETTEL_POST') $partnerText = 'VTP';
         if (empty($partnerText)) $partnerText = 'UNK';
 
+        $isCancelLog = $this->isCancelPayload($payload);
+
         // 4. Parse Status Response Text and Errors
         $responseText = '';
-        if ($log->status == 1 || strpos($log->response, "ORDER_NUMBER") !== false || strpos($log->response, "success") !== false) {
+        if (($isCancelLog && (int)$log->status === OrderPartnerLog::STATUS_SUCCESS) || $isCancelledSync) {
+            $responseText = "<span class='badge badge-warning'>Đã huỷ đồng bộ - $partnerText</span>";
+        } elseif ($log->status == 1 || strpos($log->response, "ORDER_NUMBER") !== false || strpos($log->response, "success") !== false) {
             $responseText = "<span class='badge badge-success'>Thành công - $partnerText</span>";
         } else {
             $errors = '';
@@ -237,6 +244,42 @@ class OrderPartnerLogController extends Controller
             'sender_name' => $senderName,
             'response_html' => $responseText,
         ];
+    }
+
+    private function getCancelledOrderIds($orderIds)
+    {
+        if (empty($orderIds)) {
+            return [];
+        }
+
+        return OrderPartnerLog::whereIn('order_id', $orderIds)
+            ->where('status', OrderPartnerLog::STATUS_SUCCESS)
+            ->get(['order_id', 'payload'])
+            ->filter(function ($log) {
+                $payload = json_decode($log->payload, true) ?? [];
+                if (isset($payload['Data']) && is_string($payload['Data'])) {
+                    $innerData = json_decode($payload['Data'], true) ?? [];
+                    if (is_array($innerData)) {
+                        $payload = array_merge($payload, $innerData);
+                    }
+                }
+
+                return $this->isCancelPayload($payload);
+            })
+            ->pluck('order_id')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    private function isCancelPayload($payload)
+    {
+        $code = strtoupper((string)($payload['Code'] ?? $payload['code'] ?? ''));
+        if ($code === 'PARTNER_ORDER_CANCEL') {
+            return true;
+        }
+
+        return isset($payload['TYPE']) && (int)$payload['TYPE'] === 4;
     }
 
     private function canCancel($log)

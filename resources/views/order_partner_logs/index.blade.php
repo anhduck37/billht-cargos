@@ -214,7 +214,7 @@
         });
 
         $('.cancel-partner-order-form').on('submit', function (event) {
-            if (!confirm('Bạn có chắc muốn huỷ đơn đối tác này? Sau khi huỷ thành công, mã đối tác sẽ bị xoá để có thể đẩy đơn sang đối tác khác.')) {
+            if (!confirm('Bạn có chắc muốn huỷ đồng bộ đơn đối tác này? Sau khi huỷ thành công, mã đối tác sẽ bị xoá để có thể đẩy đơn sang đối tác khác.')) {
                 event.preventDefault();
             }
         });
