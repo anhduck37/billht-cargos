@@ -1385,7 +1385,7 @@ class OrderController extends AppBaseController
             // $sendOrderEms = new SendOrderEmsJob($order);
             // $result = $sendOrderEms->handle();
             }
-            Flash::success('Vận đơn đã được thêm vào danh sách chờ đẩy lên EMS. Kiểm tra tại đây <a target="_blank" style="color: white" href="https://ht-cargos.com/vtp">Link</a>');
+            Flash::success('Vận đơn đã được thêm vào danh sách chờ đẩy lên EMS. Kiểm tra tại đây <a target="_blank" style="color: white" href="https://bill.ht-cargos.com/order-partner-logs">Link</a>');
         }
         catch (Exception $e) {
             Flash::error($e->getMessage());

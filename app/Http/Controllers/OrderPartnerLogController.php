@@ -57,11 +57,13 @@ class OrderPartnerLogController extends Controller
         $errorCount = $errorQuery->count();
 
         $orderIds = $logs->getCollection()->pluck('order_id')->filter()->unique()->values()->all();
-        $cancelledOrderIds = $this->getCancelledOrderIds($orderIds);
+        $cancelledAtByOrderId = $this->getCancelledAtByOrderId($orderIds);
 
         // Process the payloads before sending to the view
         foreach ($logs as $log) {
-            $log->parsed = $this->parseLogData($log, in_array($log->order_id, $cancelledOrderIds));
+            $cancelledAt = $cancelledAtByOrderId[$log->order_id] ?? null;
+            $isCancelledSync = $cancelledAt && $log->updated_at <= $cancelledAt;
+            $log->parsed = $this->parseLogData($log, $isCancelledSync);
             $log->can_cancel = $this->canCancel($log);
         }
 
@@ -193,7 +195,7 @@ class OrderPartnerLogController extends Controller
 
         // 4. Parse Status Response Text and Errors
         $responseText = '';
-        if (($isCancelLog && (int)$log->status === OrderPartnerLog::STATUS_SUCCESS) || $isCancelledSync) {
+        if (($isCancelLog && (int)$log->status === OrderPartnerLog::STATUS_SUCCESS) || ($isCancelledSync && (int)$log->status === OrderPartnerLog::STATUS_SUCCESS)) {
             $responseText = "<span class='badge badge-warning'>Đã huỷ đồng bộ - $partnerText</span>";
         } elseif ($log->status == 1 || strpos($log->response, "ORDER_NUMBER") !== false || strpos($log->response, "success") !== false) {
             $responseText = "<span class='badge badge-success'>Thành công - $partnerText</span>";
@@ -246,7 +248,7 @@ class OrderPartnerLogController extends Controller
         ];
     }
 
-    private function getCancelledOrderIds($orderIds)
+    private function getCancelledAtByOrderId($orderIds)
     {
         if (empty($orderIds)) {
             return [];
@@ -254,7 +256,7 @@ class OrderPartnerLogController extends Controller
 
         return OrderPartnerLog::whereIn('order_id', $orderIds)
             ->where('status', OrderPartnerLog::STATUS_SUCCESS)
-            ->get(['order_id', 'payload'])
+            ->get(['order_id', 'payload', 'updated_at'])
             ->filter(function ($log) {
                 $payload = json_decode($log->payload, true) ?? [];
                 if (isset($payload['Data']) && is_string($payload['Data'])) {
@@ -266,9 +268,10 @@ class OrderPartnerLogController extends Controller
 
                 return $this->isCancelPayload($payload);
             })
-            ->pluck('order_id')
-            ->unique()
-            ->values()
+            ->groupBy('order_id')
+            ->map(function ($logs) {
+                return $logs->max('updated_at');
+            })
             ->all();
     }
 
