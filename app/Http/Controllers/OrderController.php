@@ -132,10 +132,17 @@ class OrderController extends AppBaseController
         if (array_key_exists('delivery_status', $formFilter) && $formFilter['delivery_status']) {
             $orders->where('delivery_status', $formFilter['delivery_status']);
         }
+        if (array_key_exists('partner_code', $formFilter) && $formFilter['partner_code']) {
+            if ($formFilter['partner_code'] === Order::TRACKING_PROVIDER_MICKEY) {
+                $orders->where('orders.tracking_provider', Order::TRACKING_PROVIDER_MICKEY);
+            } else {
+                $orders->where('orders.partner_code', $formFilter['partner_code']);
+            }
+        }
         if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
             if (auth()->user()->level == User::LEVEL_POSTMAN) {
                 // $orders->where('orders.person_charge', auth()->user()->id);
-                if (empty($formFilter['search']) && empty($formFilter['order_date']) && empty($formFilter['delivery_status']) && empty($formFilter['order_code_from']) && empty($formFilter['order_code_to'])) {
+                if (empty($formFilter['search']) && empty($formFilter['order_date']) && empty($formFilter['delivery_status']) && empty($formFilter['partner_code']) && empty($formFilter['order_code_from']) && empty($formFilter['order_code_to'])) {
                     $orders->where('orders.id', 0);
                 }
             }

@@ -136,7 +136,7 @@
                         @php
                             $isMickeyOrder = $order->tracking_provider === \App\Models\Order::TRACKING_PROVIDER_MICKEY;
                             $showPartnerBadge = auth()->user()->level != \App\User::LEVEL_USER && (($order->partner_code && $order->order_partner_code) || $isMickeyOrder);
-                            $partnerBadgeText = $isMickeyOrder ? 'Mickey' : (\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? '');
+                            $partnerBadgeText = $isMickeyOrder ? 'Q-CPN' : (\App\Models\Order::MAP_CODE_PARTNER[$order->partner_code] ?? '');
                             $partnerBadgeColor = $isMickeyOrder ? '#2563eb' : ($order->partner_code == \App\Models\Order::CODE_EMS ? '#57afa8db' : '#f97316');
                         @endphp
                         @if($showPartnerBadge)
@@ -314,6 +314,7 @@
                     let order_code_from = $("input[name='order_code_from']").val();
                     let order_code_to = $("input[name='order_code_to']").val();
                     let delivery_status = $('select[name="delivery_status"]').val();
+                    let partner_code = $('select[name="partner_code"]').val();
                     let order_date = $("#order_date").val();
 
                     url += '?'
@@ -325,6 +326,7 @@
                         url += `order_code_from=${order_code_from}&order_code_to=${order_code_to}&`
                     }
                     if(delivery_status) url += `delivery_status=${delivery_status}&`
+                    if(partner_code) url += `partner_code=${partner_code}&`
 
                     if(order_date) {
                         let splitOrderDate = order_date.split(' - ')

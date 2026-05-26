@@ -20,7 +20,7 @@
 
                     <div class="card-body">
                         <div class="form-row">
-                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN])) col-md-4 @else col-md-6 @endif mb-3">
+                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN])) col-lg col-md-6 @else col-md-6 @endif mb-3">
                                 <label>Từ khóa tìm kiếm</label>
                                 <input type="text" value="{{request('search', '')}}" class="form-control" name="search" placeholder="Tên cá nhân / Công ty / Mã vận đơn / Số điện thoại">
                             </div>
@@ -28,12 +28,12 @@
                                 <label>Mã vận đơn</label>
                                 <input type="text" class="form-control" value="{{request('order_code', '')}}" name="order_code" placeholder="Mã vận đơn">
                             </div>  --}}
-                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN])) col-md-4 @else col-md-6 @endif mb-3">
+                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN])) col-lg col-md-6 @else col-md-6 @endif mb-3">
                                 <label>Ngày gửi</label>
                                 <input type="text" class="form-control" value="{{request('order_date', '')}}" name="order_date" id="order_date" placeholder="Ngày gửi">
                             </div>
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN]))
-                            <div class="@if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF, \App\User::LEVEL_POSTMAN])) col-md-4 @else col-md-6 @endif mb-3">
+                            <div class="col-lg col-md-6 mb-3">
                                 <label>Trạng thái vận đơn</label>
                                 <select name="delivery_status" class="form-control">
                                     <option value=""></option>
@@ -42,31 +42,26 @@
                                     @endforeach
                                 </select>
                             </div>
+                            <div class="col-lg col-md-6 mb-3">
+                                <label>Đối tác</label>
+                                <select name="partner_code" class="form-control">
+                                    <option value=""></option>
+                                    <option value="{{ \App\Models\Order::CODE_VIETTEL_POST }}" @if(request('partner_code') == \App\Models\Order::CODE_VIETTEL_POST) selected @endif>Viettel</option>
+                                    <option value="{{ \App\Models\Order::CODE_EMS }}" @if(request('partner_code') == \App\Models\Order::CODE_EMS) selected @endif>EMS</option>
+                                    <option value="{{ \App\Models\Order::TRACKING_PROVIDER_MICKEY }}" @if(request('partner_code') == \App\Models\Order::TRACKING_PROVIDER_MICKEY) selected @endif>Q-CPN</option>
+                                </select>
+                            </div>
+                            @endif
+                            @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN]))
+                            <div class="col-lg col-md-6 mb-3">
+                                <label>Tìm kiếm mã vận đơn trong khoảng</label>
+                                <div class="d-flex">
+                                    <input type="text" value="{{request('order_code_from', '')}}" name="order_code_from" class="form-control mr-1" placeholder="Từ: HE0001">
+                                    <input type="text" value="{{request('order_code_to', '')}}" name="order_code_to" class="form-control" placeholder="Đến: HE0009">
+                                </div>
+                            </div>
                             @endif
                         </div>
-                        @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN]))
-                        <div class="form-row align-items-center">
-                            <div class="col-12 mb-2">
-                                <label>Tìm kiếm mã vận đơn trong khoảng</label>
-                            </div>
-                            <div class="col-md-6 col-12 my-1">
-                              <div class="input-group">
-                                <div class="input-group-prepend">
-                                  <div class="input-group-text">Từ</div>
-                                </div>
-                                <input type="text" value="{{request('order_code_from', '')}}" name="order_code_from" class="form-control" placeholder="VD: HE0001">
-                              </div>
-                            </div>
-                            <div class="col-md-6 col-12 my-1">
-                                <div class="input-group">
-                                  <div class="input-group-prepend">
-                                    <div class="input-group-text">Đến</div>
-                                  </div>
-                                  <input type="text" value="{{request('order_code_to', '')}}" name="order_code_to" class="form-control" placeholder="VD: HE0009">
-                                </div>
-                              </div>
-                        </div>
-                        @endif
                     </div>
                     <div class="card-footer text-right">
                         <div class="row">
@@ -118,12 +113,12 @@
                     </div>
 
                     {!! Form::close() !!}
-                    @if(auth()->user()->level != \App\User::LEVEL_POSTMAN || request('search') || request('order_date') || request('delivery_status'))
+                    @if(auth()->user()->level != \App\User::LEVEL_POSTMAN || request('search') || request('order_date') || request('delivery_status') || request('partner_code'))
                         @include('orders.table')
                     @endif
 
                 </div>
-                @if(auth()->user()->level != \App\User::LEVEL_POSTMAN || request('search') || request('order_date') || request('delivery_status'))
+                @if(auth()->user()->level != \App\User::LEVEL_POSTMAN || request('search') || request('order_date') || request('delivery_status') || request('partner_code'))
                     <div class="align-content-center" style="margin-top: 20px">
                         {!! $orders->appends(request()->query())->links() !!}
                     </div>

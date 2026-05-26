@@ -55,6 +55,13 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
         if (isset($this->form_filter['delivery_status'])) {
             $orders->where('orders.delivery_status', $this->form_filter['delivery_status']);
         }
+        if (isset($this->form_filter['partner_code']) && $this->form_filter['partner_code']) {
+            if ($this->form_filter['partner_code'] === Order::TRACKING_PROVIDER_MICKEY) {
+                $orders->where('orders.tracking_provider', Order::TRACKING_PROVIDER_MICKEY);
+            } else {
+                $orders->where('orders.partner_code', $this->form_filter['partner_code']);
+            }
+        }
 
         if (in_array(auth()->user()->level, [User::LEVEL_USER])) {
             $orders->where('orders.user_id', auth()->user()->id);

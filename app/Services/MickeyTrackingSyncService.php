@@ -144,11 +144,15 @@ class MickeyTrackingSyncService
             return Order::DELIVERY_STATUS_OK;
         }
 
+        if ($this->containsAny($status, ['di khoi ttkt ha noi', 'di khoi buu cuc'])) {
+            return Order::DELIVERY_STATUS_RETURN;
+        }
+
         if ($this->containsAny($status, ['dang phat', 'di phat', 'buu ta', 'di giao'])) {
             return Order::DELIVERY_STATUS_PERSON_CHARGE;
         }
 
-        if ($this->containsAny($status, ['da den', 'den buu cuc', 'nhap buu cuc', 'den bc'])) {
+        if ($this->containsAny($status, ['den ttkt ha noi', 'da den', 'den buu cuc', 'nhap buu cuc', 'den bc'])) {
             return Order::DELIVERY_STATUS_RECEIVED;
         }
 
