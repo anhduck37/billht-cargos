@@ -25,18 +25,24 @@ class OrderPartnerLogController extends Controller
         $query = OrderPartnerLog::with('order');
 
         // Filter by Status
-        if ($request->has('filter_status') && $request->filter_status !== '') {
-            $query->where('status', $request->filter_status);
+        if ($request->filled('filter_status')) {
+            $query->where('status', $request->input('filter_status'));
         }
 
         // Filter by Date
-        if ($request->has('filter_date') && $request->filter_date !== '') {
-            $query->whereDate('updated_at', $request->filter_date);
+        $filterDateInput = $request->filled('filter_date') ? $request->input('filter_date') : $request->input('filter_date_display');
+        if ($filterDateInput !== null && trim((string)$filterDateInput) !== '') {
+            try {
+                $filterDate = $this->parseFilterDate($filterDateInput);
+                $query->whereDate('updated_at', $filterDate->toDateString());
+            } catch (\Exception $e) {
+                Flash::error('Ngày lọc không hợp lệ.');
+            }
         }
 
         // Filter by Partner
-        if ($request->has('filter_partner') && $request->filter_partner !== '') {
-            $query->where('partner_code', strtoupper($request->filter_partner));
+        if ($request->filled('filter_partner')) {
+            $query->where('partner_code', strtoupper($request->input('filter_partner')));
         }
 
         // Paginate results
@@ -50,9 +56,9 @@ class OrderPartnerLogController extends Controller
         $errorQuery = OrderPartnerLog::where('status', 0)
                                     ->whereRaw("DATE_FORMAT(updated_at, '%Y-%m') = ?", [$currentMonth]);
 
-        if ($request->has('filter_partner') && $request->filter_partner !== '') {
-            $successQuery->where('partner_code', strtoupper($request->filter_partner));
-            $errorQuery->where('partner_code', strtoupper($request->filter_partner));
+        if ($request->filled('filter_partner')) {
+            $successQuery->where('partner_code', strtoupper($request->input('filter_partner')));
+            $errorQuery->where('partner_code', strtoupper($request->input('filter_partner')));
         }
 
         $successCount = $successQuery->count();
@@ -70,8 +76,29 @@ class OrderPartnerLogController extends Controller
         }
 
         $apiStatuses = app(ApiStatusService::class)->getStatuses();
+        $logDates = OrderPartnerLog::selectRaw('DATE(updated_at) as log_date')
+            ->whereNotNull('updated_at')
+            ->groupBy('log_date')
+            ->orderBy('log_date', 'desc')
+            ->limit(90)
+            ->pluck('log_date');
 
-        return view('order_partner_logs.index', compact('logs', 'successCount', 'errorCount', 'apiStatuses'));
+        return view('order_partner_logs.index', compact('logs', 'successCount', 'errorCount', 'apiStatuses', 'logDates'));
+    }
+
+    private function parseFilterDate($date)
+    {
+        $date = trim((string)$date);
+
+        if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $date, $matches)) {
+            return Carbon::create((int)$matches[1], (int)$matches[2], (int)$matches[3]);
+        }
+
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $date, $matches)) {
+            return Carbon::create((int)$matches[3], (int)$matches[2], (int)$matches[1]);
+        }
+
+        return Carbon::parse($date);
     }
 
     public function checkApiStatus(Request $request, $provider, ApiStatusService $apiStatusService)
