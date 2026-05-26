@@ -191,9 +191,10 @@ class MickeyTrackingSyncService
         $candidates = [];
         $table = $tracking['table'] ?? [];
         if (!empty($table)) {
-            $last = end($table);
-            if (!empty($last['trang_thai'])) {
-                $candidates[] = trim($last['trang_thai']);
+            foreach ($table as $item) {
+                if (!empty($item['trang_thai'])) {
+                    $candidates[] = trim($item['trang_thai']);
+                }
             }
         }
 
