@@ -99,10 +99,6 @@
 
                                     @if($providerKey === 'mickey' && in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                                         <div class="mt-3 d-flex flex-wrap">
-                                            {!! Form::open(['route' => array_merge(['order_partner_logs.mickey.detect'], request()->query()), 'method' => 'POST', 'class' => 'mr-2 mb-2']) !!}
-                                                <input type="hidden" name="limit" value="{{ config('tracking.mickey_manual_limit', 20) }}">
-                                                <button type="submit" class="btn btn-sm btn-warning">Quét đơn</button>
-                                            {!! Form::close() !!}
                                             {!! Form::open(['route' => array_merge(['order_partner_logs.mickey.sync'], request()->query()), 'method' => 'POST', 'class' => 'mb-2']) !!}
                                                 <input type="hidden" name="limit" value="{{ config('tracking.mickey_manual_limit', 20) }}">
                                                 <button type="submit" class="btn btn-sm btn-info">Đồng bộ trạng thái</button>

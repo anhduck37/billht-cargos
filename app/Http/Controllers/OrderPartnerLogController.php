@@ -118,12 +118,23 @@ class OrderPartnerLogController extends Controller
         }
 
         $limit = (int)$request->input('limit', config('tracking.mickey_manual_limit', 20));
-        $this->runMickeyCommandWithFlash(
-            'mickey:sync-tracking',
-            $limit,
-            'Đồng bộ trạng thái Mickey thành công',
-            'Đồng bộ trạng thái Mickey thất bại'
-        );
+        try {
+            $detect = $this->runArtisanCommand('mickey:detect-orders', $limit);
+            if ((int)$detect['exit_code'] !== 0) {
+                Flash::error('Đồng bộ trạng thái Mickey thất bại ở bước quét đơn. Mã lỗi: ' . $detect['exit_code'] . '. ' . $detect['summary']);
+                return redirect()->route('order_partner_logs.index', $request->query());
+            }
+
+            $sync = $this->runArtisanCommand('mickey:sync-tracking', $limit);
+            if ((int)$sync['exit_code'] !== 0) {
+                Flash::error('Đồng bộ trạng thái Mickey thất bại ở bước cập nhật trạng thái. Mã lỗi: ' . $sync['exit_code'] . '. ' . $sync['summary']);
+                return redirect()->route('order_partner_logs.index', $request->query());
+            }
+
+            Flash::success('Đồng bộ trạng thái Mickey thành công. Limit: ' . $limit . '. Detect: ' . $detect['summary'] . '. Sync: ' . $sync['summary']);
+        } catch (\Exception $e) {
+            Flash::error('Đồng bộ trạng thái Mickey thất bại: ' . $e->getMessage());
+        }
 
         return redirect()->route('order_partner_logs.index', $request->query());
     }
@@ -131,8 +142,9 @@ class OrderPartnerLogController extends Controller
     private function runMickeyCommandWithFlash($command, $limit, $successMessage, $errorMessage)
     {
         try {
-            $exitCode = Artisan::call($command, ['--limit' => $limit]);
-            $summary = $this->getArtisanSummary();
+            $result = $this->runArtisanCommand($command, $limit);
+            $exitCode = $result['exit_code'];
+            $summary = $result['summary'];
             $message = $successMessage . '. Limit: ' . $limit . ($summary ? '. ' . $summary : '.');
 
             if ((int)$exitCode === 0) {
@@ -144,6 +156,15 @@ class OrderPartnerLogController extends Controller
         } catch (\Exception $e) {
             Flash::error($errorMessage . ': ' . $e->getMessage());
         }
+    }
+
+    private function runArtisanCommand($command, $limit)
+    {
+        $exitCode = Artisan::call($command, ['--limit' => $limit]);
+        return [
+            'exit_code' => $exitCode,
+            'summary' => $this->getArtisanSummary(),
+        ];
     }
 
     private function getArtisanSummary()
