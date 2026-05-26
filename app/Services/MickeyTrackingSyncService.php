@@ -21,6 +21,7 @@ class MickeyTrackingSyncService
         if (!$this->hasTrackingData($tracking)) {
             return [
                 'detected' => false,
+                'mapped' => false,
                 'updated' => false,
                 'message' => 'Mickey khong co du lieu',
             ];
@@ -39,6 +40,7 @@ class MickeyTrackingSyncService
         if ($dryRun) {
             return [
                 'detected' => true,
+                'mapped' => (bool)$mappedStatus,
                 'updated' => $willUpdateStatus || $willUpdateProvider || $willUpdateSignator,
                 'message' => 'Dry run',
                 'old_status' => $oldStatus,
@@ -95,6 +97,7 @@ class MickeyTrackingSyncService
 
         return [
             'detected' => true,
+            'mapped' => (bool)$mappedStatus,
             'updated' => $willUpdateStatus || $willUpdateProvider || $willUpdateSignator,
             'message' => $mappedStatus ? 'Synced' : 'Detected Mickey, status not mapped',
             'old_status' => $oldStatus,

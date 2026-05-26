@@ -41,6 +41,7 @@ class MickeySyncTrackingCommand extends Command
         }
 
         $updated = 0;
+        $mapped = 0;
 
         foreach ($orders as $order) {
             $tracking = $mickeyService->tracking($order, $order->order_code);
@@ -50,6 +51,9 @@ class MickeySyncTrackingCommand extends Command
             }
 
             $result = $syncService->syncOrder($order, $tracking, $dryRun);
+            if (!empty($result['mapped'])) {
+                $mapped++;
+            }
             if (!empty($result['updated'])) {
                 $updated++;
             }
@@ -64,7 +68,7 @@ class MickeySyncTrackingCommand extends Command
             ));
         }
 
-        $this->info("Checked {$orders->count()} Mickey orders. Updated {$updated}.");
+        $this->info("Checked {$orders->count()} Mickey orders. Mapped {$mapped}. Updated {$updated}.");
         return 0;
     }
 }
