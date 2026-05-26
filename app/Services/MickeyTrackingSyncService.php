@@ -134,8 +134,19 @@ class MickeyTrackingSyncService
 
     private function mapDeliveryStatus($tracking)
     {
-        $status = $this->normalizeStatus($this->extractStatusText($tracking));
+        foreach ($this->extractStatusCandidates($tracking) as $statusText) {
+            $mappedStatus = $this->mapStatusText($statusText);
+            if ($mappedStatus) {
+                return $mappedStatus;
+            }
+        }
 
+        return null;
+    }
+
+    private function mapStatusText($statusText)
+    {
+        $status = $this->normalizeStatus($statusText);
         if ($status === '') {
             return null;
         }
@@ -165,18 +176,33 @@ class MickeyTrackingSyncService
 
     private function extractStatusText($tracking)
     {
-        $table1 = $tracking['table1'][0] ?? [];
-        if (!empty($table1['tinh_trang'])) {
-            return trim($table1['tinh_trang']);
+        $candidates = $this->extractStatusCandidates($tracking);
+        foreach ($candidates as $statusText) {
+            if ($this->mapStatusText($statusText)) {
+                return trim($statusText);
+            }
         }
 
+        return $candidates[0] ?? '';
+    }
+
+    private function extractStatusCandidates($tracking)
+    {
+        $candidates = [];
         $table = $tracking['table'] ?? [];
         if (!empty($table)) {
             $last = end($table);
-            return trim($last['trang_thai'] ?? '');
+            if (!empty($last['trang_thai'])) {
+                $candidates[] = trim($last['trang_thai']);
+            }
         }
 
-        return '';
+        $table1 = $tracking['table1'][0] ?? [];
+        if (!empty($table1['tinh_trang'])) {
+            $candidates[] = trim($table1['tinh_trang']);
+        }
+
+        return array_values(array_unique(array_filter($candidates)));
     }
 
     private function extractSignator($tracking)
