@@ -139,7 +139,7 @@ class OrderStatusChangeController extends Controller
                     // Bill đã tồn tại + Loại bill != "Tạo mới" → OK, cập nhật trạng thái
                 }
 
-                $order->delivery_status = Order::DELIVERY_STATUS_RECEIVED;
+                $order->delivery_status = Order::DELIVERY_STATUS_PERSON_CHARGE;
                 $order->signator = $signator;
                 $order->updated_at = $trackingAt;
                 $order->save();
@@ -149,7 +149,7 @@ class OrderStatusChangeController extends Controller
                     'order_code' => $order->order_code,
                     'order_status' => $order->order_status,
                     'user_id' => auth()->id(),
-                    'delivery_status' => Order::DELIVERY_STATUS_RECEIVED,
+                    'delivery_status' => Order::DELIVERY_STATUS_PERSON_CHARGE,
                     'city_id' => $order->city_id,
                     'person_charge' => $order->person_charge,
                     'signator' => $signator,
@@ -286,7 +286,7 @@ class OrderStatusChangeController extends Controller
             'sender_id' => $sender->id,
             'receiver_id' => $receiver->id,
             'order_status' => Order::ORDER_BLANK,
-            'delivery_status' => Order::DELIVERY_STATUS_RECEIVED,
+            'delivery_status' => Order::DELIVERY_STATUS_PERSON_CHARGE,
             'payment_method' => Order::PAYMENT_METHOD_COD,
             'order_code' => $billCode,
             'total' => 0,
