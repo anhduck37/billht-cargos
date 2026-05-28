@@ -352,8 +352,10 @@ class ViettelPostService
             $order->order_code ?? null,
         ]));
         $lastResult = [];
+        $attempts = [];
 
-        foreach (array_unique([$this->api, $this->url]) as $baseUrl) {
+        $expiredResult = null;
+        foreach (array_unique([$this->api]) as $baseUrl) {
             $client = new Client([
                 'headers' => $headers,
                 'timeout' => 30
@@ -370,8 +372,18 @@ class ViettelPostService
                     $body = $response->getBody()->getContents();
                     $result = json_decode($body, true);
                     $lastResult = is_array($result) ? $result : [];
+                    $attempts[] = [
+                        'base_url' => $baseUrl,
+                        'order_number' => $orderNumber,
+                        'http_status' => $response->getStatusCode(),
+                        'message_key' => $lastResult['messageKey'] ?? null,
+                        'message' => $lastResult['message'] ?? null,
+                        'has_data' => !empty($lastResult['data']),
+                        'body' => $this->limitLogText((string)$body),
+                    ];
 
                     if ($this->isExpiredTokenResponse($lastResult)) {
+                        $expiredResult = $lastResult;
                         continue;
                     }
 
@@ -384,9 +396,14 @@ class ViettelPostService
                         'order_id' => $order->id ?? null,
                         'order_number' => $orderNumber,
                         'http_status' => $response->getStatusCode(),
-                        'body' => mb_substr((string)$body, 0, 1000),
+                        'body' => $this->limitLogText((string)$body),
                     ]);
                 } catch (\Exception $e) {
+                    $attempts[] = [
+                        'base_url' => $baseUrl,
+                        'order_number' => $orderNumber,
+                        'exception' => $e->getMessage(),
+                    ];
                     \Log::error('VTP API Error tracking: ' . $e->getMessage(), [
                         'base_url' => $baseUrl,
                         'order_id' => $order->id ?? null,
@@ -397,7 +414,23 @@ class ViettelPostService
             }
         }
 
+        if ($expiredResult !== null) {
+            $expiredResult['_tracking_attempts'] = $attempts;
+            return $expiredResult;
+        }
+
+        if (empty($lastResult)) {
+            $lastResult = ['data' => null];
+        }
+        $lastResult['_tracking_attempts'] = $attempts;
         return $lastResult;
+    }
+
+    private function limitLogText($text, $limit = 1000)
+    {
+        return function_exists('mb_substr')
+            ? mb_substr($text, 0, $limit, 'UTF-8')
+            : substr($text, 0, $limit);
     }
 
     private function isExpiredTokenResponse($result)
