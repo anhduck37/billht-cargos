@@ -175,6 +175,7 @@
                                 <th scope="col">Mã vận đơn</th>
                                 <th scope="col">Người gửi</th>
                                 <th scope="col">Đối Tác</th>
+                                <th scope="col">Địa chỉ so sánh</th>
                                 <th scope="col">Chi tiết phản hồi</th>
                                 <th scope="col">Thời gian</th>
                                 <th scope="col" class="text-right">Thao tác</th>
@@ -212,6 +213,19 @@
                                                 </span>
                                             @endif
                                         </td>
+                                        <td style="white-space: normal; min-width: 360px; max-width: 520px;">
+                                            <div class="mb-1">
+                                                <span class="badge {{ $log->parsed->address_compare_class }}">{{ $log->parsed->address_compare_label }}</span>
+                                            </div>
+                                            <div class="text-sm mb-2">
+                                                <strong>Địa chỉ nhập:</strong>
+                                                <span>{{ $log->parsed->app_receiver_address }}</span>
+                                            </div>
+                                            <div class="text-sm" style="white-space: pre-line;">
+                                                <strong>{{ $log->parsed->partner_address_label }}:</strong>
+                                                <span>{{ $log->parsed->partner_receiver_address }}</span>
+                                            </div>
+                                        </td>
                                         <td style="white-space: normal; max-width: 400px;">
                                             {!! $log->parsed->response_html !!}
                                         </td>
@@ -232,7 +246,7 @@
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="7" class="text-center">Không có dữ liệu logs.</td>
+                                    <td colspan="8" class="text-center">Không có dữ liệu logs.</td>
                                 </tr>
                             @endif
                         </tbody>

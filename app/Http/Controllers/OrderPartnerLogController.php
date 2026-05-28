@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\City;
+use App\District;
 use App\Models\Order;
 use App\OrderPartnerLog;
 use App\PartnerConfig;
 use App\OrderHistory;
+use App\Ward;
 use App\Services\EmsService;
 use App\Services\ApiStatusService;
 use App\Services\OrderHistoryService;
@@ -22,7 +25,13 @@ class OrderPartnerLogController extends Controller
     public function index(Request $request)
     {
         // Query builder for filtering
-        $query = OrderPartnerLog::with('order');
+        $query = OrderPartnerLog::with([
+            'order.receiver.city',
+            'order.receiver.district',
+            'order.receiver.ward',
+            'order.receiver.newProvince',
+            'order.receiver.newWard',
+        ]);
 
         // Filter by Status
         if ($request->filled('filter_status')) {
@@ -84,6 +93,196 @@ class OrderPartnerLogController extends Controller
             ->pluck('log_date');
 
         return view('order_partner_logs.index', compact('logs', 'successCount', 'errorCount', 'apiStatuses', 'logDates'));
+    }
+
+    private function formatAppReceiverAddress($order)
+    {
+        if (!$order || !$order->receiver) {
+            return 'N/A';
+        }
+
+        if (!empty($order->receiver->full_address_text)) {
+            return $order->receiver->full_address_text;
+        }
+
+        $parts = [
+            $order->receiver->address ?? null,
+            $order->receiver->ward_name ?? null,
+            $order->receiver->district_name ?? null,
+            $order->receiver->city_name ?? null,
+        ];
+
+        return implode(', ', array_filter($parts)) ?: 'N/A';
+    }
+
+    private function formatPartnerReceiverAddress($log, array $payload)
+    {
+        $partnerCode = strtoupper((string)$log->partner_code);
+
+        if ($partnerCode === 'VIETTEL_POST') {
+            $address = trim((string)($payload['RECEIVER_ADDRESS'] ?? ''));
+            $wardName = $this->findWardNameByCode($payload['RECEIVER_WARD'] ?? null);
+            $districtName = $this->findDistrictNameByCode($payload['RECEIVER_DISTRICT'] ?? null);
+            $provinceName = $this->findCityNameByCode($payload['RECEIVER_PROVINCE'] ?? null);
+            $codeAddress = implode(', ', array_filter([$wardName, $districtName, $provinceName]));
+
+            if ($address && $codeAddress) {
+                return $address . "\nTheo mã VTP: " . $codeAddress;
+            }
+
+            return $address ?: ($codeAddress ?: 'N/A');
+        }
+
+        if ($partnerCode === 'EMS') {
+            $buyerInfo = $payload['BuyerInfo'] ?? $payload['ReceiverInfo'] ?? [];
+            if (is_array($buyerInfo)) {
+                $address = trim((string)($buyerInfo['Street'] ?? ''));
+                $codeAddress = implode(', ', array_filter([
+                    !empty($buyerInfo['WardID']) ? 'WardID: ' . $buyerInfo['WardID'] : null,
+                    !empty($buyerInfo['DistrictID']) ? 'DistrictID: ' . $buyerInfo['DistrictID'] : null,
+                    !empty($buyerInfo['ProvinceID']) ? 'ProvinceID: ' . $buyerInfo['ProvinceID'] : null,
+                ]));
+
+                if ($address && $codeAddress) {
+                    return $address . "\nTheo mã EMS: " . $codeAddress;
+                }
+
+                return $address ?: ($codeAddress ?: 'N/A');
+            }
+        }
+
+        return 'N/A';
+    }
+
+    private function getAddressCompareStatus($log, array $payload, $appAddress, $partnerAddress)
+    {
+        if ($appAddress === 'N/A' || $partnerAddress === 'N/A') {
+            return ['label' => 'Thiếu dữ liệu', 'class' => 'badge-secondary'];
+        }
+
+        $appParts = $this->getAppReceiverAddressParts($log->order);
+        $partnerParts = $this->getPartnerReceiverAddressParts($log, $payload);
+
+        if ($appParts['province'] && $partnerParts['province'] && !$this->sameAddressPart($appParts['province'], $partnerParts['province'])) {
+            return ['label' => 'Khác tỉnh/thành', 'class' => 'badge-danger'];
+        }
+
+        if ($appParts['district'] && $partnerParts['district'] && !$this->sameAddressPart($appParts['district'], $partnerParts['district'])) {
+            return ['label' => 'Khác huyện/quận', 'class' => 'badge-danger'];
+        }
+
+        if ($appParts['ward'] && $partnerParts['ward'] && !$this->sameAddressPart($appParts['ward'], $partnerParts['ward'])) {
+            return ['label' => 'Khác xã/phường', 'class' => 'badge-danger'];
+        }
+
+        if ($appParts['street'] && $partnerParts['street'] && !$this->sameStreetAddress($appParts['street'], $partnerParts['street'])) {
+            return ['label' => 'Khác địa chỉ nhập', 'class' => 'badge-danger'];
+        }
+
+        if (!$partnerParts['street'] && !$partnerParts['ward'] && !$partnerParts['district'] && !$partnerParts['province']) {
+            return ['label' => 'Thiếu dữ liệu', 'class' => 'badge-secondary'];
+        }
+
+        return ['label' => 'Khớp', 'class' => 'badge-success'];
+    }
+
+    private function getAppReceiverAddressParts($order)
+    {
+        $receiver = $order ? $order->receiver : null;
+        if (!$receiver) {
+            return ['street' => null, 'ward' => null, 'district' => null, 'province' => null];
+        }
+
+        $isNewAddress = $receiver->address_scheme === 'new';
+
+        return [
+            'street' => $receiver->address ?? null,
+            'ward' => $isNewAddress ? optional($receiver->newWard)->name : optional($receiver->ward)->ward_name,
+            'district' => $isNewAddress ? null : optional($receiver->district)->district_name,
+            'province' => $isNewAddress ? optional($receiver->newProvince)->name : optional($receiver->city)->city_name,
+        ];
+    }
+
+    private function getPartnerReceiverAddressParts($log, array $payload)
+    {
+        $partnerCode = strtoupper((string)$log->partner_code);
+
+        if ($partnerCode === 'VIETTEL_POST') {
+            return [
+                'street' => $payload['RECEIVER_ADDRESS'] ?? null,
+                'ward' => $this->findWardNameByCode($payload['RECEIVER_WARD'] ?? null, false),
+                'district' => $this->findDistrictNameByCode($payload['RECEIVER_DISTRICT'] ?? null, false),
+                'province' => $this->findCityNameByCode($payload['RECEIVER_PROVINCE'] ?? null, false),
+            ];
+        }
+
+        if ($partnerCode === 'EMS') {
+            $buyerInfo = $payload['BuyerInfo'] ?? $payload['ReceiverInfo'] ?? [];
+            return [
+                'street' => is_array($buyerInfo) ? ($buyerInfo['Street'] ?? null) : null,
+                'ward' => null,
+                'district' => null,
+                'province' => null,
+            ];
+        }
+
+        return ['street' => null, 'ward' => null, 'district' => null, 'province' => null];
+    }
+
+    private function sameAddressPart($appValue, $partnerValue)
+    {
+        return $this->normalizeAddress($appValue) === $this->normalizeAddress($partnerValue);
+    }
+
+    private function sameStreetAddress($appValue, $partnerValue)
+    {
+        $appValue = $this->normalizeAddress($appValue);
+        $partnerValue = $this->normalizeAddress($partnerValue);
+
+        if (!$appValue || !$partnerValue) {
+            return false;
+        }
+
+        return strpos($partnerValue, $appValue) !== false || strpos($appValue, $partnerValue) !== false;
+    }
+
+    private function normalizeAddress($address)
+    {
+        $address = mb_strtolower((string)$address, 'UTF-8');
+        $address = str_replace(["\r", "\n"], ' ', $address);
+        $address = preg_replace('/\b(theo ma|theo mã)\s+(vtp|ems)\s*:/iu', ' ', $address);
+        $address = preg_replace('/\b(wardid|districtid|provinceid)\s*:\s*\d+/iu', ' ', $address);
+        $address = preg_replace('/[^\pL\pN]+/u', ' ', $address);
+        $address = preg_replace('/\s+/u', ' ', $address);
+
+        return trim($address);
+    }
+
+    private function findWardNameByCode($code, $fallbackToCode = true)
+    {
+        if ($code === null || $code === '') {
+            return null;
+        }
+
+        return Ward::where('ward_code', $code)->value('ward_name') ?: ($fallbackToCode ? 'Ward code: ' . $code : null);
+    }
+
+    private function findDistrictNameByCode($code, $fallbackToCode = true)
+    {
+        if ($code === null || $code === '') {
+            return null;
+        }
+
+        return District::where('district_code', $code)->value('district_name') ?: ($fallbackToCode ? 'District code: ' . $code : null);
+    }
+
+    private function findCityNameByCode($code, $fallbackToCode = true)
+    {
+        if ($code === null || $code === '') {
+            return null;
+        }
+
+        return City::where('city_code', $code)->value('city_name') ?: ($fallbackToCode ? 'Province code: ' . $code : null);
     }
 
     private function parseFilterDate($date)
@@ -321,6 +520,10 @@ class OrderPartnerLogController extends Controller
         if ($partnerText == 'VIETTEL_POST') $partnerText = 'VTP';
         if (empty($partnerText)) $partnerText = 'UNK';
 
+        $appReceiverAddress = $this->formatAppReceiverAddress($log->order);
+        $partnerReceiverAddress = $this->formatPartnerReceiverAddress($log, $payload);
+        $addressCompareStatus = $this->getAddressCompareStatus($log, $payload, $appReceiverAddress, $partnerReceiverAddress);
+
         $isCancelLog = $this->isCancelPayload($payload);
 
         // 4. Parse Status Response Text and Errors
@@ -375,6 +578,11 @@ class OrderPartnerLogController extends Controller
             'order_number' => $orderNumber,
             'sender_name' => $senderName,
             'response_html' => $responseText,
+            'app_receiver_address' => $appReceiverAddress,
+            'partner_receiver_address' => $partnerReceiverAddress,
+            'partner_address_label' => $partnerText === 'VTP' ? 'Địa chỉ VTP' : 'Địa chỉ ' . $partnerText,
+            'address_compare_label' => $addressCompareStatus['label'],
+            'address_compare_class' => $addressCompareStatus['class'],
         ];
     }
 
