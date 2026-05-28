@@ -6,6 +6,7 @@ use App\District;
 use App\Http\Controllers\Controller;
 use App\Ward;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class WardController extends Controller
 {
@@ -16,7 +17,31 @@ class WardController extends Controller
     }
 
     public function getNewWards(Request $request, $province_id) {
-        $wards = \App\NewWard::where('new_province_id', $province_id)->get();
-        return response()->json($wards);
+        try {
+            $wards = \App\NewWard::query()
+                ->select('id', 'name')
+                ->where('new_province_id', $province_id)
+                ->where('is_active', 1)
+                ->orderBy('name')
+                ->get()
+                ->map(function ($ward) {
+                    return [
+                        'id' => $ward->id,
+                        'name' => trim((string)$ward->name),
+                    ];
+                })
+                ->values();
+
+            return response()->json($wards, 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+        } catch (\Exception $e) {
+            Log::error('Cannot load new wards', [
+                'province_id' => $province_id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Không tải được danh sách xã/phường. Vui lòng thử lại hoặc liên hệ quản trị.',
+            ], 500, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+        }
     }
 }

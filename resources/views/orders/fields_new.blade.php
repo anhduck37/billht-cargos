@@ -706,6 +706,9 @@
 
         function renderSelectNew(name, id, type, idUpdate = null) {
             let url =`/api/${type}/${id}`;
+            const $select = $(`#${name}`);
+            $select.html(`<option value="">Đang tải...</option>`);
+
             $.get(url, function (res) {
                 let html = `
                 <option value=''></option>
@@ -713,8 +716,14 @@
                 res.forEach(item => {
                     html += `<option value="${item.id}" ${idUpdate == item.id ? 'selected' : ''}>${item.name}</option>`
                 })
-                $(`#${name}`).html(html)
-            })
+                $select.html(html)
+            }).fail(function (xhr) {
+                let message = 'Không tải được danh sách xã/phường';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    message = xhr.responseJSON.message;
+                }
+                $select.html(`<option value="">${message}</option>`);
+            });
         }
 
         function readBarCodeFromImage(urlImage) {
