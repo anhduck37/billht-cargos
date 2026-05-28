@@ -161,7 +161,8 @@ class EmsService
         $receiverDistrictID = (int)($order->receiver->district->ems_code ?? 0);
         $receiverWardID = (int)($order->receiver->ward->ems_code ?? 0);
 
-        if (($order->address_scheme ?? $order->receiver->address_scheme) === 'new') {
+        $receiverAddressScheme = $order->receiver->address_scheme ?? $order->address_scheme ?? 'old';
+        if ($receiverAddressScheme === 'new') {
             $newProvince = $order->receiver->newProvince;
             $newWard = $order->receiver->newWard;
             
@@ -183,7 +184,8 @@ class EmsService
         $senderDistrictID = (int)($order->sender->district->ems_code ?? 0);
         $senderWardID = (int)($order->sender->ward->ems_code ?? 0);
 
-        if (($order->address_scheme ?? $order->sender->address_scheme) === 'new') {
+        $senderAddressScheme = $order->sender->address_scheme ?? $order->address_scheme ?? 'old';
+        if ($senderAddressScheme === 'new') {
             $newProvince = $order->sender->newProvince;
             $newWard = $order->sender->newWard;
             

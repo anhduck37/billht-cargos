@@ -77,16 +77,23 @@ class ViettelPostService
         $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->city_name ?? '');
         $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward_name ?? '') . ' ' . ($order->receiver->city_name ?? '');
 
+        $receiverAddressScheme = $order->receiver->address_scheme ?? $order->address_scheme ?? 'old';
         $receiverWard = $order->receiver->ward->ward_code ?? 0;
         $receiverDistrict = $order->receiver->district->district_code ?? 0;
         $receiverProvince = $order->receiver->city->city_code ?? 0;
         
-        if (($order->address_scheme ?? $order->receiver->address_scheme) === 'new' && isset($order->receiver->new_ward_id)) {
-            $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'VTP');
-            if ($mapping) {
-                $receiverWard = $mapping->partner_ward_code ?? $receiverWard;
-                $receiverDistrict = $mapping->partner_district_code ?? $receiverDistrict;
-                $receiverProvince = $mapping->partner_province_code ?? $receiverProvince;
+        if ($receiverAddressScheme === 'new') {
+            $receiverWard = 0;
+            $receiverDistrict = 0;
+            $receiverProvince = 0;
+
+            if (isset($order->receiver->new_ward_id)) {
+                $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'VTP');
+                if ($mapping) {
+                    $receiverWard = $mapping->partner_ward_code ?? $receiverWard;
+                    $receiverDistrict = $mapping->partner_district_code ?? $receiverDistrict;
+                    $receiverProvince = $mapping->partner_province_code ?? $receiverProvince;
+                }
             }
         }
 
@@ -140,6 +147,26 @@ class ViettelPostService
             "MONEY_TOTALVAT" => 0,
             "MONEY_TOTAL" => 0
         ];
+
+        if ($receiverAddressScheme === 'new' && (!$receiverWard || !$receiverDistrict || !$receiverProvince)) {
+            $result = [
+                'error' => true,
+                'message' => 'Địa chỉ người nhận dùng địa chỉ mới nhưng chưa có mapping Viettel Post đầy đủ cho xã/phường. Vui lòng chọn lại Xã/Phường hoặc bổ sung mapping VTP trước khi đồng bộ.',
+                'data' => []
+            ];
+
+            $orderPartnerLog = new OrderPartnerLog();
+            $orderPartnerLog->order_id = $order->id;
+            $orderPartnerLog->status = OrderPartnerLog::STATUS_FAILD;
+            $orderPartnerLog->partner_code = PartnerConfig::CODE_VIETTEL_POST;
+            $orderPartnerLog->payload = json_encode($formatData, JSON_UNESCAPED_UNICODE);
+            $orderPartnerLog->response = json_encode($result, JSON_UNESCAPED_UNICODE);
+            $orderPartnerLog->user_id = auth()->user()->id ?? 0;
+            $orderPartnerLog->save();
+
+            return $result;
+        }
+
         $client = new Client([
             'headers' => $this->headers,
             'timeout' => 30

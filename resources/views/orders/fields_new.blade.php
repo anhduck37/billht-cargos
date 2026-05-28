@@ -38,6 +38,8 @@
     .text-info { color: #11cdef !important; }
 </style>
 
+<input type="hidden" name="order[address_scheme]" value="new">
+
 @if(auth()->user()->level != \App\User::LEVEL_POSTMAN)
 <div class="row">
     <div class="col-sm-6">

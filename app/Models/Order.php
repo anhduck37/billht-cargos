@@ -58,6 +58,7 @@ class Order extends Model
         'long',
         'push_error',
         'tracking_provider',
+        'address_scheme',
     ];
     const CODE_VIETTEL_POST = 'VTP';
     const CODE_EMS = 'EMS';
