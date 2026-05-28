@@ -347,14 +347,6 @@ class ViettelPostService
             }
         }
 
-        if (!array_key_exists('data', $result) || empty($result['data'])) {
-            \Log::warning('VTP tracking response has no data', [
-                'order_id' => $order->id ?? null,
-                'order_partner_code' => $order->order_partner_code ?? null,
-                'response' => $result,
-            ]);
-        }
-
         return $result['data'] ?? null;
     }
 
@@ -369,85 +361,32 @@ class ViettelPostService
             $order->order_code ?? null,
         ]));
         $lastResult = [];
-        $attempts = [];
 
-        $expiredResult = null;
-        foreach (array_unique([$this->api]) as $baseUrl) {
-            $client = new Client([
-                'headers' => $headers,
-                'timeout' => 30
-            ]);
+        $client = new Client([
+            'headers' => $headers,
+            'timeout' => 30
+        ]);
 
-            foreach ($orderNumbers as $orderNumber) {
-                try {
-                    $response = $client->get($baseUrl . $path, [
-                        'query' => [
-                            'OrderNumber' => $orderNumber
-                        ]
-                    ]);
+        foreach ($orderNumbers as $orderNumber) {
+            try {
+                $response = $client->get($this->api . $path, [
+                    'query' => [
+                        'OrderNumber' => $orderNumber
+                    ]
+                ]);
 
-                    $body = $response->getBody()->getContents();
-                    $result = json_decode($body, true);
-                    $lastResult = is_array($result) ? $result : [];
-                    $attempts[] = [
-                        'base_url' => $baseUrl,
-                        'order_number' => $orderNumber,
-                        'http_status' => $response->getStatusCode(),
-                        'message_key' => $lastResult['messageKey'] ?? null,
-                        'message' => $lastResult['message'] ?? null,
-                        'has_data' => !empty($lastResult['data']),
-                        'body' => $this->limitLogText((string)$body),
-                    ];
+                $result = json_decode($response->getBody()->getContents(), true);
+                $lastResult = is_array($result) ? $result : [];
 
-                    if ($this->isExpiredTokenResponse($lastResult)) {
-                        $expiredResult = $lastResult;
-                        continue;
-                    }
-
-                    if (!empty($lastResult['data'])) {
-                        return $lastResult;
-                    }
-
-                    \Log::warning('VTP tracking empty response candidate', [
-                        'base_url' => $baseUrl,
-                        'order_id' => $order->id ?? null,
-                        'order_number' => $orderNumber,
-                        'http_status' => $response->getStatusCode(),
-                        'body' => $this->limitLogText((string)$body),
-                    ]);
-                } catch (\Exception $e) {
-                    $attempts[] = [
-                        'base_url' => $baseUrl,
-                        'order_number' => $orderNumber,
-                        'exception' => $e->getMessage(),
-                    ];
-                    \Log::error('VTP API Error tracking: ' . $e->getMessage(), [
-                        'base_url' => $baseUrl,
-                        'order_id' => $order->id ?? null,
-                        'order_partner_code' => $order->order_partner_code ?? null,
-                        'order_number' => $orderNumber,
-                    ]);
+                if ($this->isExpiredTokenResponse($lastResult) || !empty($lastResult['data'])) {
+                    return $lastResult;
                 }
+            } catch (\Exception $e) {
+                \Log::error('VTP API Error tracking: ' . $e->getMessage());
             }
         }
 
-        if ($expiredResult !== null) {
-            $expiredResult['_tracking_attempts'] = $attempts;
-            return $expiredResult;
-        }
-
-        if (empty($lastResult)) {
-            $lastResult = ['data' => null];
-        }
-        $lastResult['_tracking_attempts'] = $attempts;
         return $lastResult;
-    }
-
-    private function limitLogText($text, $limit = 1000)
-    {
-        return function_exists('mb_substr')
-            ? mb_substr($text, 0, $limit, 'UTF-8')
-            : substr($text, 0, $limit);
     }
 
     private function isExpiredTokenResponse($result)
