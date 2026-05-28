@@ -113,16 +113,12 @@
                     </div>
 
                     {!! Form::close() !!}
-                    @if(auth()->user()->level != \App\User::LEVEL_POSTMAN || request('search') || request('order_date') || request('delivery_status') || request('partner_code'))
-                        @include('orders.table')
-                    @endif
+                    @include('orders.table')
 
                 </div>
-                @if(auth()->user()->level != \App\User::LEVEL_POSTMAN || request('search') || request('order_date') || request('delivery_status') || request('partner_code'))
-                    <div class="align-content-center" style="margin-top: 20px">
-                        {!! $orders->appends(request()->query())->links() !!}
-                    </div>
-                @endif
+                <div class="align-content-center" style="margin-top: 20px">
+                    {!! $orders->appends(request()->query())->links() !!}
+                </div>
 
                 <!-- Modal Email -->
                 <div class="modal fade" id="openModalEmail" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

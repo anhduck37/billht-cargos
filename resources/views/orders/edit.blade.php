@@ -76,8 +76,8 @@
                             <button type="button" id="sendSMS"  data-id="{{$order->id}}" class="btn btn-primary mb-2">Gửi SMS</button>
                             <button type="button" id="sendZaloZNS"  data-id="{{$order->id}}" class="btn btn-primary mb-2">Gửi Zalo</button>
                             @endif
-                            <a class='btn btn-primary mb-2' href="{{route('orders.index')}}">Tìm vận đơn</a>
-                            <a class='btn btn-primary mb-2' href="{{ route('orders.create') }}">Tạo vận đơn khác</a>
+                            <!-- <a class='btn btn-primary mb-2' href="{{route('orders.index')}}">Tìm vận đơn</a> -->
+                            <a class='btn btn-primary mb-2' href="{{ route('orders.createNew') }}">Tạo vận đơn khác</a>
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                             <a class='btn btn-primary mb-2' href="{{ route('orders.createViettelPost', ['id' => $order->id]) }}">Tạo vận đơn Viettel Post</a>
                             <a class='btn btn-primary mb-2' href="{{ route('orders.createEms', ['id' => $order->id]) }}">Tạo vận đơn EMS</a>

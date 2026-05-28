@@ -141,10 +141,19 @@ class OrderController extends AppBaseController
         }
         if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
             if (auth()->user()->level == User::LEVEL_POSTMAN) {
-                // $orders->where('orders.person_charge', auth()->user()->id);
-                if (empty($formFilter['search']) && empty($formFilter['order_date']) && empty($formFilter['delivery_status']) && empty($formFilter['partner_code']) && empty($formFilter['order_code_from']) && empty($formFilter['order_code_to'])) {
-                    $orders->where('orders.id', 0);
-                }
+                $postmanId = auth()->user()->id;
+                $orders->where(function ($q) use ($postmanId) {
+                    $q->where('orders.user_id', $postmanId)
+                        ->orWhereIn('orders.id', function ($historyQuery) use ($postmanId) {
+                            $historyQuery->select('order_id')
+                                ->from('order_historys')
+                                ->where('user_id', $postmanId)
+                                ->whereIn('type_order', [
+                                    OrderHistory::TYPE_ORDER_CREATE,
+                                    OrderHistory::TYPE_ORDER_UPDATE,
+                                ]);
+                        });
+                });
             }
             else {
                 $orders->where('orders.user_id', auth()->user()->id);
@@ -308,6 +317,9 @@ class OrderController extends AppBaseController
         if ($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
             return abort(403);
         }
+        if ($user->level == User::LEVEL_POSTMAN && !$this->postmanCanAccessOrder($order, $user->id)) {
+            return abort(403, 'Bạn không có quyền xem vận đơn này. Bưu tá chỉ được xem các vận đơn do mình tạo hoặc đã cập nhật.');
+        }
         return view('orders.edit', [
             'citys' => $citys, 
             'newProvinces' => $newProvinces, 
@@ -316,6 +328,25 @@ class OrderController extends AppBaseController
             'update' => true, 
             'users' => $users
         ]);
+    }
+
+    private function postmanCanAccessOrder($order, $postmanId)
+    {
+        if (!$order) {
+            return false;
+        }
+
+        if ((int)$order->user_id === (int)$postmanId) {
+            return true;
+        }
+
+        return OrderHistory::where('order_id', $order->id)
+            ->where('user_id', $postmanId)
+            ->whereIn('type_order', [
+                OrderHistory::TYPE_ORDER_CREATE,
+                OrderHistory::TYPE_ORDER_UPDATE,
+            ])
+            ->exists();
     }
 
     public function destroy($id)
@@ -362,6 +393,9 @@ class OrderController extends AppBaseController
                 if ($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
                     return abort(403);
                 }
+                if ($user->level == User::LEVEL_POSTMAN && !$this->postmanCanAccessOrder($order, $user->id)) {
+                    return abort(403, 'Bạn không có quyền cập nhật vận đơn này. Bưu tá chỉ được cập nhật các vận đơn do mình tạo hoặc đã từng thao tác.');
+                }
 
                 $fileName = $this->upload(
                     $request->image_data,
@@ -386,6 +420,9 @@ class OrderController extends AppBaseController
             $user = auth()->user();
             if ($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
                 return abort(403);
+            }
+            if ($user->level == User::LEVEL_POSTMAN && !$this->postmanCanAccessOrder($order, $user->id)) {
+                return abort(403, 'Bạn không có quyền cập nhật vận đơn này. Bưu tá chỉ được cập nhật các vận đơn do mình tạo hoặc đã từng thao tác.');
             }
             $order_old = clone $order;
             $sender_old = $order->sender ? clone $order->sender : null;

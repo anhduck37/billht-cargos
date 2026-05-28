@@ -29,7 +29,7 @@
                             @if(auth()->user()->level != \App\User::LEVEL_USER)
                             <button type="button" id="image" class="btn btn-info mb-2"><i class="fas fa-camera mr-2"></i>Chụp ảnh</button>
                             @endif
-                            {!! Form::submit( 'Tạo vận đơn' , ['class' => 'btn btn-success btn-lg mb-2 px-5 font-weight-bold shadow']) !!}
+                            {!! Form::submit( 'Cập nhật vận đơn' , ['class' => 'btn btn-success btn-lg mb-2 px-5 font-weight-bold shadow']) !!}
                             <a class='btn btn-outline-primary mb-2' href="{{route('orders.index')}}"><i class="fas fa-list mr-2"></i>Quản lý vận đơn</a>
                         </div>
 
