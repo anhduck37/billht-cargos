@@ -124,6 +124,16 @@
                         </div>
                         <div class="col-4 text-right">
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                                <div class="dropdown d-inline-block mr-2">
+                                    <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="syncApiDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Đồng bộ API
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="syncApiDropdown">
+                                        <button class="dropdown-item sync-api-action" type="submit" form="bulkResolvePartnerLogsForm">Tự gán lại địa chỉ</button>
+                                        <button class="dropdown-item sync-api-action" type="submit" form="bulkPushViettelPartnerLogsForm">Đẩy lại API Viettel</button>
+                                        <button class="dropdown-item sync-api-action" type="submit" form="bulkPushEmsPartnerLogsForm">Đẩy lại API EMS</button>
+                                    </div>
+                                </div>
                                 <button type="submit" form="bulkCancelPartnerOrdersForm" class="btn btn-sm btn-danger">Huỷ đồng bộ hàng loạt</button>
                             @endif
                         </div>
@@ -171,6 +181,12 @@
                     {!! Form::open(['route' => array_merge(['order_partner_logs.bulk_cancel'], request()->query()), 'method' => 'POST', 'id' => 'bulkCancelPartnerOrdersForm', 'class' => 'd-none']) !!}
                         <input type="hidden" name="reason" value="Huy don hang loat tu BillHT">
                     {!! Form::close() !!}
+                    {!! Form::open(['route' => array_merge(['order_partner_logs.bulk_resolve_addresses'], request()->query()), 'method' => 'POST', 'id' => 'bulkResolvePartnerLogsForm', 'class' => 'd-none']) !!}
+                    {!! Form::close() !!}
+                    {!! Form::open(['route' => array_merge(['order_partner_logs.bulk_push_viettel'], request()->query()), 'method' => 'POST', 'id' => 'bulkPushViettelPartnerLogsForm', 'class' => 'd-none']) !!}
+                    {!! Form::close() !!}
+                    {!! Form::open(['route' => array_merge(['order_partner_logs.bulk_push_ems'], request()->query()), 'method' => 'POST', 'id' => 'bulkPushEmsPartnerLogsForm', 'class' => 'd-none']) !!}
+                    {!! Form::close() !!}
                     <table class="table align-items-center table-flush">
                         <thead class="thead-light">
                             <tr>
@@ -191,8 +207,11 @@
                                 @foreach($logs as $log)
                                     <tr>
                                         <td class="text-center">
-                                            @if($log->can_cancel)
+                                            @if($log->order_id > 0)
                                                 <input type="checkbox" class="cancel-log-checkbox" form="bulkCancelPartnerOrdersForm" name="log_ids[]" value="{{ $log->id }}">
+                                                <input type="hidden" form="bulkResolvePartnerLogsForm" name="log_ids[]" value="{{ $log->id }}" disabled class="sync-log-hidden sync-log-hidden-{{ $log->id }}">
+                                                <input type="hidden" form="bulkPushViettelPartnerLogsForm" name="log_ids[]" value="{{ $log->id }}" disabled class="sync-log-hidden sync-log-hidden-{{ $log->id }}">
+                                                <input type="hidden" form="bulkPushEmsPartnerLogsForm" name="log_ids[]" value="{{ $log->id }}" disabled class="sync-log-hidden sync-log-hidden-{{ $log->id }}">
                                             @else
                                                 <input type="checkbox" disabled>
                                             @endif
@@ -274,12 +293,60 @@
     $(function () {
         $('#checkAllCancelableLogs').on('change', function () {
             $('.cancel-log-checkbox').prop('checked', $(this).is(':checked'));
+            syncBulkApiHiddenInputs();
         });
 
         $('.cancel-log-checkbox').on('change', function () {
             let total = $('.cancel-log-checkbox').length;
             let checked = $('.cancel-log-checkbox:checked').length;
             $('#checkAllCancelableLogs').prop('checked', total > 0 && total === checked);
+            syncBulkApiHiddenInputs();
+        });
+
+        function syncBulkApiHiddenInputs() {
+            $('.sync-log-hidden').prop('disabled', true);
+            $('.cancel-log-checkbox:checked').each(function () {
+                $('.sync-log-hidden-' + $(this).val()).prop('disabled', false);
+            });
+        }
+
+        $('#bulkResolvePartnerLogsForm').on('submit', function (event) {
+            let checked = $('.cancel-log-checkbox:checked').length;
+            if (checked === 0) {
+                alert('Bạn vui lòng chọn ít nhất một log cần thao tác.');
+                event.preventDefault();
+                return;
+            }
+
+            if (!confirm('Tự nhận diện và gán lại địa chỉ cho ' + checked + ' vận đơn đã chọn?')) {
+                event.preventDefault();
+            }
+        });
+
+        $('#bulkPushViettelPartnerLogsForm').on('submit', function (event) {
+            let checked = $('.cancel-log-checkbox:checked').length;
+            if (checked === 0) {
+                alert('Bạn vui lòng chọn ít nhất một log cần thao tác.');
+                event.preventDefault();
+                return;
+            }
+
+            if (!confirm('Đẩy lại ' + checked + ' vận đơn đã chọn lên API Viettel?')) {
+                event.preventDefault();
+            }
+        });
+
+        $('#bulkPushEmsPartnerLogsForm').on('submit', function (event) {
+            let checked = $('.cancel-log-checkbox:checked').length;
+            if (checked === 0) {
+                alert('Bạn vui lòng chọn ít nhất một log cần thao tác.');
+                event.preventDefault();
+                return;
+            }
+
+            if (!confirm('Đẩy lại ' + checked + ' vận đơn đã chọn lên API EMS?')) {
+                event.preventDefault();
+            }
         });
 
         $('#bulkCancelPartnerOrdersForm').on('submit', function (event) {

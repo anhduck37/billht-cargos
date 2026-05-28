@@ -63,6 +63,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order/update-many', 'OrderController@updateMany');
     Route::post('/order/send-email', 'OrderController@sendEmail');
     Route::post('/order/send-sms', 'OrderController@sendSMS');
+    Route::post('/order/resolve-legacy-addresses', 'OrderController@resolveLegacyAddresses');
     Route::post('/order/create-viettel-post', 'OrderController@createViettelPost');
     Route::post('/order/send-zalo-zns', 'OrderController@sendZaloZNS');
     Route::get('/order/create-order-viettel/{id}', 'OrderController@createOrderViettelPost')->name('orders.createViettelPost');
@@ -73,6 +74,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order-partner-logs/api-status/{provider}/check', 'OrderPartnerLogController@checkApiStatus')->name('order_partner_logs.api_status.check');
     Route::post('/order-partner-logs/mickey/detect', 'OrderPartnerLogController@runMickeyDetect')->name('order_partner_logs.mickey.detect');
     Route::post('/order-partner-logs/mickey/sync', 'OrderPartnerLogController@runMickeySync')->name('order_partner_logs.mickey.sync');
+    Route::post('/order-partner-logs/bulk-resolve-addresses', 'OrderPartnerLogController@bulkResolveAddresses')->name('order_partner_logs.bulk_resolve_addresses');
+    Route::post('/order-partner-logs/bulk-push-viettel', 'OrderPartnerLogController@bulkPushViettel')->name('order_partner_logs.bulk_push_viettel');
+    Route::post('/order-partner-logs/bulk-push-ems', 'OrderPartnerLogController@bulkPushEms')->name('order_partner_logs.bulk_push_ems');
     Route::post('/order-partner-logs/bulk-cancel', 'OrderPartnerLogController@bulkCancel')->name('order_partner_logs.bulk_cancel');
     Route::post('/order-partner-logs/{orderPartnerLog}/cancel', 'OrderPartnerLogController@cancel')->name('order_partner_logs.cancel');
     Route::get('/order/status-change', 'OrderStatusChangeController@index')->name('order_status_changes.index');

@@ -322,6 +322,7 @@ class OrderController extends AppBaseController
         if ($user->level == User::LEVEL_POSTMAN && !$this->postmanCanAccessOrder($order, $user->id)) {
             return abort(403, 'Bạn không có quyền xem vận đơn này. Bưu tá chỉ được xem các vận đơn do mình tạo hoặc đã cập nhật.');
         }
+        $this->hydrateLegacyAddressIdsForDisplay($order);
         return view('orders.edit', [
             'citys' => $citys, 
             'newProvinces' => $newProvinces, 
@@ -448,9 +449,11 @@ class OrderController extends AppBaseController
                 }
                 if (auth()->user()->level !== User::LEVEL_POSTMAN) {
                     if (isset($senderForm) && $senderForm) {
+                        $senderForm = $this->fillLegacyAddressIdsWhenMissing($senderForm, $order->sender);
                         Sender::where('id', $order->sender_id)->update($senderForm);
                     }
                     if (isset($receiverForm) && $receiverForm) {
+                        $receiverForm = $this->fillLegacyAddressIdsWhenMissing($receiverForm, $order->receiver);
                         Receiver::where('id', $order->receiver_id)->update($receiverForm);
                     }
 
@@ -603,9 +606,9 @@ class OrderController extends AppBaseController
                     DB::beginTransaction();
                     try {
                         $senderData = [
-                            'sender_name' => $sheet->getCell('B' . $row)->getValue() ?? '',
-                            'sender_phone' => $sheet->getCell('C' . $row)->getValue() ?? '',
-                            'address' => $sheet->getCell('S' . $row)->getValue() ?? '',
+                            'sender_name' => $sheet->getCell('B' . $row)->getCalculatedValue() ?? '',
+                            'sender_phone' => $sheet->getCell('C' . $row)->getCalculatedValue() ?? '',
+                            'address' => $sheet->getCell('S' . $row)->getCalculatedValue() ?? '',
                             'address_scheme' => 'new'
                         ];
                         if (!empty($senderData['address'])) {
@@ -618,9 +621,9 @@ class OrderController extends AppBaseController
                         }
 
                         $receiverData = [
-                            'receiver_name' => $sheet->getCell('E' . $row)->getValue() ?? '',
-                            'address' => $sheet->getCell('F' . $row)->getValue() ?? '',
-                            'receiver_phone' => $sheet->getCell('G' . $row)->getValue() ?? '',
+                            'receiver_name' => $sheet->getCell('E' . $row)->getCalculatedValue() ?? '',
+                            'address' => $sheet->getCell('F' . $row)->getCalculatedValue() ?? '',
+                            'receiver_phone' => $sheet->getCell('G' . $row)->getCalculatedValue() ?? '',
                             'address_scheme' => 'new'
                         ];
                         if (!empty($receiverData['address'])) {
@@ -673,8 +676,8 @@ class OrderController extends AppBaseController
                                     $person_charge = User::where('name', 'LIKE', '%' . $sheet->getCell('N' . $row)->getValue() . '%')->first();
                                     $orderData['person_charge'] = isset($person_charge) ? $person_charge->id : 0;
                                 }
-                                if ($sheet->getCell('M' . $row)->getValue()) {
-                                    $orderData['invoice_code'] = $sheet->getCell('M' . $row)->getValue();
+                                if ($sheet->getCell('M' . $row)->getCalculatedValue()) {
+                                    $orderData['invoice_code'] = $sheet->getCell('M' . $row)->getCalculatedValue();
                                 }
                             }
 
@@ -701,7 +704,7 @@ class OrderController extends AppBaseController
                                     dispatch(new SendSMSJob($order));
                                 }
 
-                                $partnerCode = $sheet->getCell('T' . $row)->getValue();
+                                $partnerCode = trim((string)$sheet->getCell('T' . $row)->getCalculatedValue());
                                 if ($partnerCode) {
                                     if ($partnerCode == Order::CODE_VIETTEL_POST) {
                                         $infoService = app(OrderService::class)->getKeyService($sheet->getCell('J' . $row)->getValue());
@@ -796,9 +799,9 @@ class OrderController extends AppBaseController
                     DB::beginTransaction();
                     try {
                         $senderData = [
-                            'sender_name' => $sheet->getCell('B' . $row)->getValue() ? $sheet->getCell('B' . $row)->getValue() : '',
-                            'sender_phone' => $sheet->getCell('C' . $row)->getValue() ? $sheet->getCell('C' . $row)->getValue() : '',
-                            'address' => $sheet->getCell('S' . $row)->getValue() ?? '',
+                            'sender_name' => $sheet->getCell('B' . $row)->getCalculatedValue() ? $sheet->getCell('B' . $row)->getCalculatedValue() : '',
+                            'sender_phone' => $sheet->getCell('C' . $row)->getCalculatedValue() ? $sheet->getCell('C' . $row)->getCalculatedValue() : '',
+                            'address' => $sheet->getCell('S' . $row)->getCalculatedValue() ?? '',
                         ];
                         // Tự động parse địa chỉ người gửi nếu có
                         if (!empty($senderData['address'])) {
@@ -809,9 +812,9 @@ class OrderController extends AppBaseController
                         }
                         // dd($senderData);
                         $receiverData = [
-                            'receiver_name' => $sheet->getCell('E' . $row)->getValue() ? $sheet->getCell('E' . $row)->getValue() : '',
-                            'address' => $sheet->getCell('F' . $row)->getValue() ? $sheet->getCell('F' . $row)->getValue() : '',
-                            'receiver_phone' => $sheet->getCell('G' . $row)->getValue() ? $sheet->getCell('G' . $row)->getValue() : '',
+                            'receiver_name' => $sheet->getCell('E' . $row)->getCalculatedValue() ? $sheet->getCell('E' . $row)->getCalculatedValue() : '',
+                            'address' => $sheet->getCell('F' . $row)->getCalculatedValue() ? $sheet->getCell('F' . $row)->getCalculatedValue() : '',
+                            'receiver_phone' => $sheet->getCell('G' . $row)->getCalculatedValue() ? $sheet->getCell('G' . $row)->getCalculatedValue() : '',
                             //                            'receiver_email' => $sheet->getCell( 'H' . $row )->getValue() ? $sheet->getCell( 'H' . $row )->getValue() : '',
                         ];
                         // Tự động parse địa chỉ người nhận nếu có
@@ -848,8 +851,8 @@ class OrderController extends AppBaseController
                                     $person_charge = User::where('name', 'LIKE', '%' . $sheet->getCell('N' . $row)->getValue() . '%')->first();
                                     $orderData['person_charge'] = isset($person_charge) ? $person_charge->id : 0;
                                 }
-                                if ($sheet->getCell('M' . $row)->getValue()) {
-                                    $orderData['invoice_code'] = $sheet->getCell('M' . $row)->getValue();
+                                if ($sheet->getCell('M' . $row)->getCalculatedValue()) {
+                                    $orderData['invoice_code'] = $sheet->getCell('M' . $row)->getCalculatedValue();
                                 }
                             }
 
@@ -890,7 +893,7 @@ class OrderController extends AppBaseController
                                 if (isset($order->receiver) && !empty($order->receiver->receiver_phone)) {
                                     dispatch(new SendSMSJob($order));
                                 }
-                                $partnerCode = $sheet->getCell('T' . $row)->getValue();
+                                $partnerCode = trim((string)$sheet->getCell('T' . $row)->getCalculatedValue());
                                 if ($partnerCode) {
                                     if ($partnerCode == Order::CODE_VIETTEL_POST) {
                                         $infoService = app(OrderService::class)->getKeyService($sheet->getCell('J' . $row)->getValue());
@@ -1395,6 +1398,35 @@ class OrderController extends AppBaseController
         return route('orders.index');
     }
 
+    public function resolveLegacyAddresses(Request $request)
+    {
+        if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
+            Flash::error('Bạn không có quyền thực hiện thao tác này');
+            return route('orders.index');
+        }
+
+        $orderIds = $request->order_ids;
+        if (empty($orderIds)) {
+            Flash::error('Bạn hãy chọn các vận đơn muốn tự gán lại địa chỉ');
+            return route('orders.index');
+        }
+
+        $orders = Order::with(['sender', 'receiver'])->whereIn('id', $orderIds)->get();
+        $updatedOrders = 0;
+        $updatedAddresses = 0;
+
+        foreach ($orders as $order) {
+            $result = $this->resolveLegacyAddressIdsForOrder($order);
+            if ($result['updated_addresses'] > 0) {
+                $updatedOrders++;
+                $updatedAddresses += $result['updated_addresses'];
+            }
+        }
+
+        Flash::success("Đã tự gán lại địa chỉ cho {$updatedOrders} vận đơn, {$updatedAddresses} địa chỉ người gửi/người nhận.");
+        return route('orders.index');
+    }
+
     public function sendEmail(Request $request)
     {
         $type_email = $request->type_email;
@@ -1727,8 +1759,9 @@ class OrderController extends AppBaseController
             return route('orders.index');
         }
         try {
-            $orders = Order::whereIn('id', $orderIds)->get();
+            $orders = Order::with(['sender', 'receiver'])->whereIn('id', $orderIds)->get();
             foreach ($orders as $order) {
+                $this->resolveLegacyAddressIdsForOrder($order);
                 dispatch(new SendOrderViettelPostJob($order));
             // $sendOrderViettelPost = new SendOrderViettelPostJob($order);
             // $result = $sendOrderViettelPost->handle();
@@ -1749,8 +1782,9 @@ class OrderController extends AppBaseController
             return route('orders.index');
         }
         try {
-            $orders = Order::whereIn('id', $orderIds)->get();
+            $orders = Order::with(['sender', 'receiver'])->whereIn('id', $orderIds)->get();
             foreach ($orders as $order) {
+                $this->resolveLegacyAddressIdsForOrder($order);
                 dispatch(new SendOrderEmsJob($order));
             // $sendOrderEms = new SendOrderEmsJob($order);
             // $result = $sendOrderEms->handle();
@@ -1931,5 +1965,97 @@ class OrderController extends AppBaseController
         }
 
         return $result;
+    }
+
+    private function fillLegacyAddressIdsWhenMissing(array $form, $addressModel): array
+    {
+        if (($form['address_scheme'] ?? optional($addressModel)->address_scheme) === 'new') {
+            return $form;
+        }
+
+        $needsParse = empty($form['city_id']) || empty($form['district_id']) || empty($form['ward_id']);
+        if (!$needsParse) {
+            return $form;
+        }
+
+        $address = trim((string)($form['address'] ?? optional($addressModel)->address));
+        if ($address === '') {
+            return $form;
+        }
+
+        $parsed = $this->parseAddressToIds($address);
+        foreach (['city_id', 'district_id', 'ward_id'] as $field) {
+            if (empty($form[$field]) && !empty($parsed[$field])) {
+                $form[$field] = $parsed[$field];
+            }
+        }
+
+        if (!empty($parsed['city_id']) && !empty($parsed['district_id']) && !empty($parsed['ward_id'])) {
+            $form['address'] = $parsed['address'];
+        }
+
+        return $form;
+    }
+
+    public function resolveLegacyAddressIdsForOrder(Order $order): array
+    {
+        $updatedAddresses = 0;
+
+        foreach (['sender', 'receiver'] as $relation) {
+            $addressModel = $order->{$relation};
+            if (!$addressModel || $addressModel->address_scheme === 'new') {
+                continue;
+            }
+
+            $form = [
+                'city_id' => $addressModel->city_id,
+                'district_id' => $addressModel->district_id,
+                'ward_id' => $addressModel->ward_id,
+                'address' => $addressModel->address,
+                'address_scheme' => $addressModel->address_scheme,
+            ];
+
+            $resolved = $this->fillLegacyAddressIdsWhenMissing($form, $addressModel);
+            $changed = false;
+
+            foreach (['city_id', 'district_id', 'ward_id', 'address'] as $field) {
+                if (array_key_exists($field, $resolved) && (string)$addressModel->{$field} !== (string)$resolved[$field]) {
+                    $addressModel->{$field} = $resolved[$field];
+                    $changed = true;
+                }
+            }
+
+            if ($changed) {
+                $addressModel->save();
+                $updatedAddresses++;
+            }
+        }
+
+        return ['updated_addresses' => $updatedAddresses];
+    }
+
+    private function hydrateLegacyAddressIdsForDisplay($order): void
+    {
+        foreach (['sender', 'receiver'] as $relation) {
+            $addressModel = $order->{$relation};
+            if (!$addressModel || $addressModel->address_scheme === 'new') {
+                continue;
+            }
+
+            if (!empty($addressModel->city_id) && !empty($addressModel->district_id) && !empty($addressModel->ward_id)) {
+                continue;
+            }
+
+            $parsed = $this->parseAddressToIds((string)$addressModel->address);
+            foreach (['city_id', 'district_id', 'ward_id'] as $field) {
+                if (empty($addressModel->{$field}) && !empty($parsed[$field])) {
+                    $addressModel->{$field} = $parsed[$field];
+                }
+            }
+
+            if (!empty($parsed['city_id']) && !empty($parsed['district_id']) && !empty($parsed['ward_id'])) {
+                $addressModel->address = $parsed['address'];
+            }
+        }
     }
 }

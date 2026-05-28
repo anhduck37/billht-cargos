@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Jobs\SendOrderEmsJob;
+use App\Jobs\SendOrderViettelPostJob;
 use App\City;
 use App\District;
 use App\Models\Order;
@@ -524,6 +526,85 @@ class OrderPartnerLogController extends Controller
         }
 
         return redirect()->route('order_partner_logs.index', $request->query());
+    }
+
+    public function bulkResolveAddresses(Request $request)
+    {
+        return $this->bulkSyncAction($request, 'resolve');
+    }
+
+    public function bulkPushViettel(Request $request)
+    {
+        return $this->bulkSyncAction($request, 'viettel');
+    }
+
+    public function bulkPushEms(Request $request)
+    {
+        return $this->bulkSyncAction($request, 'ems');
+    }
+
+    private function bulkSyncAction(Request $request, $action)
+    {
+        if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
+            abort(403);
+        }
+
+        $logIds = array_filter((array)$request->input('log_ids', []));
+        if (empty($logIds)) {
+            Flash::error('Bạn vui lòng chọn log cần thao tác.');
+            return redirect()->route('order_partner_logs.index', $request->query());
+        }
+
+        $orders = $this->getOrdersFromLogIds($logIds);
+        if ($orders->isEmpty()) {
+            Flash::error('Không tìm thấy vận đơn hợp lệ từ các log đã chọn.');
+            return redirect()->route('order_partner_logs.index', $request->query());
+        }
+
+        $resolvedOrders = 0;
+        $resolvedAddresses = 0;
+        $queued = 0;
+        $orderController = app(OrderController::class);
+
+        foreach ($orders as $order) {
+            $result = $orderController->resolveLegacyAddressIdsForOrder($order);
+            if ($result['updated_addresses'] > 0) {
+                $resolvedOrders++;
+                $resolvedAddresses += $result['updated_addresses'];
+            }
+
+            if ($action === 'viettel') {
+                dispatch(new SendOrderViettelPostJob($order));
+                $queued++;
+            } elseif ($action === 'ems') {
+                dispatch(new SendOrderEmsJob($order));
+                $queued++;
+            }
+        }
+
+        if ($action === 'resolve') {
+            Flash::success("Đã tự gán lại địa chỉ cho {$resolvedOrders} vận đơn, {$resolvedAddresses} địa chỉ người gửi/người nhận.");
+        } elseif ($action === 'viettel') {
+            Flash::success("Đã đưa {$queued} vận đơn vào hàng chờ đẩy lại API Viettel. Đã tự gán lại địa chỉ cho {$resolvedOrders} vận đơn trước khi đẩy.");
+        } else {
+            Flash::success("Đã đưa {$queued} vận đơn vào hàng chờ đẩy lại API EMS. Đã tự gán lại địa chỉ cho {$resolvedOrders} vận đơn trước khi đẩy.");
+        }
+
+        return redirect()->route('order_partner_logs.index', $request->query());
+    }
+
+    private function getOrdersFromLogIds(array $logIds)
+    {
+        $orderIds = OrderPartnerLog::whereIn('id', $logIds)
+            ->whereNotNull('order_id')
+            ->pluck('order_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        return Order::with(['sender', 'receiver'])
+            ->whereIn('id', $orderIds)
+            ->get();
     }
 
     /**

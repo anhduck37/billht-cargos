@@ -100,10 +100,16 @@
                                 <button style="width: 100%" id="sendSMS" type="button" class="btn btn-primary">Gửi SMS</button>
                             </div> --}}
                             <div class="col mb-1">
-                                <button style="width: 100%" id="createViettelPost" type="button" class="btn btn-primary">Tạo vận đơn Viettel Post</button>
-                            </div>
-                            <div class="col mb-1">
-                                <button style="width: 100%" id="createEms" type="button" class="btn btn-primary">Tạo vận đơn Ems</button>
+                                <div class="dropdown" style="width: 100%">
+                                    <button style="width: 100%" class="btn btn-primary dropdown-toggle" type="button" id="syncApiDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                        Đồng bộ API
+                                    </button>
+                                    <div class="dropdown-menu" aria-labelledby="syncApiDropdown">
+                                        <button class="dropdown-item" type="button" id="resolveLegacyAddresses">Tự gán lại địa chỉ</button>
+                                        <button class="dropdown-item" type="button" id="createViettelPost">Đẩy lại API Viettel</button>
+                                        <button class="dropdown-item" type="button" id="createEms">Đẩy lại API EMS</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="col mb-1">
                                 <button style="width: 100%" id="sendZaloZNS" type="button" class="btn btn-primary">Gửi Zalo</button>

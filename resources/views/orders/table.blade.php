@@ -268,10 +268,10 @@
                     dataPrint = orders.map(order => {
                         return order.id
                     })
-                    $('.printOrder').attr('checked', true)
+                    $('.printOrder').prop('checked', true)
                 } else {
                     dataPrint = [];
-                    $('.printOrder').attr('checked', false)
+                    $('.printOrder').prop('checked', false)
                 }
             })
             $('#print').on('click', function () {
@@ -365,13 +365,21 @@
                 });
             })
             $('#createViettelPost').on('click', function () {
+                if (!dataPrint.length) {
+                    alert('Bạn vui lòng chọn vận đơn');
+                    return;
+                }
+                if (!confirm('Đẩy các vận đơn đã chọn lên API Viettel?')) {
+                    return;
+                }
                 $.ajax({
                     type: "POST",
                     url: '/order/create-viettel-post',
                     data: {'order_ids': dataPrint},
                     beforeSend: function() {
+                        $('#syncApiDropdown').attr("disabled", true)
                         $('#createViettelPost').attr("disabled", true)
-                        $('#createViettelPost').html(`Tạo vận đơn Viettel Post <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
+                        $('#createViettelPost').html(`Đang đẩy Viettel <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
                     },
                     success: function (res) {
                         window.location.href = res;
@@ -379,13 +387,43 @@
                 });
             })
             $('#createEms').on('click', function () {
+                if (!dataPrint.length) {
+                    alert('Bạn vui lòng chọn vận đơn');
+                    return;
+                }
+                if (!confirm('Đẩy các vận đơn đã chọn lên API EMS?')) {
+                    return;
+                }
                 $.ajax({
                     type: "POST",
                     url: '/order/create-ems',
                     data: {'order_ids': dataPrint},
                     beforeSend: function() {
+                        $('#syncApiDropdown').attr("disabled", true)
                         $('#createEms').attr("disabled", true)
-                        $('#createEms').html(`Tạo vận đơn Ems <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
+                        $('#createEms').html(`Đang đẩy EMS <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
+                    },
+                    success: function (res) {
+                        window.location.href = res;
+                    },
+                });
+            })
+            $('#resolveLegacyAddresses').on('click', function () {
+                if (!dataPrint.length) {
+                    alert('Bạn vui lòng chọn vận đơn');
+                    return;
+                }
+                if (!confirm('Tự nhận diện và gán lại Tỉnh/Huyện/Xã cho các vận đơn đã chọn?')) {
+                    return;
+                }
+                $.ajax({
+                    type: "POST",
+                    url: '/order/resolve-legacy-addresses',
+                    data: {'order_ids': dataPrint},
+                    beforeSend: function() {
+                        $('#syncApiDropdown').attr("disabled", true)
+                        $('#resolveLegacyAddresses').attr("disabled", true)
+                        $('#resolveLegacyAddresses').html(`Đang gán địa chỉ <img width="20px" src="{{asset('/image/loading.jpg')}}" >`)
                     },
                     success: function (res) {
                         window.location.href = res;
