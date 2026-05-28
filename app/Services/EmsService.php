@@ -239,9 +239,9 @@ class EmsService
             "ReceiverInfo" => [
                 "FullName" => $order->receiver->receiver_name ?? '',
                 "MobileNumber" => $order->receiver->receiver_phone ?? '',
-                "ProvinceID" => (int)($order->receiver->city->ems_code ?? 0),
-                "DistrictID" => (int)($order->receiver->district->ems_code ?? 0),
-                "WardID" => (int)($order->receiver->ward->ems_code ?? 0),
+                "ProvinceID" => $receiverProvinceID,
+                "DistrictID" => $receiverDistrictID,
+                "WardID" => $receiverWardID,
                 "Street" => $receiverAddress
             ],
             
