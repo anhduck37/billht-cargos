@@ -17,6 +17,7 @@ use App\Services\ViettelPostService;
 use App\User;
 use Carbon\Carbon;
 use Flash;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
@@ -135,6 +136,11 @@ class OrderPartnerLogController extends Controller
         $partnerCode = strtoupper((string)$log->partner_code);
 
         if ($partnerCode === 'VIETTEL_POST') {
+            $actualVtpAddress = $this->getActualVtpReceiverAddress($log);
+            if (!empty($actualVtpAddress['address'])) {
+                return $actualVtpAddress['address'];
+            }
+
             $address = trim((string)($payload['RECEIVER_ADDRESS'] ?? ''));
             $wardName = $this->findWardNameByCode($payload['RECEIVER_WARD'] ?? null);
             $districtName = $this->findDistrictNameByCode($payload['RECEIVER_DISTRICT'] ?? null);
@@ -167,6 +173,94 @@ class OrderPartnerLogController extends Controller
         }
 
         return 'N/A';
+    }
+
+    private function getPartnerReceiverAddressLabel($log)
+    {
+        $partnerCode = strtoupper((string)$log->partner_code);
+        if ($partnerCode === 'VIETTEL_POST') {
+            $actualVtpAddress = $this->getActualVtpReceiverAddress($log);
+            return !empty($actualVtpAddress['address']) ? 'Địa chỉ VTP thực tế' : 'Địa chỉ VTP đã gửi';
+        }
+
+        if ($partnerCode === 'EMS') {
+            return 'Địa chỉ EMS';
+        }
+
+        return 'Địa chỉ đối tác';
+    }
+
+    private function getActualVtpReceiverAddress($log)
+    {
+        if (strtoupper((string)$log->partner_code) !== 'VIETTEL_POST' || !$log->order || empty($log->order->order_partner_code)) {
+            return ['address' => null];
+        }
+
+        $cacheKey = 'vtp_actual_receiver_address_' . $log->order->order_partner_code;
+
+        return Cache::remember($cacheKey, Carbon::now()->addHours(6), function () use ($log) {
+            try {
+                $trackingData = app(ViettelPostService::class)->tracking($log->order);
+                return ['address' => $this->extractActualVtpReceiverAddress($trackingData)];
+            } catch (\Exception $e) {
+                \Log::warning('Cannot fetch actual VTP receiver address: ' . $e->getMessage(), [
+                    'order_id' => $log->order_id,
+                    'order_partner_code' => $log->order->order_partner_code ?? null,
+                ]);
+                return ['address' => null];
+            }
+        });
+    }
+
+    private function extractActualVtpReceiverAddress($data)
+    {
+        if (empty($data)) {
+            return null;
+        }
+
+        $fullAddress = $this->findValueByKeysRecursive($data, [
+            'RECEIVER_FULL_ADDRESS',
+            'RECEIVER_ADDRESS_FULL',
+            'RECEIVER_FULLADDRESS',
+            'receiver_full_address',
+            'receiver_address_full',
+            'receiverFullAddress',
+        ]);
+        if ($fullAddress) {
+            return trim((string)$fullAddress);
+        }
+
+        $address = $this->findValueByKeysRecursive($data, ['RECEIVER_ADDRESS', 'receiver_address', 'receiverAddress']);
+        $ward = $this->findValueByKeysRecursive($data, ['RECEIVER_WARD_NAME', 'receiver_ward_name', 'receiverWardName', 'WARD_NAME', 'ward_name']);
+        $district = $this->findValueByKeysRecursive($data, ['RECEIVER_DISTRICT_NAME', 'receiver_district_name', 'receiverDistrictName', 'DISTRICT_NAME', 'district_name']);
+        $province = $this->findValueByKeysRecursive($data, ['RECEIVER_PROVINCE_NAME', 'receiver_province_name', 'receiverProvinceName', 'PROVINCE_NAME', 'province_name']);
+
+        $parts = array_filter([$address, $ward, $district, $province]);
+        return count($parts) > 1 ? implode(', ', $parts) : null;
+    }
+
+    private function findValueByKeysRecursive($data, array $keys)
+    {
+        if (!is_array($data)) {
+            return null;
+        }
+
+        foreach ($keys as $key) {
+            if (isset($data[$key]) && !is_array($data[$key]) && trim((string)$data[$key]) !== '') {
+                return $data[$key];
+            }
+        }
+
+        foreach ($data as $value) {
+            if (is_array($value)) {
+                $found = $this->findValueByKeysRecursive($value, $keys);
+                if ($found !== null) {
+                    return $found;
+                }
+            }
+        }
+
+        return null;
     }
 
     private function getAddressCompareStatus($log, array $payload, $appAddress, $partnerAddress)
@@ -232,6 +326,11 @@ class OrderPartnerLogController extends Controller
         $partnerCode = strtoupper((string)$log->partner_code);
 
         if ($partnerCode === 'VIETTEL_POST') {
+            $actualVtpAddress = $this->getActualVtpReceiverAddress($log);
+            if (!empty($actualVtpAddress['address'])) {
+                return $this->splitAddressTextToParts($actualVtpAddress['address']);
+            }
+
             return [
                 'street' => $payload['RECEIVER_ADDRESS'] ?? null,
                 'ward' => $this->findWardNameByCode($payload['RECEIVER_WARD'] ?? null, false),
@@ -251,6 +350,28 @@ class OrderPartnerLogController extends Controller
         }
 
         return ['street' => null, 'ward' => null, 'district' => null, 'province' => null];
+    }
+
+    private function splitAddressTextToParts($address)
+    {
+        $parts = array_values(array_filter(array_map('trim', explode(',', (string)$address))));
+        $count = count($parts);
+
+        if ($count < 4) {
+            return [
+                'street' => $address,
+                'ward' => null,
+                'district' => null,
+                'province' => null,
+            ];
+        }
+
+        return [
+            'street' => implode(', ', array_slice($parts, 0, $count - 3)),
+            'ward' => $parts[$count - 3] ?? null,
+            'district' => $parts[$count - 2] ?? null,
+            'province' => $parts[$count - 1] ?? null,
+        ];
     }
 
     private function sameAddressPart($appValue, $partnerValue)
@@ -604,7 +725,7 @@ class OrderPartnerLogController extends Controller
             'response_html' => $responseText,
             'app_receiver_address' => $appReceiverAddress,
             'partner_receiver_address' => $partnerReceiverAddress,
-            'partner_address_label' => $partnerText === 'VTP' ? 'Địa chỉ VTP' : 'Địa chỉ ' . $partnerText,
+            'partner_address_label' => $this->getPartnerReceiverAddressLabel($log),
             'address_compare_label' => $addressCompareStatus['label'],
             'address_compare_class' => $addressCompareStatus['class'],
         ];
