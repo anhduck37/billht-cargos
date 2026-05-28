@@ -35,14 +35,13 @@ class ViettelPostService
 
     public function refreshToken()
     {
-        $path = '/v2/user/Login';
         $client = new Client([
             'headers' => $this->headers,
             'timeout' => 30
         ]);
         try {
             $response = $client->post(
-                $this->url . $path,
+                $this->url . '/v2/user/Login',
                 [
                     'body' => json_encode([
                         'USERNAME' => $this->username,
@@ -50,7 +49,25 @@ class ViettelPostService
                     ]),
                 ]
             );
-            $result = json_decode($response->getBody()->getContents(), true);
+            $loginResult = json_decode($response->getBody()->getContents(), true);
+
+            if (empty($loginResult['data']['token'])) {
+                return $loginResult;
+            }
+
+            $ownerResponse = $client->post(
+                $this->url . '/v2/user/ownerconnect',
+                [
+                    'headers' => array_merge($this->headers, [
+                        'Token' => $loginResult['data']['token'],
+                    ]),
+                    'body' => json_encode([
+                        'USERNAME' => $this->username,
+                        'PASSWORD' => $this->password,
+                    ]),
+                ]
+            );
+            $result = json_decode($ownerResponse->getBody()->getContents(), true);
         } catch (\Exception $e) {
             \Log::error('VTP API Error refreshToken: ' . $e->getMessage());
             $result = ['error' => true, 'message' => 'Lỗi kết nối Viettel Post: ' . $e->getMessage(), 'data' => []];

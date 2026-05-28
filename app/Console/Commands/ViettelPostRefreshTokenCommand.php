@@ -31,6 +31,13 @@ class ViettelPostRefreshTokenCommand extends Command
     {
         $viettelPostService = new ViettelPostService();
         $result = $viettelPostService->refreshToken();
-        dd($result);
+
+        if (!empty($result['data']['token'])) {
+            $this->info('Viettel Post token refreshed successfully.');
+            return 0;
+        }
+
+        $this->error('Viettel Post token refresh failed: ' . ($result['message'] ?? 'Unknown error'));
+        return 1;
     }
 }
