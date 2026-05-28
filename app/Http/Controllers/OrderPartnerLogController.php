@@ -177,6 +177,15 @@ class OrderPartnerLogController extends Controller
 
         $appParts = $this->getAppReceiverAddressParts($log->order);
         $partnerParts = $this->getPartnerReceiverAddressParts($log, $payload);
+        $partnerCode = strtoupper((string)$log->partner_code);
+
+        if (empty($appParts['ward'])) {
+            return ['label' => 'Thiếu xã/phường nhập', 'class' => 'badge-warning'];
+        }
+
+        if ($partnerCode === 'VIETTEL_POST' && empty($payload['RECEIVER_WARD'])) {
+            return ['label' => 'Thiếu mã xã/phường VTP', 'class' => 'badge-warning'];
+        }
 
         if ($appParts['province'] && $partnerParts['province'] && !$this->sameAddressPart($appParts['province'], $partnerParts['province'])) {
             return ['label' => 'Khác tỉnh/thành', 'class' => 'badge-danger'];
