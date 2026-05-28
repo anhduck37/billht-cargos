@@ -131,6 +131,11 @@
                     
                     <!-- Filter bar -->
                     <form action="{{ route('order_partner_logs.index') }}" method="GET" class="form-inline mt-3">
+                        <div class="form-group mr-2 mb-2">
+                            <label for="filter_search" class="form-control-label mr-2">Tìm kiếm:</label>
+                            <input type="text" name="filter_search" id="filter_search" value="{{ request('filter_search') }}" class="form-control form-control-sm" style="min-width: 260px;" placeholder="Mã vận đơn / Người gửi">
+                        </div>
+
                         <div class="form-group mr-2">
                             <label for="filter_date" class="form-control-label mr-2">Ngày:</label>
                             <input type="date" name="filter_date" id="filter_date" value="{{ request('filter_date') }}" class="form-control form-control-sm">
@@ -155,7 +160,7 @@
                         </div>
                         
                         <button type="submit" class="btn btn-primary btn-sm">Lọc</button>
-                        @if(request()->has('filter_date') || request()->has('filter_status') || request()->has('filter_partner'))
+                        @if(request()->has('filter_search') || request()->has('filter_date') || request()->has('filter_status') || request()->has('filter_partner'))
                             <a href="{{ route('order_partner_logs.index') }}" class="btn btn-secondary btn-sm ml-1">Làm mới</a>
                         @endif
                     </form>

@@ -54,6 +54,21 @@ class OrderPartnerLogController extends Controller
             $query->where('partner_code', strtoupper($request->input('filter_partner')));
         }
 
+        // Filter by order code or sender name
+        if ($request->filled('filter_search')) {
+            $keyword = trim((string)$request->input('filter_search'));
+            $query->where(function ($q) use ($keyword) {
+                $q->where('payload', 'LIKE', '%' . $keyword . '%')
+                    ->orWhereHas('order', function ($orderQuery) use ($keyword) {
+                        $orderQuery->where('order_code', 'LIKE', '%' . $keyword . '%')
+                            ->orWhere('invoice_code', 'LIKE', '%' . $keyword . '%')
+                            ->orWhereHas('sender', function ($senderQuery) use ($keyword) {
+                                $senderQuery->where('sender_name', 'LIKE', '%' . $keyword . '%');
+                            });
+                    });
+            });
+        }
+
         // Paginate results
         $logs = $query->orderBy('updated_at', 'desc')->paginate(50);
         
