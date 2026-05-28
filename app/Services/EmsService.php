@@ -93,9 +93,17 @@ class EmsService
 
     public function createOrder($order)
     {
+        $mappingError = $this->validateNewAddressEmsMapping($order);
         $formatData = $this->formatDataBody($order);
-        
-        $result = $this->executeRequest("PARTNER_ORDER_ADD", $formatData);
+
+        if ($mappingError) {
+            $result = [
+                'code' => self::STATUS_ERROR,
+                'message' => $mappingError,
+            ];
+        } else {
+            $result = $this->executeRequest("PARTNER_ORDER_ADD", $formatData);
+        }
 
         $orderPartnerLog = new OrderPartnerLog();
         $statusLog = OrderPartnerLog::STATUS_FAILD;
@@ -120,6 +128,28 @@ class EmsService
         $orderPartnerLog->save();
         
         return $result;
+    }
+
+    private function validateNewAddressEmsMapping($order)
+    {
+        foreach (['sender' => 'người gửi', 'receiver' => 'người nhận'] as $relation => $label) {
+            $addressModel = $order->{$relation} ?? null;
+            $addressScheme = $addressModel->address_scheme ?? $order->address_scheme ?? 'old';
+            if (!$addressModel || $addressScheme !== 'new') {
+                continue;
+            }
+
+            if (empty($addressModel->new_ward_id)) {
+                return "Địa chỉ {$label} dùng địa chỉ mới nhưng chưa có Xã/Phường mới.";
+            }
+
+            $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($addressModel->new_ward_id, 'EMS');
+            if (!$mapping || empty($mapping->partner_province_code) || empty($mapping->partner_district_code) || empty($mapping->partner_ward_code)) {
+                return "Địa chỉ {$label} dùng địa chỉ mới nhưng chưa có mapping EMS đầy đủ cho xã/phường. Vui lòng bổ sung mapping EMS trước khi đồng bộ.";
+            }
+        }
+
+        return null;
     }
 
     public function cancelOrder($order, $reasonCancel = null)
@@ -163,12 +193,9 @@ class EmsService
 
         $receiverAddressScheme = $order->receiver->address_scheme ?? $order->address_scheme ?? 'old';
         if ($receiverAddressScheme === 'new') {
-            $newProvince = $order->receiver->newProvince;
-            $newWard = $order->receiver->newWard;
-            
-            $receiverProvinceID = (int)($newProvince->official_code ?? 0);
-            $receiverDistrictID = 0; // Địa chỉ mới không có quận/huyện
-            $receiverWardID = (int)($newWard->official_code ?? 0);
+            $receiverProvinceID = 0;
+            $receiverDistrictID = 0;
+            $receiverWardID = 0;
 
             if (isset($order->receiver->new_ward_id)) {
                 $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'EMS');
@@ -186,12 +213,9 @@ class EmsService
 
         $senderAddressScheme = $order->sender->address_scheme ?? $order->address_scheme ?? 'old';
         if ($senderAddressScheme === 'new') {
-            $newProvince = $order->sender->newProvince;
-            $newWard = $order->sender->newWard;
-            
-            $senderProvinceID = (int)($newProvince->official_code ?? 0);
+            $senderProvinceID = 0;
             $senderDistrictID = 0;
-            $senderWardID = (int)($newWard->official_code ?? 0);
+            $senderWardID = 0;
 
             if (isset($order->sender->new_ward_id)) {
                 $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->sender->new_ward_id, 'EMS');
