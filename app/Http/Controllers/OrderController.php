@@ -617,6 +617,15 @@ class OrderController extends AppBaseController
                                 $senderData['address'] = $parsed['address'];
                                 $senderData['new_province_id'] = $parsed['new_province_id'];
                                 $senderData['new_ward_id'] = $parsed['new_ward_id'];
+                            } else {
+                                $legacyParsed = $this->parseAddressToIds($senderData['address']);
+                                if (!empty($legacyParsed['city_id']) && !empty($legacyParsed['district_id']) && !empty($legacyParsed['ward_id'])) {
+                                    $senderData['address_scheme'] = 'old';
+                                    $senderData['address'] = $legacyParsed['address'];
+                                    $senderData['city_id'] = $legacyParsed['city_id'];
+                                    $senderData['district_id'] = $legacyParsed['district_id'];
+                                    $senderData['ward_id'] = $legacyParsed['ward_id'];
+                                }
                             }
                         }
 
@@ -632,6 +641,15 @@ class OrderController extends AppBaseController
                                 $receiverData['address'] = $parsed['address'];
                                 $receiverData['new_province_id'] = $parsed['new_province_id'];
                                 $receiverData['new_ward_id'] = $parsed['new_ward_id'];
+                            } else {
+                                $legacyParsed = $this->parseAddressToIds($receiverData['address']);
+                                if (!empty($legacyParsed['city_id']) && !empty($legacyParsed['district_id']) && !empty($legacyParsed['ward_id'])) {
+                                    $receiverData['address_scheme'] = 'old';
+                                    $receiverData['address'] = $legacyParsed['address'];
+                                    $receiverData['city_id'] = $legacyParsed['city_id'];
+                                    $receiverData['district_id'] = $legacyParsed['district_id'];
+                                    $receiverData['ward_id'] = $legacyParsed['ward_id'];
+                                }
                             }
                         }
 
@@ -1799,13 +1817,15 @@ class OrderController extends AppBaseController
 
     public function createOrderEms($id)
     {
-        $order = Order::findOrFail($id);
+        $order = Order::with(['sender', 'receiver'])->findOrFail($id);
         // check đơn trùng trên viettel
         if ($order->order_partner_code) {
             Flash::error('Vận đơn đã có trên ' . (Order::MAP_MESSAGE_NOTI_PARTNER[$order->partner_code] ?? '') . '.');
             return back();
         }
         // check đơn trùng trên viettel
+        $this->resolveLegacyAddressIdsForOrder($order);
+        $order = Order::with(['sender', 'receiver'])->findOrFail($id);
         $sendOrderEms = new SendOrderEmsJob($order);
         $result = $sendOrderEms->handle();
         if (isset($result['code']) && $result['code'] == EmsService::STATUS_SUCCESS) {
@@ -2128,17 +2148,31 @@ class OrderController extends AppBaseController
 
     private function fillLegacyAddressIdsWhenMissing(array $form, $addressModel): array
     {
-        if (($form['address_scheme'] ?? optional($addressModel)->address_scheme) === 'new') {
-            return $form;
-        }
-
         $needsParse = empty($form['city_id']) || empty($form['district_id']) || empty($form['ward_id']);
-        if (!$needsParse) {
+        $addressScheme = $form['address_scheme'] ?? optional($addressModel)->address_scheme;
+        $needsNewParse = $addressScheme === 'new' && (empty($form['new_province_id']) || empty($form['new_ward_id']));
+
+        if (!$needsParse && !$needsNewParse) {
             return $form;
         }
 
         $address = trim((string)($form['address'] ?? optional($addressModel)->address));
         if ($address === '') {
+            return $form;
+        }
+
+        if ($addressScheme === 'new' || $needsParse) {
+            $newParsed = app(\App\Services\Address2025Service::class)->parseFullAddress($address);
+            if (!empty($newParsed['success'])) {
+                $form['address_scheme'] = 'new';
+                $form['address'] = $newParsed['address'];
+                $form['new_province_id'] = $newParsed['new_province_id'];
+                $form['new_ward_id'] = $newParsed['new_ward_id'];
+                return $form;
+            }
+        }
+
+        if ($addressScheme === 'new') {
             return $form;
         }
 
@@ -2162,7 +2196,7 @@ class OrderController extends AppBaseController
 
         foreach (['sender', 'receiver'] as $relation) {
             $addressModel = $order->{$relation};
-            if (!$addressModel || $addressModel->address_scheme === 'new') {
+            if (!$addressModel) {
                 continue;
             }
 
@@ -2170,6 +2204,8 @@ class OrderController extends AppBaseController
                 'city_id' => $addressModel->city_id,
                 'district_id' => $addressModel->district_id,
                 'ward_id' => $addressModel->ward_id,
+                'new_province_id' => $addressModel->new_province_id,
+                'new_ward_id' => $addressModel->new_ward_id,
                 'address' => $addressModel->address,
                 'address_scheme' => $addressModel->address_scheme,
             ];
@@ -2177,7 +2213,7 @@ class OrderController extends AppBaseController
             $resolved = $this->fillLegacyAddressIdsWhenMissing($form, $addressModel);
             $changed = false;
 
-            foreach (['city_id', 'district_id', 'ward_id', 'address'] as $field) {
+            foreach (['city_id', 'district_id', 'ward_id', 'new_province_id', 'new_ward_id', 'address', 'address_scheme'] as $field) {
                 if (array_key_exists($field, $resolved) && (string)$addressModel->{$field} !== (string)$resolved[$field]) {
                     $addressModel->{$field} = $resolved[$field];
                     $changed = true;

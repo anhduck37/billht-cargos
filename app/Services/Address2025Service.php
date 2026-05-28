@@ -49,6 +49,11 @@ class Address2025Service
             $detailAddress = implode(', ', array_slice($parts, 0, $count - 2));
         }
 
+        if ($this->looksLikeOldDistrictName($wardName)) {
+            $result['errors'][] = "Thành phần Xã/Phường mới đang là Quận/Huyện/TP cũ: {$wardName}";
+            return $result;
+        }
+
         $province = $this->findProvince($provinceName);
         if (!$province) {
             $result['errors'][] = "Không tìm thấy Tỉnh/Thành phố mới: {$provinceName}";
@@ -69,6 +74,29 @@ class Address2025Service
         return $result;
     }
 
+    private function looksLikeOldDistrictName($name)
+    {
+        $name = mb_strtolower(trim((string)$name), 'UTF-8');
+        $name = Str::ascii($name);
+        $name = preg_replace('/[^a-z0-9\s.]/i', ' ', $name);
+        $name = preg_replace('/\s+/', ' ', trim($name));
+
+        $districtPrefixes = [
+            'quan ', 'q ', 'q. ',
+            'huyen ', 'h ', 'h. ',
+            'thi xa ', 'tx ', 'tx. ',
+            'thanh pho ', 'tp ', 'tp. ',
+        ];
+
+        foreach ($districtPrefixes as $prefix) {
+            if (strpos($name, $prefix) === 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function findProvince($name)
     {
         $normalized = $this->normalizeName($name);
@@ -86,12 +114,14 @@ class Address2025Service
     public function normalizeName($name)
     {
         $name = mb_strtolower(trim($name), 'UTF-8');
+        $name = str_replace(['Ð', 'ð'], ['Đ', 'đ'], $name);
+        $name = Str::ascii($name);
         
         // Remove prefixes
         $prefixes = [
-            'thành phố ', 'tp ', 'tp. ', 'tp.', 'tỉnh ',
-            'quận ', 'huyện ', 'thị xã ', 'tx ', 'tx. ', 'tx.',
-            'phường ', 'xã ', 'thị trấn ', 'tt ', 'tt. ', 'tt.'
+            'thanh pho ', 'tp ', 'tp. ', 'tp.', 'tinh ',
+            'quan ', 'huyen ', 'thi xa ', 'tx ', 'tx. ', 'tx.',
+            'phuong ', 'xa ', 'thi tran ', 'tt ', 'tt. ', 'tt.'
         ];
         
         foreach ($prefixes as $prefix) {
@@ -103,23 +133,22 @@ class Address2025Service
         
         // Handle common abbreviations
         $abbreviations = [
-            'sg' => 'hồ chí minh',
-            'hcm' => 'hồ chí minh',
-            'hcmc' => 'hồ chí minh',
-            'hn' => 'hà nội',
-            'hp' => 'hải phòng',
-            'đn' => 'đà nẵng',
-            'dn' => 'đà nẵng',
-            'vt' => 'bà rịa - vũng tàu',
-            'brvt' => 'bà rịa - vũng tàu',
-            'bd' => 'bình dương',
-            'dnai' => 'đồng nai',
-            'tn' => 'tây ninh',
+            'sg' => 'ho chi minh',
+            'hcm' => 'ho chi minh',
+            'hcmc' => 'ho chi minh',
+            'hn' => 'ha noi',
+            'hp' => 'hai phong',
+            'dn' => 'da nang',
+            'vt' => 'ba ria vung tau',
+            'brvt' => 'ba ria vung tau',
+            'bd' => 'binh duong',
+            'dnai' => 'dong nai',
+            'tn' => 'tay ninh',
             'la' => 'long an',
-            'tg' => 'tiền giang',
-            'ct' => 'cần thơ',
+            'tg' => 'tien giang',
+            'ct' => 'can tho',
             'ag' => 'an giang',
-            'kg' => 'kiên giang',
+            'kg' => 'kien giang',
             'cm' => 'cà mau',
         ];
 
