@@ -16,7 +16,11 @@ class ApiStatusService
     {
         $statuses = [];
         foreach ($this->providers() as $key => $provider) {
-            $statuses[$key] = Cache::get($this->cacheKey($key), $this->unknownStatus($key, $provider));
+            $status = Cache::get($this->cacheKey($key));
+            if (!$status || $this->shouldRefresh($status)) {
+                $status = $this->check($key);
+            }
+            $statuses[$key] = $status;
         }
 
         return $statuses;
@@ -112,6 +116,19 @@ class ApiStatusService
             'message' => 'Chua kiem tra',
             'checked_at' => null,
         ];
+    }
+
+    private function shouldRefresh($status)
+    {
+        if (empty($status['checked_at'])) {
+            return true;
+        }
+
+        try {
+            return Carbon::parse($status['checked_at'])->lt(Carbon::now()->subHours(3));
+        } catch (\Exception $e) {
+            return true;
+        }
     }
 
     private function cacheKey($provider)
