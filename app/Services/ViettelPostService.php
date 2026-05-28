@@ -315,6 +315,20 @@ class ViettelPostService
     public function tracking($order)
     {
         $path = '/api/setting/listOrderTrackingVTP3';
+        $result = $this->requestTracking($path, $order);
+
+        if ($this->isExpiredTokenResponse($result)) {
+            $refreshResult = $this->refreshToken();
+            if (!empty($refreshResult['data']['token'])) {
+                $result = $this->requestTracking($path, $order);
+            }
+        }
+
+        return $result['data'] ?? null;
+    }
+
+    private function requestTracking($path, $order)
+    {
         $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
         $this->headers['token'] = $partnerConfig->token ?? '';
         $client = new Client([
@@ -328,12 +342,29 @@ class ViettelPostService
                     'OrderNumber' => $order->order_partner_code
                 ]
             ]);
-            $result = json_decode($response->getBody()->getContents(), true);
+
+            return json_decode($response->getBody()->getContents(), true) ?: [];
         } catch (\Exception $e) {
             \Log::error('VTP API Error tracking: ' . $e->getMessage());
-            $result = [];
+            return [];
         }
-        return $result['data'] ?? null;
+    }
+
+    private function isExpiredTokenResponse($result)
+    {
+        if (!is_array($result)) {
+            return false;
+        }
+
+        $messageKey = strtoupper((string)($result['messageKey'] ?? ''));
+        $message = function_exists('mb_strtolower')
+            ? mb_strtolower((string)($result['message'] ?? ''), 'UTF-8')
+            : strtolower((string)($result['message'] ?? ''));
+
+        return $messageKey === 'EXPIRED_TOKEN'
+            || strpos($message, 'hết hạn') !== false
+            || strpos($message, 'het han') !== false
+            || strpos($message, 'expired') !== false;
     }
 
     private function formatDataWebhook($order, $data)
