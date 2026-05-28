@@ -88,6 +88,7 @@
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="sender[new_ward_id]" id="sender_ward" class="form-control">
                             <option value=""></option>
                         </select>
+                        <span id="sender_ward_error" class="invalid-feedback ward-load-error" style="display: none;" role="alert"></span>
                         @if ($errors->has('sender.new_ward_id'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
                                 <strong style="color: red;">{!! $errors->first('sender.new_ward_id') !!}</strong>
@@ -169,6 +170,7 @@
                         <select @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="receiver[new_ward_id]" id="receiver_ward" class="form-control">
                             <option value=""></option>
                         </select>
+                        <span id="receiver_ward_error" class="invalid-feedback ward-load-error" style="display: none;" role="alert"></span>
                         @if ($errors->has('receiver.new_ward_id'))
                             <span class="invalid-feedback" style="display: block;" role="alert">
                                 <strong style="color: red;">{!! $errors->first('receiver.new_ward_id') !!}</strong>
@@ -707,16 +709,31 @@
         function renderSelectNew(name, id, type, idUpdate = null) {
             let url =`/api/${type}/${id}`;
             const $select = $(`#${name}`);
+            const $error = $(`#${name}_error`);
+            const showWardLoadError = function(message) {
+                $select.html(`<option value=""></option>`);
+                $select.addClass('is-invalid');
+                $error.html(`<strong style="color: red;">${message}</strong>`).show();
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.trigger('change.select2');
+                }
+            };
+
+            $select.removeClass('is-invalid');
+            $error.hide().html('');
             $select.html(`<option value="">Đang tải...</option>`);
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.trigger('change.select2');
+            }
 
             $.get(url, function (res) {
                 if (res && res.error) {
-                    $select.html(`<option value="">${res.message || 'Không tải được danh sách xã/phường'}</option>`);
+                    showWardLoadError(res.message || 'Không tải được danh sách xã/phường');
                     return;
                 }
 
                 if (!Array.isArray(res)) {
-                    $select.html(`<option value="">Dữ liệu xã/phường không hợp lệ</option>`);
+                    showWardLoadError('Dữ liệu xã/phường không hợp lệ');
                     return;
                 }
 
@@ -727,12 +744,15 @@
                     html += `<option value="${item.id}" ${idUpdate == item.id ? 'selected' : ''}>${item.name}</option>`
                 })
                 $select.html(html)
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.trigger('change.select2');
+                }
             }).fail(function (xhr) {
                 let message = 'Không tải được danh sách xã/phường';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     message = xhr.responseJSON.message;
                 }
-                $select.html(`<option value="">${message}</option>`);
+                showWardLoadError(message);
             });
         }
 
