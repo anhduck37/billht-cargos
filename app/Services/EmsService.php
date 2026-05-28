@@ -180,7 +180,7 @@ class EmsService
 
             $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($addressModel->new_ward_id, 'EMS');
             if (!$mapping || empty($mapping->partner_province_code)) {
-                return "Địa chỉ {$label} dùng địa chỉ mới nhưng chưa có mapping EMS đầy đủ cho xã/phường. Vui lòng bổ sung mapping EMS trước khi đồng bộ.";
+                return "Địa chỉ {$label} dùng địa chỉ mới nhưng chưa có mapping EMS cho Tỉnh/Thành phố. Vui lòng bổ sung mapping EMS trước khi đồng bộ.";
             }
         }
 
