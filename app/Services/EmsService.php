@@ -347,7 +347,10 @@ class EmsService
         
         // Validation size/weight
         $weight = (int)($order->weight ?? 0);
-        if ($weight > 0) $data["TransportInfo"]["TransportWeight"] = $weight;
+        if ($weight > 0) {
+            if ($weight < 100) $weight = 100; // EMS API crashes with Error 99 if weight is too small
+            $data["TransportInfo"]["TransportWeight"] = $weight;
+        }
         
         $length = (int)($order->long ?? 0);
         if ($length > 0) $data["TransportInfo"]["TransportSizeLength"] = $length;
