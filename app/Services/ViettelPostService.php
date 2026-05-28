@@ -321,7 +321,21 @@ class ViettelPostService
             $refreshResult = $this->refreshToken();
             if (!empty($refreshResult['data']['token'])) {
                 $result = $this->requestTracking($path, $order);
+            } else {
+                \Log::warning('VTP tracking token refresh failed', [
+                    'order_id' => $order->id ?? null,
+                    'order_partner_code' => $order->order_partner_code ?? null,
+                    'refresh_result' => $refreshResult,
+                ]);
             }
+        }
+
+        if (!array_key_exists('data', $result) || empty($result['data'])) {
+            \Log::warning('VTP tracking response has no data', [
+                'order_id' => $order->id ?? null,
+                'order_partner_code' => $order->order_partner_code ?? null,
+                'response' => $result,
+            ]);
         }
 
         return $result['data'] ?? null;
