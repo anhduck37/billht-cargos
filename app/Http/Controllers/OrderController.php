@@ -41,6 +41,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception as ExceptionMail;
 
@@ -961,6 +963,330 @@ class OrderController extends AppBaseController
     {
         $partners = Partner::get();
         return view('orders.import', ['orders' => [], 'partners' => $partners]);
+    }
+
+    public function showAddressImportTool()
+    {
+        return view('orders.address_import_tool', [
+            'rows' => [],
+            'summary' => null,
+        ]);
+    }
+
+    public function previewAddressImportTool(Request $request)
+    {
+        $file = $request->file('file');
+        if (!$file) {
+            Flash::error('Bạn vui lòng chọn file Excel.');
+            return redirect()->route('orders.addressImportTool');
+        }
+
+        $mimes = [
+            'application/vnd.ms-excel',
+            'text/xls',
+            'text/xlsx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ];
+        if (!in_array($file->getClientMimeType(), $mimes)) {
+            Flash::error('File đã chọn phải là Excel.');
+            return redirect()->route('orders.addressImportTool');
+        }
+
+        $reader = IOFactory::createReaderForFile($file->getRealPath());
+        $reader->setReadDataOnly(true);
+        $chunkFilter = new class implements \PhpOffice\PhpSpreadsheet\Reader\IReadFilter {
+            public function readCell($columnAddress, $row, $worksheetName = '') {
+                $allowedColumns = range('A', 'T');
+                return $row <= 2000 && in_array($columnAddress, $allowedColumns);
+            }
+        };
+        $reader->setReadFilter($chunkFilter);
+        $spreadsheet = $reader->load($file->getRealPath());
+        $sheet = $spreadsheet->getActiveSheet();
+        $rowLimit = $sheet->getHighestDataRow();
+        $addressService = app(\App\Services\Address2025Service::class);
+        $downloadToken = uniqid('address-check-', true);
+        $downloadDir = storage_path('app/address-import-tool');
+        if (!File::isDirectory($downloadDir)) {
+            File::makeDirectory($downloadDir, 0755, true);
+        }
+        $originalFileName = $downloadToken . '.' . ($file->getClientOriginalExtension() ?: 'xlsx');
+        $originalPath = $downloadDir . DIRECTORY_SEPARATOR . $originalFileName;
+        File::copy($file->getRealPath(), $originalPath);
+
+        $rows = [];
+        $summary = [
+            'total' => 0,
+            'new' => 0,
+            'old' => 0,
+            'mixed' => 0,
+            'unknown' => 0,
+            'vtp_ready' => 0,
+            'ems_ready' => 0,
+            'has_warning' => 0,
+            'warning_messages' => [],
+            'download_token' => $downloadToken,
+        ];
+        $consecutiveEmptyRows = 0;
+
+        if ($rowLimit < 2) {
+            return view('orders.address_import_tool', compact('rows', 'summary'));
+        }
+
+        foreach (range(2, $rowLimit) as $rowNumber) {
+            $receiverAddress = trim((string)$sheet->getCell('F' . $rowNumber)->getCalculatedValue());
+            $receiverName = trim((string)$sheet->getCell('E' . $rowNumber)->getCalculatedValue());
+            $receiverPhone = trim((string)$sheet->getCell('G' . $rowNumber)->getCalculatedValue());
+            $partnerCode = $this->normalizeImportPartnerCode($sheet->getCell('T' . $rowNumber)->getCalculatedValue());
+
+            if ($receiverAddress === '' && $receiverName === '' && $receiverPhone === '') {
+                $consecutiveEmptyRows++;
+                if ($consecutiveEmptyRows >= 15) {
+                    break;
+                }
+                continue;
+            }
+            $consecutiveEmptyRows = 0;
+
+            $receiverAnalysis = $this->analyzeImportAddress($receiverAddress, $addressService);
+            $rowType = $receiverAnalysis['type'];
+            $partnerReadiness = $this->resolvePartnerReadiness($receiverAnalysis);
+            $warnings = $this->buildAddressImportWarnings($receiverAnalysis, $partnerCode, $partnerReadiness);
+
+            $rows[] = [
+                'row' => $rowNumber,
+                'receiver_name' => $receiverName,
+                'receiver_phone' => $receiverPhone,
+                'partner_code' => $partnerCode,
+                'receiver_address' => $receiverAddress,
+                'receiver_analysis' => $receiverAnalysis,
+                'type' => $rowType,
+                'vtp' => $partnerReadiness['VTP'],
+                'ems' => $partnerReadiness['EMS'],
+                'warnings' => $warnings,
+            ];
+
+            $summary['total']++;
+            $summary[$rowType]++;
+            if ($partnerReadiness['VTP']['ready']) $summary['vtp_ready']++;
+            if ($partnerReadiness['EMS']['ready']) $summary['ems_ready']++;
+            if (!empty($warnings)) {
+                $summary['has_warning']++;
+                foreach ($warnings as $warning) {
+                    $summary['warning_messages'][$warning] = ($summary['warning_messages'][$warning] ?? 0) + 1;
+                }
+            }
+        }
+
+        $warningRows = array_values(array_map(function ($row) {
+            return $row['row'];
+        }, array_filter($rows, function ($row) {
+            return !empty($row['warnings']);
+        })));
+
+        File::put($downloadDir . DIRECTORY_SEPARATOR . $downloadToken . '.json', json_encode([
+            'file' => $originalFileName,
+            'warning_rows' => $warningRows,
+        ]));
+
+        return view('orders.address_import_tool', compact('rows', 'summary'));
+    }
+
+    public function downloadAddressImportTool($token, $type)
+    {
+        if (!in_array($type, ['all', 'errors'])) {
+            abort(404);
+        }
+
+        $downloadDir = storage_path('app/address-import-tool');
+        $metaPath = $downloadDir . DIRECTORY_SEPARATOR . $token . '.json';
+        if (!File::exists($metaPath)) {
+            abort(404);
+        }
+
+        $meta = json_decode(File::get($metaPath), true);
+        $originalPath = $downloadDir . DIRECTORY_SEPARATOR . ($meta['file'] ?? '');
+        if (!$meta || !File::exists($originalPath)) {
+            abort(404);
+        }
+
+        $warningRows = array_map('intval', $meta['warning_rows'] ?? []);
+        $spreadsheet = IOFactory::load($originalPath);
+        $sheet = $spreadsheet->getActiveSheet();
+
+        if ($type === 'errors') {
+            $warningMap = array_flip($warningRows);
+            for ($row = $sheet->getHighestDataRow(); $row >= 2; $row--) {
+                if (!isset($warningMap[$row])) {
+                    $sheet->removeRow($row);
+                }
+            }
+            if ($sheet->getHighestDataRow() >= 2) {
+                $sheet->getStyle('A2:T' . $sheet->getHighestDataRow())->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFD6D6');
+            }
+            $fileName = 'dia-chi-can-sua.xlsx';
+        } else {
+            foreach ($warningRows as $row) {
+                $sheet->getStyle('A' . $row . ':T' . $row)->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFD6D6');
+            }
+            $fileName = 'dia-chi-da-kiem-tra.xlsx';
+        }
+
+        $outputPath = $downloadDir . DIRECTORY_SEPARATOR . $token . '-' . $type . '.xlsx';
+        (new Xlsx($spreadsheet))->save($outputPath);
+
+        return response()->download($outputPath, $fileName)->deleteFileAfterSend(true);
+    }
+
+    private function analyzeImportAddress($address, $addressService)
+    {
+        $address = trim((string)$address);
+        $newParsed = $addressService->parseFullAddress($address);
+        $oldParsed = $this->parseAddressToIds($address);
+
+        $oldCity = !empty($oldParsed['city_id']) ? City::find($oldParsed['city_id']) : null;
+        $oldDistrict = !empty($oldParsed['district_id']) ? District::find($oldParsed['district_id']) : null;
+        $oldWard = !empty($oldParsed['ward_id']) ? Ward::find($oldParsed['ward_id']) : null;
+        $newProvince = !empty($newParsed['new_province_id']) ? \App\NewProvince::find($newParsed['new_province_id']) : null;
+        $newWard = !empty($newParsed['new_ward_id']) ? \App\NewWard::find($newParsed['new_ward_id']) : null;
+
+        $oldReady = $oldCity && $oldDistrict && $oldWard;
+        $newReady = !empty($newParsed['success']) && $newProvince && $newWard;
+
+        if ($newReady && $oldReady) {
+            $type = 'mixed';
+        } elseif ($newReady) {
+            $type = 'new';
+        } elseif ($oldReady) {
+            $type = 'old';
+        } else {
+            $type = 'unknown';
+        }
+
+        return [
+            'input' => $address,
+            'type' => $type,
+            'new' => [
+                'ready' => $newReady,
+                'detail_address' => $newParsed['address'] ?? $address,
+                'province_id' => $newParsed['new_province_id'] ?? null,
+                'province_name' => $newProvince->name ?? null,
+                'province_code' => $newProvince->official_code ?? null,
+                'ward_id' => $newParsed['new_ward_id'] ?? null,
+                'ward_name' => $newWard->name ?? null,
+                'ward_code' => $newWard->official_code ?? null,
+                'errors' => $newParsed['errors'] ?? [],
+            ],
+            'old' => [
+                'ready' => $oldReady,
+                'detail_address' => $oldParsed['address'] ?? $address,
+                'city_id' => $oldParsed['city_id'] ?? null,
+                'city_name' => $oldCity->city_name ?? null,
+                'district_id' => $oldParsed['district_id'] ?? null,
+                'district_name' => $oldDistrict->district_name ?? null,
+                'ward_id' => $oldParsed['ward_id'] ?? null,
+                'ward_name' => $oldWard->ward_name ?? null,
+                'vtp' => [
+                    'province_code' => $oldCity->city_code ?? null,
+                    'district_code' => $oldDistrict->district_code ?? null,
+                    'ward_code' => $oldWard->ward_code ?? null,
+                ],
+                'ems' => [
+                    'province_code' => $oldCity->ems_code ?? null,
+                    'district_code' => $oldDistrict->ems_code ?? null,
+                    'ward_code' => $oldWard->ems_code ?? null,
+                ],
+            ],
+        ];
+    }
+
+    private function resolvePartnerReadiness(array $receiverAnalysis)
+    {
+        $addressService = app(\App\Services\Address2025Service::class);
+
+        $vtp = ['ready' => false, 'mode' => null, 'message' => 'Chưa xác định được địa chỉ người nhận.'];
+        $ems = ['ready' => false, 'mode' => null, 'message' => 'Chưa xác định được địa chỉ người nhận.'];
+
+        if ($receiverAnalysis['new']['ready']) {
+            $vtpMapping = $addressService->getPartnerMapping($receiverAnalysis['new']['ward_id'], 'VTP');
+            $emsMapping = $addressService->getPartnerMapping($receiverAnalysis['new']['ward_id'], 'EMS');
+
+            $vtpReady = $vtpMapping && $vtpMapping->partner_province_code && $vtpMapping->partner_district_code && $vtpMapping->partner_ward_code;
+            $emsReady = $emsMapping
+                ? ($emsMapping->partner_province_code && $emsMapping->partner_ward_code)
+                : ($receiverAnalysis['new']['province_code'] && $receiverAnalysis['new']['ward_code']);
+
+            $vtp = [
+                'ready' => (bool)$vtpReady,
+                'mode' => 'new',
+                'message' => $vtpReady ? 'Đủ mapping VTP từ địa chỉ mới.' : 'Thiếu mapping VTP cho xã/phường mới.',
+            ];
+            $ems = [
+                'ready' => (bool)$emsReady,
+                'mode' => 'new',
+                'message' => $emsReady ? 'Có thể đẩy EMS theo địa chỉ mới.' : 'Thiếu mapping/mã EMS cho địa chỉ mới.',
+            ];
+        }
+
+        if (!$vtp['ready'] && $receiverAnalysis['old']['ready']) {
+            $codes = $receiverAnalysis['old']['vtp'];
+            $ready = $codes['province_code'] && $codes['district_code'] && $codes['ward_code'];
+            $vtp = [
+                'ready' => (bool)$ready,
+                'mode' => 'old',
+                'message' => $ready ? 'Đủ mã VTP theo địa chỉ cũ.' : 'Thiếu mã VTP ở tỉnh/huyện/xã cũ.',
+            ];
+        }
+
+        if (!$ems['ready'] && $receiverAnalysis['old']['ready']) {
+            $codes = $receiverAnalysis['old']['ems'];
+            $ready = $codes['province_code'] && $codes['district_code'] && $codes['ward_code'];
+            $ems = [
+                'ready' => (bool)$ready,
+                'mode' => 'old',
+                'message' => $ready ? 'Đủ mã EMS theo địa chỉ cũ.' : 'Thiếu mã EMS ở tỉnh/huyện/xã cũ.',
+            ];
+        }
+
+        return ['VTP' => $vtp, 'EMS' => $ems];
+    }
+
+    private function buildAddressImportWarnings(array $receiverAnalysis, $partnerCode, array $partnerReadiness)
+    {
+        $warnings = [];
+        if ($receiverAnalysis['type'] === 'unknown') {
+            $warnings[] = 'Không nhận diện được địa chỉ người nhận.';
+        }
+
+        $partnerCode = strtoupper(trim((string)$partnerCode));
+        if ($partnerCode === Order::CODE_VIETTEL_POST && !$partnerReadiness['VTP']['ready']) {
+            $warnings[] = 'Dòng chọn VTP nhưng chưa đủ điều kiện đẩy Viettel.';
+        }
+        if ($partnerCode === Order::CODE_EMS && !$partnerReadiness['EMS']['ready']) {
+            $warnings[] = 'Dòng chọn EMS nhưng chưa đủ điều kiện đẩy EMS.';
+        }
+
+        return $warnings;
+    }
+
+    private function normalizeImportPartnerCode($partnerCode)
+    {
+        $partnerCode = strtoupper(trim((string)$partnerCode));
+        $partnerCode = preg_replace('/\s+/', '', $partnerCode);
+
+        if (in_array($partnerCode, ['VIETTEL', 'VIETTELPOST', 'VIETTEL_POST', 'VT'])) {
+            return Order::CODE_VIETTEL_POST;
+        }
+
+        if ($partnerCode === 'EMS') {
+            return Order::CODE_EMS;
+        }
+
+        return $partnerCode;
     }
 
     public function renderTemplate(Request $request)

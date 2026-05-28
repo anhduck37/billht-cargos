@@ -53,6 +53,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('orders/import-old', 'OrderController@importOld')->name('orders.importOld');
     Route::post('orders/import-new', 'OrderController@importNew')->name('orders.importNew');
     Route::get('fileDemo', 'OrderController@fileDownload')->name('fileDemo');
+    Route::get('order/address-import-tool', 'OrderController@showAddressImportTool')->name('orders.addressImportTool');
+    Route::post('order/address-import-tool/preview', 'OrderController@previewAddressImportTool')->name('orders.addressImportTool.preview');
+    Route::get('order/address-import-tool/download/{token}/{type}', 'OrderController@downloadAddressImportTool')->name('orders.addressImportTool.download');
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');
     Route::get('order/export', 'OrderController@export')->name('orders.export');
     Route::post('/template/render', 'OrderController@renderTemplate');

@@ -31,6 +31,7 @@
                                         <label class="custom-file-label border-primary" for="file" style="height: 50px; line-height: 35px;"><i class="fas fa-file-excel mr-2 text-primary"></i>Chọn tệp tin vận đơn...</label>
                                     </div>
                                     <a href="{{route('fileDemo')}}" class="btn btn-link btn-sm text-primary mt-2"><i class="fas fa-download mr-1"></i>Tải File Excel Mẫu Chuẩn</a>
+                                    <a href="{{route('orders.addressImportTool')}}" class="btn btn-link btn-sm text-success mt-2"><i class="fas fa-search-location mr-1"></i>Kiểm tra địa chỉ trước khi import</a>
                                 </div>
                             </div>
                         </div>
