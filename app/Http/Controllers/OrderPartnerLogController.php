@@ -662,8 +662,8 @@ class OrderPartnerLogController extends Controller
             elseif (strpos($log->response, "[RECEIVER_ADDRESS]") !== false) $errors = "Sai/thiếu địa chỉ người nhận";
             elseif (strpos($log->response, "ORDER_SERVICE") !== false) $errors = "Thiếu trọng lượng";
             elseif (strpos($log->response, "Price does not apply") !== false) $errors = "Dịch vụ gửi không phù hợp nội tỉnh";
-            elseif (strpos($log->response, "026") !== false) $errors = "Tỉnh/Thành phố người nhận không hợp lệ";
-            elseif (strpos($log->response, "011") !== false) $errors = "SĐT hoặc địa chỉ gửi không được trống";
+            elseif (strpos($log->response, '"026"') !== false) $errors = "Tỉnh/Thành phố người nhận không hợp lệ";
+            elseif (strpos($log->response, '"011"') !== false) $errors = "SĐT hoặc địa chỉ gửi không được trống";
             elseif (strpos($log->response, "401 Unauthorized") !== false) $errors = "Lỗi xác thực Token, hãng từ chối kết nối (401)";
             
             // Try extracting detailed errors from JSON arrays (especially EMS data struct)
