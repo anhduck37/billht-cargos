@@ -41,8 +41,14 @@ class SendOrderEmsJob implements ShouldQueue
                 // Trường hợp EMS trả về mảng lỗi validation [{Parameter, Message}]
                 $errorItems = [];
                 foreach ($result['data'] as $item) {
-                    if (isset($item['Parameter']) && isset($item['Message'])) {
-                        $errorItems[] = $item['Parameter'] . ': ' . $item['Message'];
+                    if (is_array($item)) {
+                        if (isset($item['Parameter']) && isset($item['Message'])) {
+                            $errorItems[] = $item['Parameter'] . ': ' . $item['Message'];
+                        } elseif (is_string($item)) {
+                            $errorItems[] = $item;
+                        }
+                    } elseif (is_string($item)) {
+                        $errorItems[] = $item;
                     }
                 }
                 $errors = implode('; ', $errorItems);
@@ -52,6 +58,11 @@ class SendOrderEmsJob implements ShouldQueue
             }
             $this->order->push_error = $errors;
             $this->order->save();
+            
+            \Log::warning('EMS Job Failed for Order', [
+                'order_id' => $this->order->id,
+                'error' => $errors
+            ]);
         }
 
         return $result;

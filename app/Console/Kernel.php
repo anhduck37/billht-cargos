@@ -23,7 +23,8 @@ class Kernel extends ConsoleKernel
         MapDistrict::class,
         MapWard::class,
         UpdateOrderCodeCommand::class,
-        UpdateDeliveryStatusCommand::class
+        UpdateDeliveryStatusCommand::class,
+        \App\Console\Commands\TestEmsIntegration::class,
     ];
 
     /**

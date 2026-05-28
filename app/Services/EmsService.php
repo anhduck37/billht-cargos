@@ -48,7 +48,6 @@ class EmsService
         ];
 
         $client = new Client([
-            'headers' => $this->headers,
             'timeout' => 30, // Tăng thêm timeout
         ]);
 
@@ -56,7 +55,10 @@ class EmsService
             $response = $client->post(
                 $this->url,
                 [
-                    'body' => json_encode($body, JSON_UNESCAPED_UNICODE)
+                    'headers' => $this->headers,
+                    'body' => json_encode($body, JSON_UNESCAPED_UNICODE),
+                    'connect_timeout' => 10,
+                    'read_timeout' => 30,
                 ]
             );
 
@@ -103,6 +105,13 @@ class EmsService
             ];
         } else {
             $result = $this->executeRequest("PARTNER_ORDER_ADD", $formatData);
+            // Log the request for debugging
+            \Log::debug('EMS API Request', [
+                'order_id' => $order->id,
+                'order_code' => $formatData['OrderCode'] ?? 'N/A',
+                'request' => 'PARTNER_ORDER_ADD',
+                'data' => $formatData
+            ]);
         }
 
         $orderPartnerLog = new OrderPartnerLog();
@@ -112,7 +121,33 @@ class EmsService
             $statusLog = OrderPartnerLog::STATUS_SUCCESS;
             $order->order_partner_code = $result['data']['ShippingCode'] ?? ($result['data']['EMSOneCode'] ?? null);
             $order->partner_code = Order::CODE_EMS;
+            $order->push_error = null; // Clear any previous errors
             $order->save();
+            
+            \Log::info('EMS Order Pushed Successfully', [
+                'order_id' => $order->id,
+                'shipping_code' => $order->order_partner_code
+            ]);
+        } else {
+            // Log failed push with detailed error info
+            $errorMsg = $result['message'] ?? 'Push EMS thất bại (không có chi tiết lỗi)';
+            if (!empty($result['data']) && is_array($result['data'])) {
+                $errorItems = [];
+                foreach ($result['data'] as $item) {
+                    if (is_array($item) && isset($item['Parameter']) && isset($item['Message'])) {
+                        $errorItems[] = $item['Parameter'] . ': ' . $item['Message'];
+                    }
+                }
+                if (!empty($errorItems)) {
+                    $errorMsg = implode('; ', $errorItems);
+                }
+            }
+            
+            \Log::warning('EMS Order Push Failed', [
+                'order_id' => $order->id,
+                'error' => $errorMsg,
+                'full_response' => $result
+            ]);
         }
         
         $orderPartnerLog->order_id = $order->id ?? 0;
@@ -227,23 +262,55 @@ class EmsService
             }
         }
 
+        // Determine OrderCode - prioritize invoice_code, fallback to order_code with prefix
+        $orderCode = !empty($order->invoice_code) ? trim($order->invoice_code) : trim($order->order_code ?? '');
+        if (empty($orderCode)) {
+            $orderCode = 'HE' . ($order->id ?? date('YmdHis'));
+        }
+        
+        // Determine OrderName - use TYPE map or description
+        $orderName = isset($order->type) && isset(Order::MAP_ORDER_TYPE[$order->type]) 
+            ? Order::MAP_ORDER_TYPE[$order->type] 
+            : (trim($order->note ?? '') ?: 'Hàng hóa');
+
+        // Validate required sender/receiver information
+        $receiverName = trim($order->receiver->receiver_name ?? '');
+        if (empty($receiverName)) {
+            $receiverName = 'Người nhận';
+        }
+        
+        $receiverPhone = trim($order->receiver->receiver_phone ?? '');
+        if (empty($receiverPhone)) {
+            $receiverPhone = '0000000000';
+        }
+        
+        $senderName = trim($order->sender->sender_name ?? '');
+        if (empty($senderName)) {
+            $senderName = 'Người gửi';
+        }
+        
+        $senderPhone = trim($order->sender->sender_phone ?? '');
+        if (empty($senderPhone)) {
+            $senderPhone = '0000000000';
+        }
+
         $data = [
             "CrmOrPaypostCode" => config('ems.crm_code', ''),
             "CustomerToken" => config('ems.crm_code', ''),
-            "OrderCode" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
-            "OrderName" => Order::MAP_ORDER_TYPE[$order->type] ?? $order->note,
+            "OrderCode" => $orderCode,
+            "OrderName" => $orderName,
             "OrderValue" => $order->total ?? 0,
             "OrderQuantity" => $order->quantity ?? 1,
-            "Note" => $order->note ?? '',
-            "Message" => $order->note ?? '',
+            "Note" => trim($order->note ?? ''),
+            "Message" => trim($order->note ?? ''),
             "Channel" => "WEB",
             "IsTransport" => "Y",
             "IsSendTransport" => "Y",
             "WareHouseID" => 0,
             
             "BuyerInfo" => [
-                "FullName" => $order->receiver->receiver_name ?? '',
-                "MobileNumber" => $order->receiver->receiver_phone ?? '',
+                "FullName" => $receiverName,
+                "MobileNumber" => $receiverPhone,
                 "ProvinceID" => $receiverProvinceID,
                 "DistrictID" => $receiverDistrictID,
                 "WardID" => $receiverWardID,
@@ -252,8 +319,8 @@ class EmsService
             ],
             
             "SenderInfo" => [
-                "FullName" => $order->sender->sender_name ?? '',
-                "MobileNumber" => $order->sender->sender_phone ?? '',
+                "FullName" => $senderName,
+                "MobileNumber" => $senderPhone,
                 "ProvinceID" => $senderProvinceID,
                 "DistrictID" => $senderDistrictID,
                 "WardID" => $senderWardID,
@@ -261,8 +328,8 @@ class EmsService
             ],
             
             "ReceiverInfo" => [
-                "FullName" => $order->receiver->receiver_name ?? '',
-                "MobileNumber" => $order->receiver->receiver_phone ?? '',
+                "FullName" => $receiverName,
+                "MobileNumber" => $receiverPhone,
                 "ProvinceID" => $receiverProvinceID,
                 "DistrictID" => $receiverDistrictID,
                 "WardID" => $receiverWardID,
