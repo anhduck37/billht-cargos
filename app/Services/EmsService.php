@@ -144,7 +144,7 @@ class EmsService
             }
 
             $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($addressModel->new_ward_id, 'EMS');
-            if (!$mapping || empty($mapping->partner_province_code) || empty($mapping->partner_district_code) || empty($mapping->partner_ward_code)) {
+            if (!$mapping || empty($mapping->partner_province_code)) {
                 return "Địa chỉ {$label} dùng địa chỉ mới nhưng chưa có mapping EMS đầy đủ cho xã/phường. Vui lòng bổ sung mapping EMS trước khi đồng bộ.";
             }
         }
@@ -201,8 +201,8 @@ class EmsService
                 $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->receiver->new_ward_id, 'EMS');
                 if ($mapping) {
                     $receiverProvinceID = (int)($mapping->partner_province_code ?? $receiverProvinceID);
-                    $receiverDistrictID = (int)($mapping->partner_district_code ?? $receiverDistrictID);
-                    $receiverWardID = (int)($mapping->partner_ward_code ?? $receiverWardID);
+                    $receiverDistrictID = 0;
+                    $receiverWardID = 0;
                 }
             }
         }

@@ -63,13 +63,11 @@ class MapAddressCodeEmsCommand extends Command
             $cols = str_getcsv($row);
             if (count($cols) < 20) continue;
             
-            // EMS API accepts the BCQG code set, not the MBC code set.
-            // CSV columns: 11/14/17 = MBC, 12/15/18 = BCQG.
-            $provCode = $cols[12];
+            $provCode = $cols[11];
             $provName = $cols[13];
-            $distCode = $cols[15];
+            $distCode = $cols[14];
             $distName = $cols[16];
-            $wardCode = $cols[18];
+            $wardCode = $cols[17];
             $wardName = $cols[19];
             
             if (empty($provCode) || empty($distCode) || empty($wardCode)) continue;
