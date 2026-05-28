@@ -346,6 +346,12 @@ class ViettelPostService
         $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
         $headers = $this->headers;
         $headers['Token'] = $partnerConfig->token ?? '';
+        $headers['Accept'] = 'application/json';
+        $orderNumbers = array_filter(array_unique([
+            $order->order_partner_code ?? null,
+            $order->order_code ?? null,
+        ]));
+        $lastResult = [];
 
         foreach (array_unique([$this->api, $this->url]) as $baseUrl) {
             $client = new Client([
@@ -353,27 +359,45 @@ class ViettelPostService
                 'timeout' => 30
             ]);
 
-            try {
-                $response = $client->get($baseUrl . $path, [
-                    'query' => [
-                        'OrderNumber' => $order->order_partner_code
-                    ]
-                ]);
+            foreach ($orderNumbers as $orderNumber) {
+                try {
+                    $response = $client->get($baseUrl . $path, [
+                        'query' => [
+                            'OrderNumber' => $orderNumber
+                        ]
+                    ]);
 
-                $result = json_decode($response->getBody()->getContents(), true) ?: [];
-                if (!$this->isExpiredTokenResponse($result)) {
-                    return $result;
+                    $body = $response->getBody()->getContents();
+                    $result = json_decode($body, true);
+                    $lastResult = is_array($result) ? $result : [];
+
+                    if ($this->isExpiredTokenResponse($lastResult)) {
+                        continue;
+                    }
+
+                    if (!empty($lastResult['data'])) {
+                        return $lastResult;
+                    }
+
+                    \Log::warning('VTP tracking empty response candidate', [
+                        'base_url' => $baseUrl,
+                        'order_id' => $order->id ?? null,
+                        'order_number' => $orderNumber,
+                        'http_status' => $response->getStatusCode(),
+                        'body' => mb_substr((string)$body, 0, 1000),
+                    ]);
+                } catch (\Exception $e) {
+                    \Log::error('VTP API Error tracking: ' . $e->getMessage(), [
+                        'base_url' => $baseUrl,
+                        'order_id' => $order->id ?? null,
+                        'order_partner_code' => $order->order_partner_code ?? null,
+                        'order_number' => $orderNumber,
+                    ]);
                 }
-            } catch (\Exception $e) {
-                \Log::error('VTP API Error tracking: ' . $e->getMessage(), [
-                    'base_url' => $baseUrl,
-                    'order_id' => $order->id ?? null,
-                    'order_partner_code' => $order->order_partner_code ?? null,
-                ]);
             }
         }
 
-        return $result ?? [];
+        return $lastResult;
     }
 
     private function isExpiredTokenResponse($result)
