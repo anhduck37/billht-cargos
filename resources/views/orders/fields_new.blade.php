@@ -710,6 +710,16 @@
             $select.html(`<option value="">Đang tải...</option>`);
 
             $.get(url, function (res) {
+                if (res && res.error) {
+                    $select.html(`<option value="">${res.message || 'Không tải được danh sách xã/phường'}</option>`);
+                    return;
+                }
+
+                if (!Array.isArray(res)) {
+                    $select.html(`<option value="">Dữ liệu xã/phường không hợp lệ</option>`);
+                    return;
+                }
+
                 let html = `
                 <option value=''></option>
             `;

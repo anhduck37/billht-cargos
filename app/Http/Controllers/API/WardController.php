@@ -33,15 +33,17 @@ class WardController extends Controller
                 ->values();
 
             return response()->json($wards, 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Cannot load new wards', [
                 'province_id' => $province_id,
                 'message' => $e->getMessage(),
             ]);
 
             return response()->json([
+                'error' => true,
                 'message' => 'Không tải được danh sách xã/phường. Vui lòng thử lại hoặc liên hệ quản trị.',
-            ], 500, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+                'data' => [],
+            ], 200, [], JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
         }
     }
 }
