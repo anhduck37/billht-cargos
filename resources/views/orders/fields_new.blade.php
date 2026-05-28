@@ -714,6 +714,7 @@
                 $select.html(`<option value=""></option>`);
                 $select.addClass('is-invalid');
                 $error.html(`<strong style="color: red;">${message}</strong>`).show();
+                showAddressApiError(message);
                 if ($select.hasClass('select2-hidden-accessible')) {
                     $select.trigger('change.select2');
                 }
@@ -754,6 +755,21 @@
                 }
                 showWardLoadError(message);
             });
+        }
+
+        function showAddressApiError(message) {
+            let $box = $('#address_api_error_box');
+            if (!$box.length) {
+                $box = $(`
+                    <div id="address_api_error_box" class="alert alert-danger mt-3" style="display:none;">
+                        <strong>Không tải được danh sách xã/phường.</strong>
+                        <div class="address-api-error-message"></div>
+                    </div>
+                `);
+                $('.card-body').first().prepend($box);
+            }
+            $box.find('.address-api-error-message').text(message || 'Vui lòng tải lại trang hoặc liên hệ quản trị.');
+            $box.show();
         }
 
         function readBarCodeFromImage(urlImage) {

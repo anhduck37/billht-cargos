@@ -18,6 +18,11 @@ class WardController extends Controller
 
     public function getNewWards(Request $request, $province_id) {
         try {
+            Log::info('Loading new wards', [
+                'province_id' => $province_id,
+                'user_id' => auth()->id(),
+            ]);
+
             $wards = \App\NewWard::query()
                 ->select('id', 'name')
                 ->where('new_province_id', $province_id)
