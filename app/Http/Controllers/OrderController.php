@@ -1851,7 +1851,7 @@ class OrderController extends AppBaseController
         $count = count($parts);
 
         if ($count < 2)
-            return $result; // Không đủ cấu trúc để tách
+            return $this->parseAddressToIdsBySuffix($addressString); // Không đủ dấu phẩy, dò từ cuối chuỗi
 
         // Cấu trúc: phần cuối = Tỉnh, áp chót = Huyện, kế tiếp = Xã
         $cityStr = $parts[$count - 1] ?? null;
@@ -1861,6 +1861,7 @@ class OrderController extends AppBaseController
         // Hàm chuẩn hóa chuỗi: bỏ dấu tiếng Việt, viết thường
         $normalize = function ($str) {
             $str = mb_strtolower(trim($str ?? ''));
+            $str = \Illuminate\Support\Str::ascii($str);
             $map = [
                 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ã' => 'a', 'ä' => 'a', 'å' => 'a',
                 'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e',
@@ -1878,7 +1879,7 @@ class OrderController extends AppBaseController
                 'ỳ' => 'y', 'ỵ' => 'y', 'ỷ' => 'y', 'ỹ' => 'y',
             ];
             $str = strtr($str, $map);
-            $str = preg_replace('/[^a-z0-9\s]/u', '', $str);
+            $str = preg_replace('/[^a-z0-9\s]/u', ' ', $str);
             return preg_replace('/\s+/', ' ', trim($str));
         };
 
@@ -1964,7 +1965,165 @@ class OrderController extends AppBaseController
             $result['address'] = implode(', ', $remainingParts);
         }
 
+        if (empty($result['city_id']) || empty($result['district_id']) || empty($result['ward_id'])) {
+            $fallback = $this->parseAddressToIdsBySuffix($addressString);
+            $fallbackScore = (int)!empty($fallback['city_id']) + (int)!empty($fallback['district_id']) + (int)!empty($fallback['ward_id']);
+            $resultScore = (int)!empty($result['city_id']) + (int)!empty($result['district_id']) + (int)!empty($result['ward_id']);
+
+            if ($fallbackScore > $resultScore) {
+                return $fallback;
+            }
+        }
+
         return $result;
+    }
+
+    private function parseAddressToIdsBySuffix(string $addressString): array
+    {
+        $result = ['city_id' => null, 'district_id' => null, 'ward_id' => null, 'address' => $addressString];
+        $normalizedAddress = $this->normalizeAddressForMatching($addressString);
+
+        if ($normalizedAddress === '') {
+            return $result;
+        }
+
+        $city = City::all()
+            ->sortByDesc(function ($city) {
+                return strlen($this->normalizeAddressForMatching($city->city_name));
+            })
+            ->first(function ($city) use ($normalizedAddress) {
+                return $this->addressEndsWithName($normalizedAddress, $city->city_name);
+            });
+
+        if (!$city) {
+            return $result;
+        }
+
+        $result['city_id'] = $city->id;
+        $remainingAfterCity = $this->removeMatchedNameFromEnd($normalizedAddress, $city->city_name);
+
+        $district = District::where('city_id', $city->id)
+            ->get()
+            ->sortByDesc(function ($district) {
+                return strlen($this->normalizeAddressForMatching($district->district_name));
+            })
+            ->first(function ($district) use ($remainingAfterCity) {
+                return $this->addressEndsWithName($remainingAfterCity, $district->district_name);
+            });
+
+        if (!$district) {
+            return $result;
+        }
+
+        $result['district_id'] = $district->id;
+        $remainingAfterDistrict = $this->removeMatchedNameFromEnd($remainingAfterCity, $district->district_name);
+
+        $ward = Ward::where('district_id', $district->id)
+            ->get()
+            ->sortByDesc(function ($ward) {
+                return strlen($this->normalizeAddressForMatching($ward->ward_name));
+            })
+            ->first(function ($ward) use ($remainingAfterDistrict) {
+                return $this->addressEndsWithName($remainingAfterDistrict, $ward->ward_name);
+            });
+
+        if ($ward) {
+            $result['ward_id'] = $ward->id;
+            $result['address'] = $this->extractDetailAddressFromSuffixMatch($addressString, $city, $district, $ward);
+        }
+
+        return $result;
+    }
+
+    private function normalizeAddressForMatching($value): string
+    {
+        $value = mb_strtolower(trim((string)$value), 'UTF-8');
+        $value = str_replace(['Ð', 'ð'], ['Đ', 'đ'], $value);
+        $value = \Illuminate\Support\Str::ascii($value);
+
+        $value = preg_replace('/[^a-z0-9\s]/i', ' ', $value);
+        $value = preg_replace('/\s+/', ' ', trim($value));
+
+        $prefixes = [
+            'tinh ', 'thanh pho ', 'tp ', 'quan ', 'huyen dao ', 'huyen ',
+            'thi xa ', 'tx ', 'phuong ', 'xa ', 'thi tran ', 'tt ', 'p ', 'q ', 'h ',
+        ];
+
+        foreach ($prefixes as $prefix) {
+            if (strpos($value, $prefix) === 0) {
+                $value = trim(substr($value, strlen($prefix)));
+                break;
+            }
+        }
+
+        return $value;
+    }
+
+    private function addressEndsWithName($normalizedAddress, $name): bool
+    {
+        $normalizedName = $this->normalizeAddressForMatching($name);
+        if ($normalizedAddress === '' || $normalizedName === '') {
+            return false;
+        }
+
+        foreach ($this->addressNameSuffixes($normalizedName) as $suffix) {
+            if ($normalizedAddress === trim($suffix) || substr($normalizedAddress, -strlen($suffix)) === $suffix) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function removeMatchedNameFromEnd($normalizedAddress, $name): string
+    {
+        $normalizedName = $this->normalizeAddressForMatching($name);
+        if ($normalizedName === '') {
+            return $normalizedAddress;
+        }
+
+        foreach ($this->addressNameSuffixes($normalizedName) as $suffix) {
+            if ($normalizedAddress === trim($suffix)) {
+                return '';
+            }
+
+            if (substr($normalizedAddress, -strlen($suffix)) === $suffix) {
+                return trim(substr($normalizedAddress, 0, -strlen($suffix)));
+            }
+        }
+
+        return $normalizedAddress;
+    }
+
+    private function addressNameSuffixes($normalizedName): array
+    {
+        $prefixes = ['', 'tinh ', 'thanh pho ', 'tp ', 'quan ', 'huyen dao ', 'huyen ', 'thi xa ', 'tx ', 'phuong ', 'xa ', 'thi tran ', 'tt ', 'p ', 'q ', 'h '];
+        $suffixes = [];
+
+        foreach ($prefixes as $prefix) {
+            $suffixes[] = ' ' . trim($prefix . $normalizedName);
+        }
+
+        usort($suffixes, function ($a, $b) {
+            return strlen($b) <=> strlen($a);
+        });
+
+        return array_values(array_unique($suffixes));
+    }
+
+    private function extractDetailAddressFromSuffixMatch($addressString, $city, $district, $ward): string
+    {
+        $parts = array_values(array_filter(array_map('trim', explode(',', $addressString))));
+        if (count($parts) >= 4) {
+            return implode(', ', array_slice($parts, 0, -3));
+        }
+
+        $normalizedAddress = $this->normalizeAddressForMatching($addressString);
+        $remaining = $this->removeMatchedNameFromEnd($normalizedAddress, $city->city_name);
+        $remaining = $this->removeMatchedNameFromEnd($remaining, $district->district_name);
+        $remaining = $this->removeMatchedNameFromEnd($remaining, $ward->ward_name);
+
+        return $remaining ?: $addressString;
     }
 
     private function fillLegacyAddressIdsWhenMissing(array $form, $addressModel): array
