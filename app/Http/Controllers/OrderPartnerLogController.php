@@ -26,6 +26,11 @@ class OrderPartnerLogController extends Controller
 {
     public function index(Request $request)
     {
+        $latestLogIds = OrderPartnerLog::selectRaw('MAX(id)')
+            ->whereNotNull('order_id')
+            ->where('order_id', '>', 0)
+            ->groupBy('order_id');
+
         // Query builder for filtering
         $query = OrderPartnerLog::with([
             'order.receiver.city',
@@ -33,7 +38,7 @@ class OrderPartnerLogController extends Controller
             'order.receiver.ward',
             'order.receiver.newProvince',
             'order.receiver.newWard',
-        ]);
+        ])->whereIn('id', $latestLogIds);
 
         // Filter by Status
         if ($request->filled('filter_status')) {
@@ -76,10 +81,17 @@ class OrderPartnerLogController extends Controller
         
         // Count statistics for the current month
         $currentMonth = Carbon::now()->format('Y-m');
-        $successQuery = OrderPartnerLog::where('status', 1)
+        $latestMonthlyLogIds = OrderPartnerLog::selectRaw('MAX(id)')
+            ->whereNotNull('order_id')
+            ->where('order_id', '>', 0)
+            ->groupBy('order_id');
+
+        $successQuery = OrderPartnerLog::whereIn('id', $latestMonthlyLogIds)
+                                      ->where('status', 1)
                                       ->whereRaw("DATE_FORMAT(updated_at, '%Y-%m') = ?", [$currentMonth]);
                                       
-        $errorQuery = OrderPartnerLog::where('status', 0)
+        $errorQuery = OrderPartnerLog::whereIn('id', $latestMonthlyLogIds)
+                                    ->where('status', 0)
                                     ->whereRaw("DATE_FORMAT(updated_at, '%Y-%m') = ?", [$currentMonth]);
 
         if ($request->filled('filter_partner')) {
@@ -646,52 +658,8 @@ class OrderPartnerLogController extends Controller
         $isCancelLog = $this->isCancelPayload($payload);
 
         // 4. Parse Status Response Text and Errors
-        $responseText = '';
-        if (($isCancelLog && (int)$log->status === OrderPartnerLog::STATUS_SUCCESS) || ($isCancelledSync && (int)$log->status === OrderPartnerLog::STATUS_SUCCESS)) {
-            $responseText = "<span class='badge badge-warning'>Đã huỷ đồng bộ - $partnerText</span>";
-        } elseif ($log->status == 1 || strpos($log->response, "ORDER_NUMBER") !== false || strpos($log->response, "success") !== false) {
-            $responseText = "<span class='badge badge-success'>Thành công - $partnerText</span>";
-        } else {
-            $errors = '';
-            $resData = json_decode($log->response, true);
-
-            // Match common raw string errors
-            if (strpos($log->response, "[SENDER_ADDRESS]") !== false) $errors = "Sai hoặc thiếu địa chỉ người gửi";
-            elseif (strpos($log->response, "[RECEIVER_PHONE]") !== false) $errors = "Sai/thiếu SĐT người nhận";
-            elseif (strpos($log->response, "[SENDER_PHONE]") !== false) $errors = "Sai/thiếu SĐT người gửi";
-            elseif (strpos($log->response, "[RECEIVER_ADDRESS]") !== false) $errors = "Sai/thiếu địa chỉ người nhận";
-            elseif (strpos($log->response, "ORDER_SERVICE") !== false) $errors = "Thiếu trọng lượng";
-            elseif (strpos($log->response, "Price does not apply") !== false) $errors = "Dịch vụ gửi không phù hợp nội tỉnh";
-            elseif (strpos($log->response, '"026"') !== false) $errors = "Tỉnh/Thành phố người nhận không hợp lệ";
-            elseif (strpos($log->response, '"011"') !== false) $errors = "SĐT hoặc địa chỉ gửi không được trống";
-            elseif (strpos($log->response, "401 Unauthorized") !== false) $errors = "Lỗi xác thực Token, hãng từ chối kết nối (401)";
-            
-            // Try extracting detailed errors from JSON arrays (especially EMS data struct)
-            if (empty($errors)) {
-                if (strtoupper($log->partner_code) === 'EMS') {
-                    if (isset($resData['data']) && is_array($resData['data'])) {
-                        $errItems = [];
-                        foreach ($resData['data'] as $item) {
-                            if (isset($item['Parameter']) && isset($item['Message'])) {
-                                $errItems[] = $item['Parameter'] . ': ' . $item['Message'];
-                            }
-                        }
-                        $errors = implode('; ', $errItems);
-                    }
-                }
-                if (empty($errors) && isset($resData['message'])) {
-                    $errors = $resData['message'];
-                }
-            }
-
-            // Fallback to raw string truncated
-            if (!empty($errors)) {
-                $responseText = "<span class='text-danger'><b>[$partnerText] $errors</b></span>";
-            } else {
-                $truncatedName = strlen($log->response) > 85 ? substr($log->response, 0, 85) . "..." : $log->response;
-                $responseText = "<span class='text-danger'><b>Lỗi $partnerText:</b> " . htmlspecialchars($truncatedName) . "</span>";
-            }
-        }
+        $actionLabel = $this->getLogActionLabel($payload);
+        $responseText = $this->formatLogResponseText($log, $partnerText, $actionLabel, $isCancelLog, $isCancelledSync);
 
         return (object)[
             'order_number' => $orderNumber,
@@ -730,6 +698,138 @@ class OrderPartnerLogController extends Controller
                 return $logs->max('updated_at');
             })
             ->all();
+    }
+
+    private function getLogActionLabel(array $payload)
+    {
+        $code = strtoupper((string)($payload['Code'] ?? $payload['code'] ?? ''));
+        if ($code === 'PARTNER_ORDER_CANCEL') {
+            return 'Huỷ đồng bộ';
+        }
+
+        if ($code === 'PARTNER_ORDER_ADD') {
+            return 'Đẩy đơn';
+        }
+
+        if (isset($payload['TYPE']) && (int)$payload['TYPE'] === 4) {
+            return 'Huỷ đồng bộ';
+        }
+
+        if (isset($payload['ORDER_NUMBER']) || isset($payload['OrderCode']) || isset($payload['order_code'])) {
+            return 'Đẩy đơn';
+        }
+
+        return 'Đồng bộ';
+    }
+
+    private function formatLogResponseText($log, $partnerText, $actionLabel, $isCancelLog, $isCancelledSync)
+    {
+        $status = (int)$log->status;
+        $responseMessage = $this->extractPartnerLogResponseMessage($log);
+        $safeMessage = htmlspecialchars($responseMessage, ENT_QUOTES, 'UTF-8');
+        $safeAction = htmlspecialchars($actionLabel, ENT_QUOTES, 'UTF-8');
+        $safePartner = htmlspecialchars($partnerText, ENT_QUOTES, 'UTF-8');
+
+        if (($isCancelLog || $isCancelledSync) && $status === OrderPartnerLog::STATUS_SUCCESS) {
+            return "<span class='badge badge-warning'>Đã huỷ đồng bộ - {$safePartner}</span>";
+        }
+
+        if ($status === OrderPartnerLog::STATUS_SUCCESS) {
+            $messageHtml = $safeMessage !== '' ? "<div class='text-muted small mt-1'>{$safeMessage}</div>" : '';
+            return "<span class='badge badge-success'>{$safeAction} thành công - {$safePartner}</span>{$messageHtml}";
+        }
+
+        if ($safeMessage === '') {
+            $safeMessage = 'Không có chi tiết lỗi từ đối tác. Kiểm tra payload/response gốc trong DB.';
+        }
+
+        return "<span class='text-danger'><b>[{$safePartner}] {$safeAction} thất bại:</b> {$safeMessage}</span>";
+    }
+
+    private function extractPartnerLogResponseMessage($log)
+    {
+        $rawResponse = trim((string)$log->response);
+        if ($rawResponse === '') {
+            return '';
+        }
+
+        $resData = json_decode($rawResponse, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($resData)) {
+            $messages = [];
+
+            foreach (['message', 'Message', 'error', 'Error', 'description', 'Description'] as $key) {
+                if (isset($resData[$key]) && is_scalar($resData[$key]) && trim((string)$resData[$key]) !== '') {
+                    $messages[] = trim((string)$resData[$key]);
+                }
+            }
+
+            foreach (['data', 'Data', 'errors', 'Errors'] as $key) {
+                if (!isset($resData[$key])) {
+                    continue;
+                }
+
+                $data = $resData[$key];
+                if (is_string($data)) {
+                    $decoded = json_decode($data, true);
+                    if (json_last_error() === JSON_ERROR_NONE) {
+                        $data = $decoded;
+                    } elseif (trim($data) !== '') {
+                        $messages[] = trim($data);
+                        continue;
+                    }
+                }
+
+                if (is_array($data)) {
+                    $messages = array_merge($messages, $this->extractMessagesFromArray($data));
+                }
+            }
+
+            $messages = array_values(array_unique(array_filter($messages)));
+            if (!empty($messages)) {
+                return implode('; ', $messages);
+            }
+        }
+
+        return $this->normalizeKnownPartnerError($rawResponse);
+    }
+
+    private function extractMessagesFromArray(array $data)
+    {
+        $messages = [];
+
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $parameter = $value['Parameter'] ?? $value['parameter'] ?? $value['field'] ?? $value['Field'] ?? null;
+                $message = $value['Message'] ?? $value['message'] ?? $value['error'] ?? $value['Error'] ?? null;
+
+                if ($message !== null && trim((string)$message) !== '') {
+                    $prefix = $parameter ? trim((string)$parameter) . ': ' : '';
+                    $messages[] = $prefix . trim((string)$message);
+                    continue;
+                }
+
+                $messages = array_merge($messages, $this->extractMessagesFromArray($value));
+            } elseif (is_string($value) && trim($value) !== '' && !is_numeric($key)) {
+                $messages[] = trim($value);
+            }
+        }
+
+        return $messages;
+    }
+
+    private function normalizeKnownPartnerError($rawResponse)
+    {
+        if (strpos($rawResponse, "[SENDER_ADDRESS]") !== false) return "Sai hoặc thiếu địa chỉ người gửi";
+        if (strpos($rawResponse, "[RECEIVER_PHONE]") !== false) return "Sai/thiếu SĐT người nhận";
+        if (strpos($rawResponse, "[SENDER_PHONE]") !== false) return "Sai/thiếu SĐT người gửi";
+        if (strpos($rawResponse, "[RECEIVER_ADDRESS]") !== false) return "Sai/thiếu địa chỉ người nhận";
+        if (strpos($rawResponse, "ORDER_SERVICE") !== false) return "Thiếu trọng lượng";
+        if (strpos($rawResponse, "Price does not apply") !== false) return "Dịch vụ gửi không phù hợp nội tỉnh";
+        if (strpos($rawResponse, '"026"') !== false) return "Tỉnh/Thành phố người nhận không hợp lệ";
+        if (strpos($rawResponse, '"011"') !== false) return "SĐT hoặc địa chỉ gửi không được trống";
+        if (strpos($rawResponse, "401 Unauthorized") !== false) return "Lỗi xác thực Token, hãng từ chối kết nối (401)";
+
+        return mb_strlen($rawResponse, 'UTF-8') > 180 ? mb_substr($rawResponse, 0, 180, 'UTF-8') . '...' : $rawResponse;
     }
 
     private function isCancelPayload($payload)
