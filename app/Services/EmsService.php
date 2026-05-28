@@ -154,8 +154,8 @@ class EmsService
 
     public function formatDataBody($order)
     {
-        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->district_name ?? '') . ' ' . ($order->sender->city_name ?? '');
-        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward_name ?? '') . ' ' . ($order->receiver->district_name ?? '') . ' ' . ($order->receiver->city_name ?? '');
+        $senderAddress = $this->formatStreetAddress($order->sender);
+        $receiverAddress = $this->formatStreetAddress($order->receiver);
         
         $receiverProvinceID = (int)($order->receiver->city->ems_code ?? 0);
         $receiverDistrictID = (int)($order->receiver->district->ems_code ?? 0);
@@ -268,6 +268,30 @@ class EmsService
         if ($height > 0) $data["TransportInfo"]["TransportSizeHeight"] = $height;
 
         return $data;
+    }
+
+    private function formatStreetAddress($addressModel)
+    {
+        if (!$addressModel) {
+            return '';
+        }
+
+        $detailAddress = trim((string)($addressModel->address ?? ''));
+        $addressScheme = $addressModel->address_scheme ?? 'old';
+
+        if ($addressScheme === 'new') {
+            if (!empty($addressModel->new_province_id) && !empty($addressModel->new_ward_id)) {
+                return $detailAddress;
+            }
+
+            return trim($detailAddress . ' ' . ($addressModel->ward_name ?? '') . ' ' . ($addressModel->city_name ?? ''));
+        }
+
+        if (!empty($addressModel->city_id) && !empty($addressModel->district_id) && !empty($addressModel->ward_id)) {
+            return $detailAddress;
+        }
+
+        return trim($detailAddress . ' ' . ($addressModel->ward_name ?? '') . ' ' . ($addressModel->district_name ?? '') . ' ' . ($addressModel->city_name ?? ''));
     }
 
     public function webhookTracking($data)
