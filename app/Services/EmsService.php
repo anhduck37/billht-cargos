@@ -36,6 +36,7 @@ class EmsService
 
     public function executeRequest($code, $dataPayload)
     {
+        $startedAt = microtime(true);
         $dataJson = json_encode($dataPayload, JSON_UNESCAPED_UNICODE);
         
         $signatureString = $code . $dataJson . $this->secret_key;
@@ -62,7 +63,15 @@ class EmsService
                 ]
             );
 
-            $result = json_decode($response->getBody()->getContents(), true);
+            $rawBody = $response->getBody()->getContents();
+            $result = json_decode($rawBody, true);
+            if (!is_array($result)) {
+                $result = [
+                    'code' => self::STATUS_ERROR,
+                    'message' => 'EMS trả về dữ liệu không hợp lệ',
+                    'raw_response' => $rawBody,
+                ];
+            }
             // Chuẩn hóa kết quả trả về
             if (isset($result['Code'])) {
                 $result['code'] = $result['Code'];
@@ -82,13 +91,40 @@ class EmsService
                 }
             }
 
+            $result['_meta'] = [
+                'endpoint' => $this->url,
+                'http_status' => $response->getStatusCode(),
+                'duration_ms' => (int)round((microtime(true) - $startedAt) * 1000),
+                'request_code' => $code,
+            ];
+
+            \Log::info('EMS API Response', [
+                'request_code' => $code,
+                'http_status' => $response->getStatusCode(),
+                'duration_ms' => $result['_meta']['duration_ms'],
+                'ems_code' => $result['code'] ?? null,
+                'ems_message' => $result['message'] ?? ($result['Message'] ?? null),
+            ]);
+
             return $result;
 
         } catch (\Exception $e) {
-            \Log::error('EMS API Error: ' . $e->getMessage());
+            $durationMs = (int)round((microtime(true) - $startedAt) * 1000);
+            \Log::error('EMS API Error: ' . $e->getMessage(), [
+                'request_code' => $code,
+                'endpoint' => $this->url,
+                'duration_ms' => $durationMs,
+            ]);
             return [
                 'code' => self::STATUS_ERROR,
-                'message' => 'Lỗi kết nối API EMS: ' . $e->getMessage()
+                'message' => 'Lỗi kết nối API EMS: ' . $e->getMessage(),
+                '_meta' => [
+                    'endpoint' => $this->url,
+                    'http_status' => null,
+                    'duration_ms' => $durationMs,
+                    'request_code' => $code,
+                    'exception' => get_class($e),
+                ],
             ];
         }
     }
