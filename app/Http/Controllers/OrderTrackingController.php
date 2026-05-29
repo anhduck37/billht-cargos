@@ -82,7 +82,17 @@ class OrderTrackingController extends Controller
                 if (
                     isset($order) && (isset($order->order_partner_code) || (isset(Order::MAP_MESSAGE_NOTI_PARTNER[$order->partner_code])))
                 ) {
-                    $data_tracking = PartnerTracking::where('order_id', $order->id)->orderBy('id', 'DESC')->get();
+                    if ($order->partner_code === Order::CODE_VIETTEL_POST) {
+                        $data_tracking = $this->viettelPostService->refreshTrackingForOrder($order);
+                    }
+
+                    if (!$data_tracking || $data_tracking->isEmpty()) {
+                        $query = PartnerTracking::where('order_id', $order->id);
+                        if ($order->partner_code === Order::CODE_VIETTEL_POST && $order->order_partner_code) {
+                            $query->where('order_partner_code', $order->order_partner_code);
+                        }
+                        $data_tracking = $query->orderBy('id', 'DESC')->get();
+                    }
                     $data_tracking = $data_tracking->isEmpty() ? null : $data_tracking;
                 } else {
                     $mickey_tracking = $this->mickeyService->tracking($order, $order_code);

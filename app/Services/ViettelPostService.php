@@ -350,6 +350,54 @@ class ViettelPostService
         return $result['data'] ?? null;
     }
 
+    public function refreshTrackingForOrder($order)
+    {
+        $tracking = $this->tracking($order);
+        $items = $this->normalizeTrackingItems($tracking);
+
+        if (empty($items)) {
+            return null;
+        }
+
+        $orderPartnerCode = $this->extractTrackingOrderNumber($items[0]);
+        if ($orderPartnerCode && $orderPartnerCode !== $order->order_partner_code) {
+            $order->order_partner_code = $orderPartnerCode;
+            $order->partner_code = Order::CODE_VIETTEL_POST;
+            $order->push_error = null;
+        }
+
+        $currentItem = $this->latestTrackingItem($items);
+        if (isset($currentItem['ORDER_STATUS']) && isset(PartnerConfig::MAP_STATUS_VIETTEL_POST[$currentItem['ORDER_STATUS']])) {
+            $order->delivery_status = PartnerConfig::MAP_STATUS_VIETTEL_POST[$currentItem['ORDER_STATUS']];
+        }
+        $order->save();
+
+        foreach ($items as $item) {
+            $dataTracking = $this->formatDataWebhook($order, $item);
+            if (empty($dataTracking['order_partner_code'])) {
+                continue;
+            }
+
+            $exists = PartnerTracking::where('order_id', $dataTracking['order_id'])
+                ->where('order_partner_code', $dataTracking['order_partner_code'])
+                ->where('order_statusdate', $dataTracking['order_statusdate'])
+                ->where('order_status', $dataTracking['order_status'])
+                ->where('status_name', $dataTracking['status_name'])
+                ->exists();
+
+            if (!$exists) {
+                PartnerTracking::create($dataTracking);
+            }
+        }
+
+        $query = PartnerTracking::where('order_id', $order->id);
+        if ($orderPartnerCode) {
+            $query->where('order_partner_code', $orderPartnerCode);
+        }
+
+        return $query->orderBy('id', 'DESC')->get();
+    }
+
     private function requestTracking($path, $order)
     {
         $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
@@ -357,10 +405,11 @@ class ViettelPostService
         $headers['Token'] = $partnerConfig->token ?? '';
         $headers['Accept'] = 'application/json';
         $orderNumbers = array_filter(array_unique([
-            $order->order_partner_code ?? null,
             $order->order_code ?? null,
+            $order->order_partner_code ?? null,
         ]));
         $lastResult = [];
+        $fallbackResult = [];
 
         $client = new Client([
             'headers' => $headers,
@@ -378,15 +427,124 @@ class ViettelPostService
                 $result = json_decode($response->getBody()->getContents(), true);
                 $lastResult = is_array($result) ? $result : [];
 
-                if ($this->isExpiredTokenResponse($lastResult) || !empty($lastResult['data'])) {
+                if ($this->isExpiredTokenResponse($lastResult)) {
                     return $lastResult;
+                }
+
+                if (!empty($lastResult['data'])) {
+                    $activeResult = $this->selectActiveTrackingResult($lastResult);
+                    if ($activeResult) {
+                        return $activeResult;
+                    }
+
+                    if (empty($fallbackResult)) {
+                        $fallbackResult = $lastResult;
+                    }
                 }
             } catch (\Exception $e) {
                 \Log::error('VTP API Error tracking: ' . $e->getMessage());
             }
         }
 
-        return $lastResult;
+        return !empty($fallbackResult) ? $fallbackResult : $lastResult;
+    }
+
+    private function selectActiveTrackingResult($result)
+    {
+        $items = $this->normalizeTrackingItems($result['data'] ?? null);
+        if (empty($items)) {
+            return null;
+        }
+
+        $groups = [];
+        foreach ($items as $item) {
+            $orderNumber = $this->extractTrackingOrderNumber($item);
+            if (!$orderNumber) {
+                $orderNumber = '_unknown';
+            }
+            $groups[$orderNumber][] = $item;
+        }
+
+        foreach ($groups as $orderNumber => $groupItems) {
+            $currentItem = $this->latestTrackingItem($groupItems);
+            if (!$this->isCancelledTrackingItem($currentItem)) {
+                usort($groupItems, function ($a, $b) {
+                    $timeA = strtotime($a['ORDER_STATUSDATE'] ?? $a['order_statusdate'] ?? '') ?: 0;
+                    $timeB = strtotime($b['ORDER_STATUSDATE'] ?? $b['order_statusdate'] ?? '') ?: 0;
+                    return $timeB <=> $timeA;
+                });
+                $result['data'] = $groupItems;
+                $result['_selected_order_number'] = $orderNumber === '_unknown' ? null : $orderNumber;
+                return $result;
+            }
+        }
+
+        return null;
+    }
+
+    private function normalizeTrackingItems($data)
+    {
+        if (empty($data) || !is_array($data)) {
+            return [];
+        }
+
+        if (isset($data['ORDER_NUMBER']) || isset($data['order_partner_code'])) {
+            return [$data];
+        }
+
+        return array_values(array_filter($data, 'is_array'));
+    }
+
+    private function extractTrackingOrderNumber($item)
+    {
+        if (!is_array($item)) {
+            return null;
+        }
+
+        return $item['ORDER_NUMBER'] ?? $item['order_partner_code'] ?? $item['OrderNumber'] ?? null;
+    }
+
+    private function latestTrackingItem($items)
+    {
+        $items = $this->normalizeTrackingItems($items);
+        if (empty($items)) {
+            return [];
+        }
+
+        usort($items, function ($a, $b) {
+            $timeA = strtotime($a['ORDER_STATUSDATE'] ?? $a['order_statusdate'] ?? '') ?: 0;
+            $timeB = strtotime($b['ORDER_STATUSDATE'] ?? $b['order_statusdate'] ?? '') ?: 0;
+            return $timeB <=> $timeA;
+        });
+
+        return $items[0];
+    }
+
+    private function isCancelledTrackingItem($item)
+    {
+        if (!is_array($item)) {
+            return false;
+        }
+
+        $statusCode = (string)($item['ORDER_STATUS'] ?? $item['order_status'] ?? '');
+        if (in_array($statusCode, ['101', '107', '201', '503', '510'], true)) {
+            return true;
+        }
+
+        $text = implode(' ', [
+            $item['STATUS_NAME'] ?? '',
+            $item['status_name'] ?? '',
+            $item['NOTE'] ?? '',
+            $item['note'] ?? '',
+        ]);
+        $text = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+
+        return strpos($text, 'hủy') !== false
+            || strpos($text, 'huỷ') !== false
+            || strpos($text, ' huy ') !== false
+            || strpos($text, 'huy don') !== false
+            || strpos($text, 'huy lay') !== false
+            || strpos($text, 'cancel') !== false;
     }
 
     private function isExpiredTokenResponse($result)
