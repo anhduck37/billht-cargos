@@ -79,6 +79,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/order-partner-logs/bulk-push-ems', 'OrderPartnerLogController@bulkPushEms')->name('order_partner_logs.bulk_push_ems');
     Route::post('/order-partner-logs/bulk-cancel', 'OrderPartnerLogController@bulkCancel')->name('order_partner_logs.bulk_cancel');
     Route::post('/order-partner-logs/{orderPartnerLog}/cancel', 'OrderPartnerLogController@cancel')->name('order_partner_logs.cancel');
+    Route::get('/partner-address-mappings', 'PartnerAddressMappingController@index')->name('partner_address_mappings.index');
+    Route::post('/partner-address-mappings', 'PartnerAddressMappingController@store')->name('partner_address_mappings.store');
+    Route::patch('/partner-address-mappings/{partnerAddressMapping}', 'PartnerAddressMappingController@update')->name('partner_address_mappings.update');
     Route::get('/order/status-change', 'OrderStatusChangeController@index')->name('order_status_changes.index');
     Route::post('/order/status-change/import', 'OrderStatusChangeController@import')->name('order_status_changes.import');
     Route::get('/order/status-change/template', 'OrderStatusChangeController@template')->name('order_status_changes.template');

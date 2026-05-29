@@ -1,6 +1,43 @@
 @extends('layouts.app')
 
 @section('content')
+<style>
+    @media (max-width: 991.98px) {
+        .partner-log-actions .btn,
+        .partner-log-actions .dropdown {
+            width: 100%;
+            margin: 0 0 0.5rem 0 !important;
+        }
+
+        .partner-log-filter .form-group,
+        .partner-log-filter .form-control,
+        .partner-log-filter .btn {
+            width: 100%;
+        }
+
+        .partner-log-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #ffffff;
+        }
+
+        .partner-log-card .log-label {
+            display: block;
+            font-size: 0.72rem;
+            color: #8898aa;
+            text-transform: uppercase;
+            font-weight: 700;
+            margin-bottom: 0.15rem;
+        }
+
+        .partner-log-card .log-value {
+            white-space: normal;
+            word-break: break-word;
+        }
+    }
+</style>
 <div class="header bg-gradient-primary pb-8 pt-5 pt-md-8">
     <div class="container-fluid">
         <div class="header-body">
@@ -119,11 +156,12 @@
             <div class="card shadow">
                 <div class="card-header border-0">
                     <div class="row align-items-center">
-                        <div class="col-8">
+                        <div class="col-lg-7 col-12 mb-3 mb-lg-0">
                             <h3 class="mb-0">Lịch sử đồng bộ vận đơn (VTP / EMS / Mickey)</h3>
                         </div>
-                        <div class="col-4 text-right">
+                        <div class="col-lg-5 col-12 text-lg-right partner-log-actions">
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
+                                <a href="{{ route('partner_address_mappings.index') }}" class="btn btn-sm btn-outline-primary mr-2">Mapping API</a>
                                 <div class="dropdown d-inline-block mr-2">
                                     <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="syncApiDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         Đồng bộ API
@@ -140,7 +178,7 @@
                     </div>
                     
                     <!-- Filter bar -->
-                    <form action="{{ route('order_partner_logs.index') }}" method="GET" class="form-inline mt-3">
+                    <form action="{{ route('order_partner_logs.index') }}" method="GET" class="form-inline mt-3 partner-log-filter">
                         <div class="form-group mr-2 mb-2">
                             <label for="filter_search" class="form-control-label mr-2">Tìm kiếm:</label>
                             <input type="text" name="filter_search" id="filter_search" value="{{ request('filter_search') }}" class="form-control form-control-sm" style="min-width: 260px;" placeholder="Mã vận đơn / Người gửi">
@@ -177,7 +215,7 @@
 
                 </div>
 
-                <div class="table-responsive">
+                <div class="table-responsive d-none d-lg-block">
                     {!! Form::open(['route' => array_merge(['order_partner_logs.bulk_cancel'], request()->query()), 'method' => 'POST', 'id' => 'bulkCancelPartnerOrdersForm', 'class' => 'd-none']) !!}
                         <input type="hidden" name="reason" value="Huy don hang loat tu BillHT">
                     {!! Form::close() !!}
@@ -275,6 +313,81 @@
                             @endif
                         </tbody>
                     </table>
+                </div>
+
+                <div class="d-lg-none px-3 pb-3">
+                    @if(count($logs) > 0)
+                        @foreach($logs as $log)
+                            <div class="partner-log-card">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <span class="log-label">Mã vận đơn</span>
+                                        @if($log->order_id > 0)
+                                            <a href="{{ route('orders.edit', $log->order_id) }}" target="_blank" class="font-weight-bold">
+                                                {{ $log->parsed->order_number }}
+                                            </a>
+                                        @else
+                                            <span class="font-weight-bold">{{ $log->parsed->order_number }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="text-right">
+                                        @if($log->order_id > 0)
+                                            <input type="checkbox" class="cancel-log-checkbox" form="bulkCancelPartnerOrdersForm" name="log_ids[]" value="{{ $log->id }}">
+                                            <input type="hidden" form="bulkResolvePartnerLogsForm" name="log_ids[]" value="{{ $log->id }}" disabled class="sync-log-hidden sync-log-hidden-{{ $log->id }}">
+                                            <input type="hidden" form="bulkPushViettelPartnerLogsForm" name="log_ids[]" value="{{ $log->id }}" disabled class="sync-log-hidden sync-log-hidden-{{ $log->id }}">
+                                            <input type="hidden" form="bulkPushEmsPartnerLogsForm" name="log_ids[]" value="{{ $log->id }}" disabled class="sync-log-hidden sync-log-hidden-{{ $log->id }}">
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <span class="log-label">Người gửi</span>
+                                    <div class="log-value">{{ $log->parsed->sender_name }}</div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <span class="log-label">Đối tác</span>
+                                    @if(strtoupper($log->partner_code) == 'EMS')
+                                        <span class="badge badge-dot mr-4"><i class="bg-warning"></i> EMS</span>
+                                    @else
+                                        <span class="badge badge-dot mr-4"><i class="bg-danger"></i> VTP</span>
+                                    @endif
+                                </div>
+
+                                <div class="mb-2">
+                                    <span class="log-label">Địa chỉ so sánh</span>
+                                    <div class="mb-1">
+                                        <span class="badge {{ $log->parsed->address_compare_class }}">{{ $log->parsed->address_compare_label }}</span>
+                                    </div>
+                                    <div class="log-value text-sm mb-2">
+                                        <strong>Địa chỉ nhập:</strong> {{ $log->parsed->app_receiver_address }}
+                                    </div>
+                                    <div class="log-value text-sm" style="white-space: pre-line;">
+                                        <strong>{{ $log->parsed->partner_address_label }}:</strong> {{ $log->parsed->partner_receiver_address }}
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <span class="log-label">Chi tiết phản hồi</span>
+                                    <div class="log-value">{!! $log->parsed->response_html !!}</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <span class="log-label">Thời gian</span>
+                                    <div>{{ \Carbon\Carbon::parse($log->updated_at)->format('H:i d/m/Y') }}</div>
+                                </div>
+
+                                @if($log->can_cancel)
+                                    {!! Form::open(['route' => array_merge(['order_partner_logs.cancel', $log->id], request()->query()), 'method' => 'POST', 'class' => 'cancel-partner-order-form']) !!}
+                                        <input type="hidden" name="reason" value="Huy don tu BillHT">
+                                        <button type="submit" class="btn btn-sm btn-danger btn-block">Huỷ đồng bộ</button>
+                                    {!! Form::close() !!}
+                                @endif
+                            </div>
+                        @endforeach
+                    @else
+                        <div class="text-center text-muted py-4">Không có dữ liệu logs.</div>
+                    @endif
                 </div>
                 
                 <div class="card-footer py-4">
