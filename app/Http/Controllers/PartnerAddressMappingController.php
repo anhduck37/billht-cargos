@@ -182,6 +182,9 @@ class PartnerAddressMappingController extends Controller
                 })->orWhere(function ($subQuery) use ($firstKeyword, $secondKeyword) {
                     $subQuery->where('districts.district_name', 'LIKE', '%' . $firstKeyword . '%')
                         ->where('citys.city_name', 'LIKE', '%' . $secondKeyword . '%');
+                })->orWhere(function ($subQuery) use ($firstKeyword, $secondKeyword) {
+                    $subQuery->where('wards.ward_name', 'LIKE', '%' . $firstKeyword . '%')
+                        ->where('citys.city_name', 'LIKE', '%' . $secondKeyword . '%');
                 });
             });
         } else {

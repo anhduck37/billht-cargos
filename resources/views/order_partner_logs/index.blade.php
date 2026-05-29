@@ -161,7 +161,9 @@
                         </div>
                         <div class="col-lg-5 col-12 text-lg-right partner-log-actions">
                             @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
-                                <a href="{{ route('partner_address_mappings.index') }}" class="btn btn-sm btn-outline-primary mr-2">Mapping API</a>
+                                @if(\Illuminate\Support\Facades\Route::has('partner_address_mappings.index'))
+                                    <a href="{{ route('partner_address_mappings.index') }}" class="btn btn-sm btn-outline-primary mr-2">Mapping API</a>
+                                @endif
                                 <div class="dropdown d-inline-block mr-2">
                                     <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="syncApiDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         Đồng bộ API
