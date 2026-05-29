@@ -413,10 +413,9 @@ class ViettelPostService
         }
 
         $logs = OrderPartnerLog::where('order_id', $order->id)
-            ->where('partner_code', PartnerConfig::CODE_VIETTEL_POST)
-            ->where('status', OrderPartnerLog::STATUS_SUCCESS)
+            ->whereIn('partner_code', [PartnerConfig::CODE_VIETTEL_POST, Order::CODE_VIETTEL_POST])
             ->orderBy('id', 'DESC')
-            ->limit(10)
+            ->limit(30)
             ->get();
 
         foreach ($logs as $log) {
@@ -426,9 +425,58 @@ class ViettelPostService
             }
 
             $response = json_decode($log->response, true);
-            $orderNumber = $response['data']['ORDER_NUMBER'] ?? $response['data']['OrderNumber'] ?? null;
+            if (!$this->isSuccessfulCreateOrderLog($log, $response)) {
+                continue;
+            }
+
+            $orderNumber = $this->findOrderNumberInArray($response);
             if ($orderNumber) {
                 return $orderNumber;
+            }
+        }
+
+        return null;
+    }
+
+    private function isSuccessfulCreateOrderLog($log, $response)
+    {
+        if ((int)$log->status === OrderPartnerLog::STATUS_SUCCESS) {
+            return true;
+        }
+
+        if (!is_array($response)) {
+            return false;
+        }
+
+        if (isset($response['error']) && $response['error']) {
+            return false;
+        }
+
+        if (isset($response['status']) && is_numeric($response['status']) && (int)$response['status'] >= 400) {
+            return false;
+        }
+
+        return !empty($this->findOrderNumberInArray($response));
+    }
+
+    private function findOrderNumberInArray($data)
+    {
+        if (!is_array($data)) {
+            return null;
+        }
+
+        foreach (['ORDER_NUMBER', 'OrderNumber', 'order_number', 'MA_VAN_DON', 'tracking_code'] as $key) {
+            if (!empty($data[$key]) && is_scalar($data[$key])) {
+                return (string)$data[$key];
+            }
+        }
+
+        foreach ($data as $value) {
+            if (is_array($value)) {
+                $orderNumber = $this->findOrderNumberInArray($value);
+                if ($orderNumber) {
+                    return $orderNumber;
+                }
             }
         }
 
