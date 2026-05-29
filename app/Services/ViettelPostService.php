@@ -352,6 +352,14 @@ class ViettelPostService
 
     public function refreshTrackingForOrder($order)
     {
+        $logOrderNumber = $this->latestSuccessfulOrderNumberFromLogs($order);
+        if ($logOrderNumber && $logOrderNumber !== $order->order_partner_code) {
+            $order->order_partner_code = $logOrderNumber;
+            $order->partner_code = Order::CODE_VIETTEL_POST;
+            $order->push_error = null;
+            $order->save();
+        }
+
         $tracking = $this->tracking($order);
         $items = $this->normalizeTrackingItems($tracking);
 
@@ -396,6 +404,35 @@ class ViettelPostService
         }
 
         return $query->orderBy('id', 'DESC')->get();
+    }
+
+    private function latestSuccessfulOrderNumberFromLogs($order)
+    {
+        if (!$order || !$order->id) {
+            return null;
+        }
+
+        $logs = OrderPartnerLog::where('order_id', $order->id)
+            ->where('partner_code', PartnerConfig::CODE_VIETTEL_POST)
+            ->where('status', OrderPartnerLog::STATUS_SUCCESS)
+            ->orderBy('id', 'DESC')
+            ->limit(10)
+            ->get();
+
+        foreach ($logs as $log) {
+            $payload = json_decode($log->payload, true);
+            if (isset($payload['TYPE']) && (int)$payload['TYPE'] === 4) {
+                continue;
+            }
+
+            $response = json_decode($log->response, true);
+            $orderNumber = $response['data']['ORDER_NUMBER'] ?? $response['data']['OrderNumber'] ?? null;
+            if ($orderNumber) {
+                return $orderNumber;
+            }
+        }
+
+        return null;
     }
 
     private function requestTracking($path, $order)
