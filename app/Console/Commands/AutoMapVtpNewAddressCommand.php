@@ -232,7 +232,7 @@ class AutoMapVtpNewAddressCommand extends Command
                 ->where('partner_code', 'VTP')
                 ->first();
 
-            if ($existing && $onlyMissing) {
+            if ($existing && $onlyMissing && $this->hasCompleteVtpMapping($existing)) {
                 $skipped++;
                 continue;
             }
@@ -278,6 +278,15 @@ class AutoMapVtpNewAddressCommand extends Command
         }
 
         return compact('mapped', 'skipped', 'review');
+    }
+
+    private function hasCompleteVtpMapping($mapping)
+    {
+        return $mapping
+            && $mapping->mapping_status === 'mapped'
+            && !empty($mapping->partner_province_code)
+            && !empty($mapping->partner_district_code)
+            && !empty($mapping->partner_ward_code);
     }
 
     private function scoreCandidate(array $province, array $district, array $ward, array $newAddress)
