@@ -31,6 +31,7 @@ class AutoMapVtpNewAddressCommand extends Command
     private $addressService;
     private $oldVtpIndex = [];
     private $newCandidates = [];
+    private $targetNewWardIds = [];
 
     public function handle(Address2025Service $addressService)
     {
@@ -58,7 +59,14 @@ class AutoMapVtpNewAddressCommand extends Command
         $provinceCode = $this->option('province-code');
 
         if ($fromFailedOrders) {
-            $checked = $this->collectFailedOrderCandidates($client, (int)$this->option('failed-limit'));
+            $this->targetNewWardIds = $this->getFailedOrderNewWardIds((int)$this->option('failed-limit'));
+            if (empty($this->targetNewWardIds)) {
+                $this->warn('Khong tim thay xa/phuong moi nao dang loi thieu mapping VTP.');
+                return 0;
+            }
+
+            $this->info('Tim thay ' . count($this->targetNewWardIds) . ' xa/phuong moi dang loi. Dang quet dia chi cu de mapping nguoc...');
+            $checked = $this->collectCandidates($client, $limit, $provinceCode);
         } else {
             $checked = $this->collectCandidates($client, $limit, $provinceCode);
         }
@@ -86,10 +94,8 @@ class AutoMapVtpNewAddressCommand extends Command
         return 0;
     }
 
-    private function collectFailedOrderCandidates(Client $client, $limit)
+    private function getFailedOrderNewWardIds($limit)
     {
-        $this->info('Dang quet cac xa/phuong moi co log VTP loi thieu mapping...');
-
         $query = \App\Models\Order::query()
             ->join('receivers', 'receivers.id', '=', 'orders.receiver_id')
             ->join('order_partner_logs', 'order_partner_logs.order_id', '=', 'orders.id')
@@ -113,86 +119,9 @@ class AutoMapVtpNewAddressCommand extends Command
             $query->limit($limit);
         }
 
-        $newWardIds = $query->pluck('receivers.new_ward_id')->filter()->values();
-        $checked = 0;
-
-        foreach ($newWardIds as $newWardId) {
-            $newWard = NewWard::with('newProvince')->find($newWardId);
-            if (!$newWard || !$newWard->newProvince) {
-                continue;
-            }
-
-            $checked++;
-            $this->collectNewWardCandidates($client, $newWard);
-        }
-
-        return $checked;
-    }
-
-    private function collectNewWardCandidates(Client $client, NewWard $newWard)
-    {
-        $provinceCode = $newWard->newProvince->official_code ?? null;
-        $wardCode = $newWard->official_code ?? null;
-
-        if (!$provinceCode || !$wardCode) {
-            return;
-        }
-
-        $response = $client->get('convert-address', [
-            'query' => [
-                'province_code' => $provinceCode,
-                'ward_code' => $wardCode,
-            ],
-        ]);
-
-        $payload = json_decode($response->getBody()->getContents(), true);
-        $oldAddresses = $payload['data']['old_addresses'] ?? $payload['data']['old_address'] ?? [];
-
-        if (empty($oldAddresses)) {
-            $response = $client->post('convert-address', [
-                'json' => [
-                    'province_code' => $provinceCode,
-                    'ward_code' => $wardCode,
-                ],
-            ]);
-
-            $payload = json_decode($response->getBody()->getContents(), true);
-            $oldAddresses = $payload['data']['old_addresses'] ?? $payload['data']['old_address'] ?? [];
-        }
-
-        if (isset($oldAddresses['province_name'])) {
-            $oldAddresses = [$oldAddresses];
-        }
-
-        foreach ($oldAddresses as $oldAddress) {
-            $oldVtp = $this->findOldVtpAddress(
-                $oldAddress['province_name'] ?? '',
-                $oldAddress['district_name'] ?? '',
-                $oldAddress['ward_name'] ?? ''
-            );
-
-            if (!$oldVtp) {
-                continue;
-            }
-
-            $this->newCandidates[$newWard->id][] = [
-                'score' => $this->scoreOldAddressForNewWard($newWard, $oldAddress),
-                'new_province_id' => $newWard->new_province_id,
-                'new_ward_id' => $newWard->id,
-                'new_province_name' => $newWard->newProvince->name,
-                'new_ward_name' => $newWard->name,
-                'old_province_name' => $oldAddress['province_name'] ?? null,
-                'old_district_name' => $oldAddress['district_name'] ?? null,
-                'old_ward_name' => $oldAddress['ward_name'] ?? null,
-                'old_province_code' => $oldAddress['province_code'] ?? null,
-                'old_district_code' => $oldAddress['district_code'] ?? null,
-                'old_ward_code' => $oldAddress['ward_code'] ?? null,
-                'partner_province_code' => $oldVtp['province_code'],
-                'partner_district_code' => $oldVtp['district_code'],
-                'partner_ward_code' => $oldVtp['ward_code'],
-                'description' => $oldAddress['ward_description'] ?? null,
-            ];
-        }
+        return $query->pluck('receivers.new_ward_id')->filter()->map(function ($id) {
+            return (int)$id;
+        })->unique()->values()->all();
     }
 
     private function collectCandidates(Client $client, $limit, $provinceCode = null)
@@ -264,6 +193,10 @@ class AutoMapVtpNewAddressCommand extends Command
 
             $newWard = $this->findNewWard($newAddress, $newProvince->id);
             if (!$newWard) {
+                continue;
+            }
+
+            if (!empty($this->targetNewWardIds) && !in_array((int)$newWard->id, $this->targetNewWardIds, true)) {
                 continue;
             }
 
