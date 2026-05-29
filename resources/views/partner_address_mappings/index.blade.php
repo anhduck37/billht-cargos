@@ -39,86 +39,64 @@
             <div class="card shadow">
                 <div class="card-header border-0">
                     <h3 class="mb-0">Tra mã địa chỉ cũ</h3>
-                    <p class="text-muted text-sm mb-0">Tìm theo tên tỉnh, huyện hoặc xã cũ để lấy mã VTP/EMS điền vào form mapping.</p>
+                    <p class="text-muted text-sm mb-0">Chọn tỉnh, huyện, xã cũ để lấy mã VTP/EMS điền vào form mapping.</p>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ route('partner_address_mappings.index') }}">
-                        <div class="form-row">
-                            <div class="form-group col-lg-6 col-md-6">
-                                <label>Từ khóa địa chỉ cũ</label>
-                                <input type="text" name="legacy_keyword" value="{{ request('legacy_keyword') }}" class="form-control" placeholder="VD: Hữu Hòa, Thanh Trì, Hà Nội">
-                            </div>
-                            <div class="form-group col-lg-3 col-md-6">
-                                <label>Đối tác cần xem mã</label>
-                                <select name="legacy_partner_code" class="form-control">
-                                    <option value="">Cả Viettel và EMS</option>
-                                    <option value="VTP" {{ request('legacy_partner_code') === 'VTP' ? 'selected' : '' }}>Viettel</option>
-                                    <option value="EMS" {{ request('legacy_partner_code') === 'EMS' ? 'selected' : '' }}>EMS</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-lg-3 col-md-12 d-flex align-items-end">
-                                <button type="submit" class="btn btn-info btn-block">Tra mã</button>
-                            </div>
+                    <div class="form-row">
+                        <div class="form-group col-lg-3 col-md-6">
+                            <label>Tỉnh/Thành phố cũ</label>
+                            <select id="legacy_city_id" class="form-control">
+                                <option value="">Vui lòng chọn...</option>
+                                @foreach($legacyCities as $city)
+                                    <option value="{{ $city->id }}">{{ $city->city_name }}</option>
+                                @endforeach
+                            </select>
                         </div>
-                    </form>
+                        <div class="form-group col-lg-3 col-md-6">
+                            <label>Huyện/Quận cũ</label>
+                            <select id="legacy_district_id" class="form-control">
+                                <option value="">Vui lòng chọn tỉnh trước...</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-3 col-md-6">
+                            <label>Xã/Phường cũ</label>
+                            <select id="legacy_ward_id" class="form-control">
+                                <option value="">Vui lòng chọn huyện trước...</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-lg-3 col-md-6">
+                            <label>Đối tác cần dùng mã</label>
+                            <select id="legacy_partner_code" class="form-control">
+                                <option value="VTP">Viettel</option>
+                                <option value="EMS">EMS</option>
+                            </select>
+                        </div>
+                    </div>
 
-                    @if(request()->filled('legacy_keyword'))
-                        <div class="table-responsive mt-3">
-                            <table class="table table-sm align-items-center">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th>Tỉnh cũ</th>
-                                        <th>Huyện cũ</th>
-                                        <th>Xã cũ</th>
-                                        <th>VTP</th>
-                                        <th>EMS</th>
-                                        <th class="text-right">Dùng mã</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($legacyAddressResults as $legacy)
-                                        <tr>
-                                            <td>{{ $legacy->city_name }}</td>
-                                            <td>{{ $legacy->district_name }}</td>
-                                            <td>{{ $legacy->ward_name }}</td>
-                                            <td>
-                                                <div>Tỉnh: <strong>{{ $legacy->vtp_province_code }}</strong></div>
-                                                <div>Huyện: <strong>{{ $legacy->vtp_district_code }}</strong></div>
-                                                <div>Xã: <strong>{{ $legacy->vtp_ward_code }}</strong></div>
-                                            </td>
-                                            <td>
-                                                <div>Tỉnh: <strong>{{ $legacy->ems_province_code }}</strong></div>
-                                                <div>Huyện: <strong>{{ $legacy->ems_district_code }}</strong></div>
-                                                <div>Xã: <strong>{{ $legacy->ems_ward_code }}</strong></div>
-                                            </td>
-                                            <td class="text-right">
-                                                <button type="button"
-                                                    class="btn btn-sm btn-outline-warning use-legacy-code mb-1"
-                                                    data-partner="VTP"
-                                                    data-province-code="{{ $legacy->vtp_province_code }}"
-                                                    data-district-code="{{ $legacy->vtp_district_code }}"
-                                                    data-ward-code="{{ $legacy->vtp_ward_code }}">
-                                                    Dùng VTP
-                                                </button>
-                                                <button type="button"
-                                                    class="btn btn-sm btn-outline-info use-legacy-code mb-1"
-                                                    data-partner="EMS"
-                                                    data-province-code="{{ $legacy->ems_province_code }}"
-                                                    data-district-code="{{ $legacy->ems_district_code }}"
-                                                    data-ward-code="{{ $legacy->ems_ward_code }}">
-                                                    Dùng EMS
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="6" class="text-center">Không tìm thấy mã địa chỉ cũ phù hợp.</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                    <div id="legacy_code_result" class="border rounded p-3 mt-2" style="display: none;">
+                        <div class="row">
+                            <div class="col-lg-4 mb-2">
+                                <div class="text-muted text-sm">Địa chỉ cũ</div>
+                                <div id="legacy_address_text" class="font-weight-bold"></div>
+                            </div>
+                            <div class="col-lg-3 mb-2">
+                                <div class="text-muted text-sm">Mã VTP</div>
+                                <div>Tỉnh: <strong id="legacy_vtp_province"></strong></div>
+                                <div>Huyện: <strong id="legacy_vtp_district"></strong></div>
+                                <div>Xã: <strong id="legacy_vtp_ward"></strong></div>
+                            </div>
+                            <div class="col-lg-3 mb-2">
+                                <div class="text-muted text-sm">Mã EMS</div>
+                                <div>Tỉnh: <strong id="legacy_ems_province"></strong></div>
+                                <div>Huyện: <strong id="legacy_ems_district"></strong></div>
+                                <div>Xã: <strong id="legacy_ems_ward"></strong></div>
+                            </div>
+                            <div class="col-lg-2 d-flex align-items-end">
+                                <button type="button" id="use_selected_legacy_code" class="btn btn-info btn-block">Dùng mã này</button>
+                            </div>
                         </div>
-                    @endif
+                    </div>
+                    <div id="legacy_code_error" class="alert alert-warning mt-3" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -333,8 +311,8 @@
                 <ol class="pl-3">
                     <li>Chọn đối tác: Viettel hoặc EMS.</li>
                     <li>Chọn Tỉnh/Thành phố mới, sau đó chọn Xã/Phường mới.</li>
-                    <li>Dùng khối <strong>Tra mã địa chỉ cũ</strong> để tìm mã tỉnh, huyện, xã của đối tác.</li>
-                    <li>Bấm <strong>Dùng VTP</strong> hoặc <strong>Dùng EMS</strong> để tự điền mã vào form.</li>
+                    <li>Dùng khối <strong>Tra mã địa chỉ cũ</strong> để chọn tỉnh, huyện, xã cũ.</li>
+                    <li>Chọn đối tác cần dùng mã và bấm <strong>Dùng mã này</strong> để tự điền mã vào form.</li>
                     <li>Chọn trạng thái <strong>Đã map</strong> và bấm <strong>Lưu mapping</strong>.</li>
                 </ol>
 
@@ -389,12 +367,104 @@
                 });
         }
 
+        var selectedLegacyCode = null;
+
+        function resetLegacyCodeResult(message) {
+            selectedLegacyCode = null;
+            $('#legacy_code_result').hide();
+            if (message) {
+                $('#legacy_code_error').text(message).show();
+            } else {
+                $('#legacy_code_error').hide().text('');
+            }
+        }
+
+        function loadLegacyDistricts(cityId) {
+            $('#legacy_district_id').html('<option value="">Đang tải...</option>');
+            $('#legacy_ward_id').html('<option value="">Vui lòng chọn huyện trước...</option>');
+            resetLegacyCodeResult();
+
+            if (!cityId) {
+                $('#legacy_district_id').html('<option value="">Vui lòng chọn tỉnh trước...</option>');
+                return;
+            }
+
+            $.get('/api/district/' + cityId)
+                .done(function (districts) {
+                    var html = '<option value="">Vui lòng chọn...</option>';
+                    (districts || []).forEach(function (district) {
+                        html += '<option value="' + district.id + '">' + district.district_name + '</option>';
+                    });
+                    $('#legacy_district_id').html(html);
+                })
+                .fail(function () {
+                    $('#legacy_district_id').html('<option value="">Không tải được huyện/quận</option>');
+                });
+        }
+
+        function loadLegacyWards(districtId) {
+            $('#legacy_ward_id').html('<option value="">Đang tải...</option>');
+            resetLegacyCodeResult();
+
+            if (!districtId) {
+                $('#legacy_ward_id').html('<option value="">Vui lòng chọn huyện trước...</option>');
+                return;
+            }
+
+            $.get('/api/ward/' + districtId)
+                .done(function (wards) {
+                    var html = '<option value="">Vui lòng chọn...</option>';
+                    (wards || []).forEach(function (ward) {
+                        html += '<option value="' + ward.id + '">' + ward.ward_name + '</option>';
+                    });
+                    $('#legacy_ward_id').html(html);
+                })
+                .fail(function () {
+                    $('#legacy_ward_id').html('<option value="">Không tải được xã/phường</option>');
+                });
+        }
+
+        function loadLegacyAddressCode(wardId) {
+            resetLegacyCodeResult();
+            if (!wardId) {
+                return;
+            }
+
+            $.get('/api/legacy-address-code/' + wardId)
+                .done(function (data) {
+                    selectedLegacyCode = data;
+                    $('#legacy_address_text').text(data.ward_name + ', ' + data.district_name + ', ' + data.city_name);
+                    $('#legacy_vtp_province').text(data.vtp_province_code || 'N/A');
+                    $('#legacy_vtp_district').text(data.vtp_district_code || 'N/A');
+                    $('#legacy_vtp_ward').text(data.vtp_ward_code || 'N/A');
+                    $('#legacy_ems_province').text(data.ems_province_code || 'N/A');
+                    $('#legacy_ems_district').text(data.ems_district_code || 'N/A');
+                    $('#legacy_ems_ward').text(data.ems_ward_code || 'N/A');
+                    $('#legacy_code_result').show();
+                })
+                .fail(function () {
+                    resetLegacyCodeResult('Không lấy được mã địa chỉ cũ.');
+                });
+        }
+
         $('#mapping_province_id').on('change', function () {
             loadWards($(this).val(), '#mapping_ward_id');
         });
 
         $('#filter_province_id').on('change', function () {
             loadWards($(this).val(), '#filter_ward_id');
+        });
+
+        $('#legacy_city_id').on('change', function () {
+            loadLegacyDistricts($(this).val());
+        });
+
+        $('#legacy_district_id').on('change', function () {
+            loadLegacyWards($(this).val());
+        });
+
+        $('#legacy_ward_id').on('change', function () {
+            loadLegacyAddressCode($(this).val());
         });
 
         $('.load-mapping').on('click', function () {
@@ -413,11 +483,23 @@
             $('html, body').animate({ scrollTop: $('#mappingForm').offset().top - 120 }, 250);
         });
 
-        $('.use-legacy-code').on('click', function () {
-            $('#partner_code').val($(this).data('partner'));
-            $('#partner_province_code').val($(this).data('province-code'));
-            $('#partner_district_code').val($(this).data('district-code'));
-            $('#partner_ward_code').val($(this).data('ward-code'));
+        $('#use_selected_legacy_code').on('click', function () {
+            if (!selectedLegacyCode) {
+                resetLegacyCodeResult('Bạn vui lòng chọn đủ tỉnh/huyện/xã cũ trước.');
+                return;
+            }
+
+            var partner = $('#legacy_partner_code').val();
+            $('#partner_code').val(partner);
+            if (partner === 'EMS') {
+                $('#partner_province_code').val(selectedLegacyCode.ems_province_code || '');
+                $('#partner_district_code').val(selectedLegacyCode.ems_district_code || '');
+                $('#partner_ward_code').val(selectedLegacyCode.ems_ward_code || '');
+            } else {
+                $('#partner_province_code').val(selectedLegacyCode.vtp_province_code || '');
+                $('#partner_district_code').val(selectedLegacyCode.vtp_district_code || '');
+                $('#partner_ward_code').val(selectedLegacyCode.vtp_ward_code || '');
+            }
             $('#mapping_status').val('mapped');
 
             $('html, body').animate({ scrollTop: $('#mappingForm').offset().top - 120 }, 250);

@@ -21,6 +21,7 @@ Route::middleware([])->group(function () {
     Route::get('/district/{city_id}', 'DistrictController@getDistricts');
     Route::get('/ward/{district_id}', 'WardController@getWards');
     Route::get('/new-ward/{province_id}', 'WardController@getNewWards');
+    Route::get('/legacy-address-code/{ward_id}', 'WardController@getLegacyAddressCode');
 });
 
 Route::group(['prefix' => 'webhook'], function () {

@@ -6,6 +6,7 @@ use App\NewAddressPartnerMapping;
 use App\NewProvince;
 use App\NewWard;
 use App\User;
+use App\City;
 use Flash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -48,13 +49,9 @@ class PartnerAddressMappingController extends Controller
             });
         }
 
-        $legacyAddressResults = collect();
-        if ($request->filled('legacy_keyword')) {
-            $legacyAddressResults = $this->searchLegacyAddressCodes($request);
-        }
-
         $mappings = $query->orderBy('updated_at', 'desc')->paginate(50);
         $newProvinces = NewProvince::where('is_active', 1)->orderBy('name')->get();
+        $legacyCities = City::orderBy('city_name')->get();
         $selectedWards = collect();
         if ($request->filled('new_province_id')) {
             $selectedWards = NewWard::where('new_province_id', $request->input('new_province_id'))
@@ -63,7 +60,7 @@ class PartnerAddressMappingController extends Controller
                 ->get();
         }
 
-        return view('partner_address_mappings.index', compact('mappings', 'newProvinces', 'selectedWards', 'legacyAddressResults'));
+        return view('partner_address_mappings.index', compact('mappings', 'newProvinces', 'selectedWards', 'legacyCities'));
     }
 
     public function store(Request $request)
