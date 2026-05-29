@@ -7,6 +7,7 @@ use App\District;
 use App\NewAddressPartnerMapping;
 use App\NewProvince;
 use App\NewWard;
+use App\OrderPartnerLog;
 use App\Services\Address2025Service;
 use App\Services\EmsService;
 use App\Ward;
@@ -21,7 +22,9 @@ class AutoMapVtpNewAddressCommand extends Command
         {--province-code= : Chi quet mot tinh/thanh cu theo ma API tra cuu dia chi, vi du Ha Noi = 1}
         {--dry-run : Chi kiem tra, khong ghi DB}
         {--only-missing=1 : Chi bo sung mapping VTP dang thieu}
-        {--write-ambiguous=0 : Cho phep ghi ca mapping co nhieu ung vien ngang diem}';
+        {--write-ambiguous=0 : Cho phep ghi ca mapping co nhieu ung vien ngang diem}
+        {--from-failed-orders=0 : Chi quet cac xa/phuong moi dang co log day VTP loi thieu mapping}
+        {--failed-limit=0 : Gioi han so xa/phuong loi can quet, 0 la tat ca}';
 
     protected $description = 'Auto create VTP mappings for new 2025 wards by converting old wards to new wards';
 
@@ -50,9 +53,16 @@ class AutoMapVtpNewAddressCommand extends Command
         $dryRun = (bool)$this->option('dry-run');
         $onlyMissing = (string)$this->option('only-missing') !== '0';
         $writeAmbiguous = (string)$this->option('write-ambiguous') === '1';
+        $fromFailedOrders = (string)$this->option('from-failed-orders') === '1';
 
         $provinceCode = $this->option('province-code');
-        $checked = $this->collectCandidates($client, $limit, $provinceCode);
+
+        if ($fromFailedOrders) {
+            $checked = $this->collectFailedOrderCandidates($client, (int)$this->option('failed-limit'));
+        } else {
+            $checked = $this->collectCandidates($client, $limit, $provinceCode);
+        }
+
         $result = $this->writeMappings($onlyMissing, $dryRun, $writeAmbiguous);
 
         if (!empty($result['review'])) {
@@ -74,6 +84,115 @@ class AutoMapVtpNewAddressCommand extends Command
         }
 
         return 0;
+    }
+
+    private function collectFailedOrderCandidates(Client $client, $limit)
+    {
+        $this->info('Dang quet cac xa/phuong moi co log VTP loi thieu mapping...');
+
+        $query = \App\Models\Order::query()
+            ->join('receivers', 'receivers.id', '=', 'orders.receiver_id')
+            ->join('order_partner_logs', 'order_partner_logs.order_id', '=', 'orders.id')
+            ->where('orders.partner_code', 'VTP')
+            ->where('receivers.address_scheme', 'new')
+            ->whereNotNull('receivers.new_ward_id')
+            ->whereIn('order_partner_logs.partner_code', ['VTP', 'VIETTEL_POST'])
+            ->where('order_partner_logs.status', OrderPartnerLog::STATUS_FAILD)
+            ->where(function ($q) {
+                $q->where('order_partner_logs.response', 'like', '%mapping Viettel%')
+                    ->orWhere('order_partner_logs.response', 'like', '%mapping VTP%')
+                    ->orWhere('order_partner_logs.response', 'like', '%RECEIVER_WARD%')
+                    ->orWhere('order_partner_logs.response', 'like', '%RECEIVER_DISTRICT%')
+                    ->orWhere('order_partner_logs.response', 'like', '%RECEIVER_PROVINCE%');
+            })
+            ->select('receivers.new_ward_id')
+            ->distinct()
+            ->orderBy('receivers.new_ward_id');
+
+        if ($limit > 0) {
+            $query->limit($limit);
+        }
+
+        $newWardIds = $query->pluck('receivers.new_ward_id')->filter()->values();
+        $checked = 0;
+
+        foreach ($newWardIds as $newWardId) {
+            $newWard = NewWard::with('newProvince')->find($newWardId);
+            if (!$newWard || !$newWard->newProvince) {
+                continue;
+            }
+
+            $checked++;
+            $this->collectNewWardCandidates($client, $newWard);
+        }
+
+        return $checked;
+    }
+
+    private function collectNewWardCandidates(Client $client, NewWard $newWard)
+    {
+        $provinceCode = $newWard->newProvince->official_code ?? null;
+        $wardCode = $newWard->official_code ?? null;
+
+        if (!$provinceCode || !$wardCode) {
+            return;
+        }
+
+        $response = $client->get('convert-address', [
+            'query' => [
+                'province_code' => $provinceCode,
+                'ward_code' => $wardCode,
+            ],
+        ]);
+
+        $payload = json_decode($response->getBody()->getContents(), true);
+        $oldAddresses = $payload['data']['old_addresses'] ?? $payload['data']['old_address'] ?? [];
+
+        if (empty($oldAddresses)) {
+            $response = $client->post('convert-address', [
+                'json' => [
+                    'province_code' => $provinceCode,
+                    'ward_code' => $wardCode,
+                ],
+            ]);
+
+            $payload = json_decode($response->getBody()->getContents(), true);
+            $oldAddresses = $payload['data']['old_addresses'] ?? $payload['data']['old_address'] ?? [];
+        }
+
+        if (isset($oldAddresses['province_name'])) {
+            $oldAddresses = [$oldAddresses];
+        }
+
+        foreach ($oldAddresses as $oldAddress) {
+            $oldVtp = $this->findOldVtpAddress(
+                $oldAddress['province_name'] ?? '',
+                $oldAddress['district_name'] ?? '',
+                $oldAddress['ward_name'] ?? ''
+            );
+
+            if (!$oldVtp) {
+                continue;
+            }
+
+            $this->newCandidates[$newWard->id][] = [
+                'score' => $this->scoreOldAddressForNewWard($newWard, $oldAddress),
+                'new_province_id' => $newWard->new_province_id,
+                'new_ward_id' => $newWard->id,
+                'new_province_name' => $newWard->newProvince->name,
+                'new_ward_name' => $newWard->name,
+                'old_province_name' => $oldAddress['province_name'] ?? null,
+                'old_district_name' => $oldAddress['district_name'] ?? null,
+                'old_ward_name' => $oldAddress['ward_name'] ?? null,
+                'old_province_code' => $oldAddress['province_code'] ?? null,
+                'old_district_code' => $oldAddress['district_code'] ?? null,
+                'old_ward_code' => $oldAddress['ward_code'] ?? null,
+                'partner_province_code' => $oldVtp['province_code'],
+                'partner_district_code' => $oldVtp['district_code'],
+                'partner_ward_code' => $oldVtp['ward_code'],
+                'description' => $oldAddress['ward_description'] ?? null,
+            ];
+        }
     }
 
     private function collectCandidates(Client $client, $limit, $provinceCode = null)
@@ -259,6 +378,34 @@ class AutoMapVtpNewAddressCommand extends Command
 
         if ($this->normalize($district['name'] ?? '') !== '') {
             $score += 1;
+        }
+
+        return $score;
+    }
+
+    private function scoreOldAddressForNewWard(NewWard $newWard, array $oldAddress)
+    {
+        $score = 0;
+        $newWardName = $this->normalize($newWard->name);
+        $newProvinceName = $this->normalize($newWard->newProvince->name ?? '');
+        $oldWardName = $this->normalize($oldAddress['ward_name'] ?? '');
+        $oldProvinceName = $this->normalize($oldAddress['province_name'] ?? '');
+        $description = $this->normalize($oldAddress['ward_description'] ?? '');
+
+        if (!empty($oldAddress['ward_code']) && (string)$oldAddress['ward_code'] === (string)$newWard->official_code) {
+            $score += 100;
+        }
+
+        if ($oldWardName !== '' && $oldWardName === $newWardName) {
+            $score += 80;
+        }
+
+        if ($oldWardName !== '' && strpos($description, $oldWardName) !== false) {
+            $score += 30;
+        }
+
+        if ($oldProvinceName !== '' && $oldProvinceName === $newProvinceName) {
+            $score += 10;
         }
 
         return $score;
