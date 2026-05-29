@@ -170,7 +170,9 @@ class PartnerAddressMappingController extends Controller
 
             $query->where('wards.ward_name', 'LIKE', '%' . $wardKeyword . '%')
                 ->where('districts.district_name', 'LIKE', '%' . $districtKeyword . '%')
-                ->where('citys.city_name', 'LIKE', '%' . $cityKeyword . '%');
+                ->where(function ($q) use ($cityKeyword) {
+                    $this->applyLegacyAddressLike($q, 'citys.city_name', $cityKeyword);
+                });
         } elseif (count($parts) === 2) {
             $firstKeyword = $this->stripLegacyAddressPrefix($parts[0]);
             $secondKeyword = $this->stripLegacyAddressPrefix($parts[1]);
@@ -181,17 +183,21 @@ class PartnerAddressMappingController extends Controller
                         ->where('districts.district_name', 'LIKE', '%' . $secondKeyword . '%');
                 })->orWhere(function ($subQuery) use ($firstKeyword, $secondKeyword) {
                     $subQuery->where('districts.district_name', 'LIKE', '%' . $firstKeyword . '%')
-                        ->where('citys.city_name', 'LIKE', '%' . $secondKeyword . '%');
+                        ->where(function ($q) use ($secondKeyword) {
+                            $this->applyLegacyAddressLike($q, 'citys.city_name', $secondKeyword);
+                        });
                 })->orWhere(function ($subQuery) use ($firstKeyword, $secondKeyword) {
                     $subQuery->where('wards.ward_name', 'LIKE', '%' . $firstKeyword . '%')
-                        ->where('citys.city_name', 'LIKE', '%' . $secondKeyword . '%');
+                        ->where(function ($q) use ($secondKeyword) {
+                            $this->applyLegacyAddressLike($q, 'citys.city_name', $secondKeyword);
+                        });
                 });
             });
         } else {
             $singleKeyword = $this->stripLegacyAddressPrefix($keyword);
             $query->where(function ($q) use ($singleKeyword) {
-                $q->where('citys.city_name', 'LIKE', '%' . $singleKeyword . '%')
-                    ->orWhere('districts.district_name', 'LIKE', '%' . $singleKeyword . '%')
+                $this->applyLegacyAddressLike($q, 'citys.city_name', $singleKeyword);
+                $q->orWhere('districts.district_name', 'LIKE', '%' . $singleKeyword . '%')
                     ->orWhere('wards.ward_name', 'LIKE', '%' . $singleKeyword . '%');
             });
         }
@@ -219,5 +225,30 @@ class PartnerAddressMappingController extends Controller
         $value = preg_replace('/^(tỉnh|tp|tp\.|thành phố|huyện|quận|tx|tx\.|thị xã|xã|phường|tt|tt\.|thị trấn)\s+/iu', '', $value);
 
         return trim($value);
+    }
+
+    private function applyLegacyAddressLike($query, $column, $keyword)
+    {
+        $keywords = array_unique(array_filter(array_merge([$keyword], $this->legacyAddressAliases($keyword))));
+        foreach ($keywords as $index => $item) {
+            if ($index === 0) {
+                $query->where($column, 'LIKE', '%' . $item . '%');
+            } else {
+                $query->orWhere($column, 'LIKE', '%' . $item . '%');
+            }
+        }
+    }
+
+    private function legacyAddressAliases($keyword)
+    {
+        $normalized = mb_strtolower(trim((string)$keyword), 'UTF-8');
+        $normalized = preg_replace('/\s+/', ' ', $normalized);
+
+        $aliases = [];
+        if (in_array($normalized, ['ho chi minh', 'hồ chí minh', 'tp ho chi minh', 'tp hồ chí minh', 'thanh pho ho chi minh', 'thành phố hồ chí minh'], true)) {
+            $aliases = ['HCM', 'TP HCM', 'TP.HCM', 'Hồ Chí Minh', 'Ho Chi Minh'];
+        }
+
+        return $aliases;
     }
 }
