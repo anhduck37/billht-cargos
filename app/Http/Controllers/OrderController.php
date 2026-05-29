@@ -81,7 +81,8 @@ class OrderController extends AppBaseController
     public function index(Request $request)
     {
         $formFilter = $request->all();
-        $postmanSearchOrderCode = $this->extractPostmanOrderCodeSearch($formFilter['search'] ?? null);
+        $postmanHasSearchFilter = auth()->user()->level == User::LEVEL_POSTMAN
+            && $this->postmanHasOrderSearchFilter($formFilter);
         $monthsAgo = Carbon::now()->subMonths(config('order_manager.months_ago_to_get_bill'));
         $firstMonthAgo = $monthsAgo->startOfMonth();
         $pageSize = config('order_manager.page_size');
@@ -95,14 +96,11 @@ class OrderController extends AppBaseController
             'order_print',
             'services'
         ])->join('senders', 'senders.id', '=', 'orders.sender_id')
-            ->join('receivers', 'receivers.id', '=', 'orders.receiver_id');
-
-        if (!$postmanSearchOrderCode) {
-            $orders->where(function ($q) use ($firstMonthAgo) {
-                $q->where('orders.created_at', '>=', $firstMonthAgo)
-                    ->orWhere('orders.updated_at', '>=', $firstMonthAgo);
-            });
-        }
+            ->join('receivers', 'receivers.id', '=', 'orders.receiver_id')
+            ->where(function ($q) use ($firstMonthAgo) {
+            $q->where('orders.created_at', '>=', $firstMonthAgo)
+                ->orWhere('orders.updated_at', '>=', $firstMonthAgo);
+        });
 
         if (isset($formFilter['search'])) {
             $orders->where(function ($q) use ($formFilter) {
@@ -149,26 +147,9 @@ class OrderController extends AppBaseController
         }
         if (!in_array(auth()->user()->level, [User::LEVEL_ADMIN, User::LEVEL_STAFF])) {
             if (auth()->user()->level == User::LEVEL_POSTMAN) {
-                $postmanId = auth()->user()->id;
-                if ($postmanSearchOrderCode) {
-                    $this->rememberPostmanSearchAccessByOrderCode($postmanSearchOrderCode, $postmanId);
+                if (!$postmanHasSearchFilter) {
+                    $orders->whereRaw('1 = 0');
                 }
-                $orders->where(function ($q) use ($postmanId, $postmanSearchOrderCode) {
-                    $q->where('orders.user_id', $postmanId)
-                        ->orWhereIn('orders.id', function ($historyQuery) use ($postmanId) {
-                            $historyQuery->select('order_id')
-                                ->from('order_historys')
-                                ->where('user_id', $postmanId)
-                                ->whereIn('type_order', [
-                                    OrderHistory::TYPE_ORDER_CREATE,
-                                    OrderHistory::TYPE_ORDER_UPDATE,
-                                ]);
-                        });
-                    if ($postmanSearchOrderCode) {
-                        $q->orWhere('orders.order_code', $postmanSearchOrderCode)
-                            ->orWhere('orders.invoice_code', $postmanSearchOrderCode);
-                    }
-                });
             }
             else {
                 $orders->where('orders.user_id', auth()->user()->id);
@@ -181,6 +162,9 @@ class OrderController extends AppBaseController
             $orders->where('orders.id', '>=', $order_id_from)->where('orders.id', '<=', $order_id_to)->where('order_code', 'LIKE', $prefix_code . '%');
         }
         $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->groupBy('orders.id')->paginate($pageSize);
+        if ($postmanHasSearchFilter) {
+            $this->rememberPostmanVisibleOrderIds($orders->pluck('id')->all(), auth()->user()->id);
+        }
         $partners = Partner::get();
 
         if (count($orders) == 0 && !empty($formFilter)) {
@@ -369,19 +353,15 @@ class OrderController extends AppBaseController
             ->exists();
     }
 
-    private function extractPostmanOrderCodeSearch($search)
+    private function postmanHasOrderSearchFilter(array $formFilter)
     {
-        $search = strtoupper(trim((string)$search));
-        if ($search === '') {
-            return null;
+        foreach (['search', 'order_date', 'delivery_status', 'partner_code', 'order_code_from', 'order_code_to'] as $key) {
+            if (isset($formFilter[$key]) && trim((string)$formFilter[$key]) !== '') {
+                return true;
+            }
         }
 
-        $search = preg_replace('/\s+/', '', $search);
-        if (preg_match('/^[A-Z]{1,5}\d{4,}$/', $search) || preg_match('/^\d{8,}$/', $search)) {
-            return $search;
-        }
-
-        return null;
+        return false;
     }
 
     private function postmanSearchAccessSessionKey($postmanId)
@@ -389,28 +369,16 @@ class OrderController extends AppBaseController
         return 'postman_order_search_access_' . (int)$postmanId;
     }
 
-    private function rememberPostmanSearchAccessByOrderCode($orderCode, $postmanId)
+    private function rememberPostmanVisibleOrderIds($orderIds, $postmanId)
     {
-        $orderCode = $this->extractPostmanOrderCodeSearch($orderCode);
-        if (!$orderCode) {
-            return;
-        }
-
-        $orderIds = Order::where('order_code', $orderCode)
-            ->orWhere('invoice_code', $orderCode)
-            ->pluck('id')
-            ->map(function ($id) {
-                return (int)$id;
-            })
-            ->toArray();
-
+        $orderIds = array_filter(array_map('intval', (array)$orderIds));
         if (empty($orderIds)) {
             return;
         }
 
         $key = $this->postmanSearchAccessSessionKey($postmanId);
         $allowedOrderIds = session($key, []);
-        $allowedOrderIds = array_slice(array_values(array_unique(array_merge($allowedOrderIds, $orderIds))), -50);
+        $allowedOrderIds = array_slice(array_values(array_unique(array_merge($allowedOrderIds, $orderIds))), -100);
         session([$key => $allowedOrderIds]);
     }
 
