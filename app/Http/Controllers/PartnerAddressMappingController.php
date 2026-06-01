@@ -358,15 +358,19 @@ class PartnerAddressMappingController extends Controller
 
     private function convertOldToNewFromDiachiApi($legacy, array $partnerCodes)
     {
-        if (!$legacy->city_code && !$legacy->district_code && !$legacy->ward_code) {
-            // legacyAddressByWardId exposes VTP codes under vtp_* aliases.
+        $diachiOldAddress = $this->findDiachiOldAddress($legacy);
+        if (!$diachiOldAddress) {
+            return [
+                'results' => [],
+                'error' => $this->diachiError('DIACHI_OLD_CODE_NOT_FOUND', 'Không tìm thấy địa chỉ cũ tương ứng trong danh mục diachi.io. Vui lòng kiểm tra lại Tỉnh/Huyện/Xã cũ.'),
+            ];
         }
 
         $payload = [
             'direction' => 'old-to-new',
-            'provinceCode' => (string)($legacy->vtp_province_code ?? ''),
-            'districtCode' => (string)($legacy->vtp_district_code ?? ''),
-            'wardCode' => (string)($legacy->vtp_ward_code ?? ''),
+            'provinceCode' => (string)($diachiOldAddress['province_code'] ?? ''),
+            'districtCode' => (string)($diachiOldAddress['district_code'] ?? ''),
+            'wardCode' => (string)($diachiOldAddress['ward_code'] ?? ''),
             'detailAddress' => '',
         ];
 
@@ -587,6 +591,119 @@ class PartnerAddressMappingController extends Controller
         return ['data' => $data, 'error' => null];
     }
 
+    private function findDiachiOldAddress($legacy)
+    {
+        $province = $this->findDiachiProvinceByName($legacy->city_name ?? '');
+        if (!$province) {
+            return null;
+        }
+
+        $district = $this->findDiachiDistrictByName($province['code'] ?? null, $legacy->district_name ?? '');
+        if (!$district) {
+            return null;
+        }
+
+        $ward = $this->findDiachiWardByName($province['code'] ?? null, $district['code'] ?? null, $legacy->ward_name ?? '', 'old');
+        if (!$ward) {
+            return null;
+        }
+
+        return [
+            'province_code' => $province['code'] ?? null,
+            'district_code' => $district['code'] ?? null,
+            'ward_code' => $ward['code'] ?? null,
+        ];
+    }
+
+    private function findDiachiProvinceByName($name)
+    {
+        $response = $this->requestDiachiCatalog('api/provinces');
+        if (empty($response['data']['data'])) {
+            return null;
+        }
+
+        $target = $this->normalizeAddressName($name);
+        foreach ($response['data']['data'] as $province) {
+            if ($this->normalizeAddressName($province['name'] ?? '') === $target) {
+                return $province;
+            }
+        }
+
+        return null;
+    }
+
+    private function findDiachiDistrictByName($provinceCode, $name)
+    {
+        if (!$provinceCode) {
+            return null;
+        }
+
+        $response = $this->requestDiachiCatalog('api/districts', ['provinceCode' => $provinceCode]);
+        if (empty($response['data']['data'])) {
+            return null;
+        }
+
+        $target = $this->normalizeAddressName($name);
+        foreach ($response['data']['data'] as $district) {
+            if ($this->normalizeAddressName($district['name'] ?? '') === $target) {
+                return $district;
+            }
+        }
+
+        return null;
+    }
+
+    private function findDiachiWardByName($provinceCode, $districtCode, $name, $status)
+    {
+        if (!$provinceCode || !$districtCode) {
+            return null;
+        }
+
+        $response = $this->requestDiachiCatalog('api/wards', [
+            'provinceCode' => $provinceCode,
+            'districtCode' => $districtCode,
+            'status' => $status,
+        ]);
+        if (empty($response['data']['data'])) {
+            return null;
+        }
+
+        $target = $this->normalizeAddressName($name);
+        foreach ($response['data']['data'] as $ward) {
+            if ($this->normalizeAddressName($ward['name'] ?? '') === $target) {
+                return $ward;
+            }
+        }
+
+        return null;
+    }
+
+    private function requestDiachiCatalog($path, array $query = [])
+    {
+        try {
+            $response = $this->diachiClient()->get($path, [
+                'query' => $query,
+            ]);
+        } catch (\Exception $e) {
+            return [
+                'data' => null,
+                'error' => $this->diachiError('CONNECTION_ERROR', 'Không kết nối được diachi.io: ' . $e->getMessage()),
+            ];
+        }
+
+        $body = (string)$response->getBody();
+        $data = json_decode($body, true);
+
+        if ($response->getStatusCode() >= 400 || empty($data['success'])) {
+            return [
+                'data' => null,
+                'error' => $this->diachiError('API_ERROR', $data['error'] ?? 'Không tải được danh mục diachi.io.', $response->getStatusCode(), $body),
+            ];
+        }
+
+        return ['data' => $data, 'error' => null];
+    }
+
     private function diachiClient()
     {
         return new Client([
@@ -620,6 +737,11 @@ class PartnerAddressMappingController extends Controller
         }
 
         if ((int)$statusCode === 404) {
+            $data = json_decode((string)$body, true);
+            if (!empty($data['error'])) {
+                return 'Diachi.io không tìm thấy địa chỉ tương ứng: ' . $data['error'];
+            }
+
             return 'Không tìm thấy endpoint diachi.io (404). Có thể API frontend đã thay đổi.';
         }
 
