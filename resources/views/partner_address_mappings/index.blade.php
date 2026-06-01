@@ -38,6 +38,95 @@
         <div class="col">
             <div class="card shadow">
                 <div class="card-header border-0">
+                    <h3 class="mb-0">Công cụ chuyển đổi địa chỉ</h3>
+                    <p class="text-muted text-sm mb-0">Tra cứu nhanh địa chỉ cũ/mới dựa trên mapping VTP/EMS đã lưu trong hệ thống.</p>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-pills mb-3 address-convert-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="old-to-new-tab" data-toggle="tab" href="#old-to-new-panel" role="tab">Cũ → Mới</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="new-to-old-tab" data-toggle="tab" href="#new-to-old-panel" role="tab">Mới → Cũ</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="old-to-new-panel" role="tabpanel">
+                            <div class="form-row">
+                                <div class="form-group col-lg-3 col-md-6">
+                                    <label>Tỉnh/Thành phố cũ</label>
+                                    <select id="convert_old_city_id" class="form-control">
+                                        <option value="">Vui lòng chọn...</option>
+                                        @foreach($legacyCities as $city)
+                                            <option value="{{ $city->id }}">{{ $city->city_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group col-lg-3 col-md-6">
+                                    <label>Huyện/Quận cũ</label>
+                                    <select id="convert_old_district_id" class="form-control">
+                                        <option value="">Vui lòng chọn tỉnh trước...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-lg-3 col-md-6">
+                                    <label>Xã/Phường cũ</label>
+                                    <select id="convert_old_ward_id" class="form-control">
+                                        <option value="">Vui lòng chọn huyện trước...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-lg-3 col-md-6">
+                                    <label>Đối tác</label>
+                                    <select id="convert_old_partner_code" class="form-control">
+                                        <option value="">Tất cả</option>
+                                        <option value="VTP">Viettel</option>
+                                        <option value="EMS">EMS</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" id="convert_old_to_new_btn" class="btn btn-primary">Chuyển đổi</button>
+                            <div id="old_to_new_result" class="mt-3"></div>
+                        </div>
+
+                        <div class="tab-pane fade" id="new-to-old-panel" role="tabpanel">
+                            <div class="form-row">
+                                <div class="form-group col-lg-4 col-md-6">
+                                    <label>Tỉnh/Thành phố mới</label>
+                                    <select id="convert_new_province_id" class="form-control">
+                                        <option value="">Vui lòng chọn...</option>
+                                        @foreach($newProvinces as $province)
+                                            <option value="{{ $province->id }}">{{ $province->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="form-group col-lg-4 col-md-6">
+                                    <label>Xã/Phường mới</label>
+                                    <select id="convert_new_ward_id" class="form-control">
+                                        <option value="">Vui lòng chọn tỉnh trước...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-lg-4 col-md-6">
+                                    <label>Đối tác</label>
+                                    <select id="convert_new_partner_code" class="form-control">
+                                        <option value="">Tất cả</option>
+                                        <option value="VTP">Viettel</option>
+                                        <option value="EMS">EMS</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" id="convert_new_to_old_btn" class="btn btn-primary">Chuyển đổi</button>
+                            <div id="new_to_old_result" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card shadow">
+                <div class="card-header border-0">
                     <h3 class="mb-0">Tra mã địa chỉ cũ</h3>
                     <p class="text-muted text-sm mb-0">Chọn tỉnh, huyện, xã cũ để lấy mã VTP/EMS điền vào form mapping.</p>
                 </div>
@@ -343,6 +432,38 @@
 @endsection
 
 @section('javascript')
+<style>
+    .address-convert-tabs.nav-pills .nav-link {
+        color: #344767 !important;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .04);
+        margin-right: .5rem;
+        font-weight: 600;
+    }
+
+    .address-convert-tabs.nav-pills .nav-link:hover,
+    .address-convert-tabs.nav-pills .nav-link:focus,
+    .address-convert-tabs.nav-pills .nav-link:hover *,
+    .address-convert-tabs.nav-pills .nav-link:focus * {
+        color: #5e72e4 !important;
+    }
+
+    .address-convert-tabs.nav-pills .nav-link:hover,
+    .address-convert-tabs.nav-pills .nav-link:focus {
+        background: #f6f8ff !important;
+        border-color: #cfd7ff !important;
+    }
+
+    .address-convert-tabs.nav-pills .nav-link.active,
+    .address-convert-tabs.nav-pills .show > .nav-link,
+    .address-convert-tabs.nav-pills .nav-link.active:hover,
+    .address-convert-tabs.nav-pills .nav-link.active:focus {
+        color: #fff !important;
+        background: #5e72e4 !important;
+        border-color: #5e72e4 !important;
+    }
+</style>
 <script>
     $(function () {
         function loadWards(provinceId, targetSelector, selectedWardId) {
@@ -377,6 +498,164 @@
             } else {
                 $('#legacy_code_error').hide().text('');
             }
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/[&<>"']/g, function (char) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[char];
+            });
+        }
+
+        function loadDistrictsTo(cityId, targetSelector, wardSelector) {
+            var $target = $(targetSelector);
+            $target.html('<option value="">Đang tải...</option>');
+            if (wardSelector) {
+                $(wardSelector).html('<option value="">Vui lòng chọn huyện trước...</option>');
+            }
+
+            if (!cityId) {
+                $target.html('<option value="">Vui lòng chọn tỉnh trước...</option>');
+                return;
+            }
+
+            $.get('/api/district/' + cityId)
+                .done(function (districts) {
+                    var html = '<option value="">Vui lòng chọn...</option>';
+                    (districts || []).forEach(function (district) {
+                        html += '<option value="' + district.id + '">' + escapeHtml(district.district_name) + '</option>';
+                    });
+                    $target.html(html);
+                })
+                .fail(function () {
+                    $target.html('<option value="">Không tải được huyện/quận</option>');
+                });
+        }
+
+        function loadLegacyWardsTo(districtId, targetSelector) {
+            var $target = $(targetSelector);
+            $target.html('<option value="">Đang tải...</option>');
+
+            if (!districtId) {
+                $target.html('<option value="">Vui lòng chọn huyện trước...</option>');
+                return;
+            }
+
+            $.get('/api/ward/' + districtId)
+                .done(function (wards) {
+                    var html = '<option value="">Vui lòng chọn...</option>';
+                    (wards || []).forEach(function (ward) {
+                        html += '<option value="' + ward.id + '">' + escapeHtml(ward.ward_name) + '</option>';
+                    });
+                    $target.html(html);
+                })
+                .fail(function () {
+                    $target.html('<option value="">Không tải được xã/phường</option>');
+                });
+        }
+
+        function codeLine(codes) {
+            codes = codes || {};
+            return 'Tỉnh: ' + escapeHtml(codes.province_code || 'N/A') +
+                ' | Huyện: ' + escapeHtml(codes.district_code || 'N/A') +
+                ' | Xã: ' + escapeHtml(codes.ward_code || 'N/A');
+        }
+
+        function diachiCodeLine(legacyAddress) {
+            var codes = legacyAddress && legacyAddress.diachi ? legacyAddress.diachi : null;
+            if (!codes) {
+                return '';
+            }
+
+            return '<div class="text-sm text-warning mt-1">Mã diachi.io: ' + codeLine({
+                province_code: codes.province_code,
+                district_code: codes.district_code,
+                ward_code: codes.ward_code
+            }) + '</div>';
+        }
+
+        function renderConversionResults(targetSelector, payload, emptyMessage) {
+            var results = payload && payload.results ? payload.results : [];
+            if (!results.length) {
+                if (payload && payload.api_error) {
+                    var error = payload.api_error;
+                    var detail = '<strong>' + escapeHtml(error.message || emptyMessage) + '</strong>';
+                    detail += '<div class="text-sm mt-1">Mã lỗi: ' + escapeHtml(error.code || 'N/A') + '</div>';
+                    if (error.http_status) {
+                        detail += '<div class="text-sm">HTTP: ' + escapeHtml(error.http_status) + '</div>';
+                    }
+                    if (error.body_preview) {
+                        detail += '<div class="text-sm mt-1">Chi tiết: ' + escapeHtml(error.body_preview) + '</div>';
+                    }
+                    $(targetSelector).html('<div class="alert alert-danger mb-0">' + detail + '</div>');
+                    return;
+                }
+                $(targetSelector).html('<div class="alert alert-warning mb-0">' + escapeHtml(emptyMessage) + '</div>');
+                return;
+            }
+
+            var html = '<div class="list-group">';
+            results.forEach(function (item) {
+                var newAddress = item.new_address || {};
+                var legacyAddress = item.legacy_address || {};
+                var codes = item.partner_codes || {};
+                html += '<div class="list-group-item">';
+                html += '<div class="d-flex flex-column flex-lg-row justify-content-between">';
+                html += '<div class="mb-2 mb-lg-0">';
+                html += '<span class="badge ' + (item.partner_code === 'EMS' ? 'badge-info' : 'badge-warning') + '">' + escapeHtml(item.partner_code) + '</span> ';
+                if (item.mapping_status === 'suggested') {
+                    html += '<span class="badge badge-secondary">Gợi ý chưa lưu</span> ';
+                } else if (item.mapping_status === 'local_code_missing') {
+                    html += '<span class="badge badge-danger">Thiếu mã local</span> ';
+                }
+                html += '<strong>' + escapeHtml(newAddress.ward_name || 'Chưa rõ xã mới') + ', ' + escapeHtml(newAddress.province_name || 'Chưa rõ tỉnh mới') + '</strong>';
+                html += '<div class="text-muted text-sm mt-1">Địa chỉ cũ: ' + escapeHtml(legacyAddress && legacyAddress.text ? legacyAddress.text : 'Chưa tìm được tên địa chỉ cũ theo mã') + '</div>';
+                html += '<div class="text-muted text-sm">Mã đối tác: ' + codeLine(codes) + '</div>';
+                html += diachiCodeLine(legacyAddress);
+                if (item.description) {
+                    html += '<div class="text-muted text-sm">Mô tả chuyển đổi: ' + escapeHtml(item.description) + '</div>';
+                }
+                if (item.note) {
+                    html += '<div class="text-muted text-sm">Ghi chú: ' + escapeHtml(item.note) + '</div>';
+                }
+                html += '</div>';
+                html += '<div class="d-flex align-items-start">';
+                html += '<button type="button" class="btn btn-sm btn-outline-primary use-conversion-mapping"';
+                html += ' data-partner="' + escapeHtml(item.partner_code) + '"';
+                html += ' data-new-province="' + escapeHtml(newAddress.province_id || '') + '"';
+                html += ' data-new-ward="' + escapeHtml(newAddress.ward_id || '') + '"';
+                html += ' data-province-code="' + escapeHtml(codes.province_code || '') + '"';
+                html += ' data-district-code="' + escapeHtml(codes.district_code || '') + '"';
+                html += ' data-ward-code="' + escapeHtml(codes.ward_code || '') + '"';
+                html += ' data-local-missing="' + (item.mapping_status === 'local_code_missing' ? '1' : '0') + '">Dùng mapping</button>';
+                if (item.mapping_status === 'local_code_missing') {
+                    html += '<button type="button" class="btn btn-sm btn-outline-secondary ml-2 fill-legacy-search"';
+                    html += ' data-city="' + escapeHtml(legacyAddress.city_name || '') + '"';
+                    html += ' data-district="' + escapeHtml(legacyAddress.district_name || '') + '"';
+                    html += ' data-ward="' + escapeHtml(legacyAddress.ward_name || '') + '">Tìm mã local</button>';
+                }
+                html += '</div></div></div>';
+            });
+            html += '</div>';
+            $(targetSelector).html(html);
+        }
+
+        function fillMappingForm(partner, newProvinceId, newWardId, provinceCode, districtCode, wardCode) {
+            $('#partner_code').val(partner || 'VTP');
+            $('#mapping_province_id').val(newProvinceId || '');
+            if (newProvinceId) {
+                loadWards(newProvinceId, '#mapping_ward_id', newWardId);
+            }
+            $('#partner_province_code').val(provinceCode || '');
+            $('#partner_district_code').val(districtCode || '');
+            $('#partner_ward_code').val(wardCode || '');
+            $('#mapping_status').val('mapped');
+            $('html, body').animate({ scrollTop: $('#mappingForm').offset().top - 120 }, 250);
         }
 
         function loadLegacyDistricts(cityId) {
@@ -455,6 +734,91 @@
             loadWards($(this).val(), '#filter_ward_id');
         });
 
+        $('#convert_new_province_id').on('change', function () {
+            loadWards($(this).val(), '#convert_new_ward_id');
+            $('#new_to_old_result').html('');
+        });
+
+        $('#convert_old_city_id').on('change', function () {
+            loadDistrictsTo($(this).val(), '#convert_old_district_id', '#convert_old_ward_id');
+            $('#old_to_new_result').html('');
+        });
+
+        $('#convert_old_district_id').on('change', function () {
+            loadLegacyWardsTo($(this).val(), '#convert_old_ward_id');
+            $('#old_to_new_result').html('');
+        });
+
+        $('#convert_old_to_new_btn').on('click', function () {
+            var wardId = $('#convert_old_ward_id').val();
+            if (!wardId) {
+                $('#old_to_new_result').html('<div class="alert alert-warning mb-0">Vui lòng chọn đủ tỉnh/huyện/xã cũ.</div>');
+                return;
+            }
+
+            $('#old_to_new_result').html('<div class="text-muted">Đang chuyển đổi...</div>');
+            $.get('{{ route('partner_address_mappings.convert_old_to_new') }}', {
+                ward_id: wardId,
+                partner_code: $('#convert_old_partner_code').val()
+            }).done(function (data) {
+                renderConversionResults('#old_to_new_result', data, 'Chưa có mapping địa chỉ mới tương ứng với địa chỉ cũ này.');
+            }).fail(function (xhr) {
+                var message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Không chuyển đổi được địa chỉ cũ sang mới.';
+                $('#old_to_new_result').html('<div class="alert alert-danger mb-0">' + escapeHtml(message) + '</div>');
+            });
+        });
+
+        $('#convert_new_to_old_btn').on('click', function () {
+            var wardId = $('#convert_new_ward_id').val();
+            if (!wardId) {
+                $('#new_to_old_result').html('<div class="alert alert-warning mb-0">Vui lòng chọn đủ tỉnh/xã mới.</div>');
+                return;
+            }
+
+            $('#new_to_old_result').html('<div class="text-muted">Đang chuyển đổi...</div>');
+            $.ajax({
+                url: '{{ route('partner_address_mappings.convert_new_to_old') }}',
+                method: 'GET',
+                data: {
+                    new_ward_id: wardId,
+                    partner_code: $('#convert_new_partner_code').val()
+                },
+                timeout: 60000
+            }).done(function (data) {
+                renderConversionResults('#new_to_old_result', data, 'Chưa có mapping địa chỉ cũ tương ứng với xã/phường mới này.');
+            }).fail(function (xhr) {
+                var message = xhr.statusText === 'timeout'
+                    ? 'Chuyển đổi quá lâu. Vui lòng thử tab Cũ → Mới với địa chỉ cũ nghi ngờ, hoặc chọn tỉnh/xã cụ thể hơn.'
+                    : (xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Không chuyển đổi được địa chỉ mới sang cũ.');
+                $('#new_to_old_result').html('<div class="alert alert-danger mb-0">' + escapeHtml(message) + '</div>');
+            });
+        });
+
+        $(document).on('click', '.use-conversion-mapping', function () {
+            if (String($(this).data('local-missing')) === '1') {
+                alert('Chưa thể dùng mapping vì BillHT chưa tìm thấy mã VTP/EMS local tương ứng. Hãy bấm "Tìm mã local" để tra cứu mã cũ trước.');
+                return;
+            }
+
+            fillMappingForm(
+                $(this).data('partner'),
+                $(this).data('new-province'),
+                $(this).data('new-ward'),
+                $(this).data('province-code'),
+                $(this).data('district-code'),
+                $(this).data('ward-code')
+            );
+        });
+
+        $(document).on('click', '.fill-legacy-search', function () {
+            var text = [$(this).data('ward'), $(this).data('district'), $(this).data('city')]
+                .filter(function (item) { return item; })
+                .join(', ');
+
+            $('#legacy_code_error').text('Hãy dùng khối Tra mã địa chỉ cũ để tìm: ' + text).show();
+            $('html, body').animate({ scrollTop: $('#legacy_code_error').offset().top - 160 }, 250);
+        });
+
         $('#legacy_city_id').on('change', function () {
             loadLegacyDistricts($(this).val());
         });
@@ -471,16 +835,16 @@
             var provinceId = $(this).data('province');
             var wardId = $(this).data('ward');
 
-            $('#partner_code').val($(this).data('partner'));
-            $('#mapping_province_id').val(provinceId);
-            loadWards(provinceId, '#mapping_ward_id', wardId);
-            $('#partner_province_code').val($(this).data('province-code'));
-            $('#partner_district_code').val($(this).data('district-code'));
-            $('#partner_ward_code').val($(this).data('ward-code'));
+            fillMappingForm(
+                $(this).data('partner'),
+                provinceId,
+                wardId,
+                $(this).data('province-code'),
+                $(this).data('district-code'),
+                $(this).data('ward-code')
+            );
             $('#mapping_status').val($(this).data('status'));
             $('#mapping_note').val($(this).data('note'));
-
-            $('html, body').animate({ scrollTop: $('#mappingForm').offset().top - 120 }, 250);
         });
 
         $('#use_selected_legacy_code').on('click', function () {
