@@ -62,6 +62,10 @@ class PartnerErrorMessageService
             return $message;
         }
 
+        if (strpos($upperMessage, 'WITH ADDRESS NEW') !== false || strpos($upperMessage, 'WITH ADDRESS OLD') !== false) {
+            return 'Viettel báo dữ liệu chưa hợp lệ. Vui lòng kiểm tra Dịch vụ trong nước đã được chọn, trọng lượng hợp lệ, địa chỉ và mapping VTP nếu đơn dùng địa chỉ mới.';
+        }
+
         $fieldLabels = [
             'SENDER_PROVINCE' => 'mã tỉnh/thành phố người gửi',
             'SENDER_DISTRICT' => 'mã huyện/quận người gửi',

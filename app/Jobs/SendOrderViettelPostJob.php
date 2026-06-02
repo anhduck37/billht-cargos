@@ -32,7 +32,7 @@ class SendOrderViettelPostJob implements ShouldQueue
 
     public function handle()
     {
-        if(empty($service_viettel)) {
+        if (empty($this->service_viettel)) {
             $orderService = Service::where('order_id', $this->order->id)
             ->where('type', Service::SERVICE_DOMESTIC)
             ->where(function($q) {
