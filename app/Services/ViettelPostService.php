@@ -134,6 +134,9 @@ class ViettelPostService
             }
         }
 
+        $senderAddress = $this->formatViettelPayloadAddress($order->sender, $senderAddressScheme, $senderProvince, $senderDistrict, $senderWard);
+        $receiverAddress = $this->formatViettelPayloadAddress($order->receiver, $receiverAddressScheme, $receiverProvince, $receiverDistrict, $receiverWard);
+
         $orderPayment = 1;
         switch ($order->payment_method) {
             case Order::PAYMENT_METHOD_LAST:
@@ -800,6 +803,47 @@ class ViettelPostService
         }
 
         return trim($streetAddress . ' ' . ($addressModel->ward_name ?? '') . ' ' . ($addressModel->city_name ?? ''));
+    }
+
+    private function formatViettelPayloadAddress($addressModel, $addressScheme, $provinceCode, $districtCode, $wardCode)
+    {
+        $streetAddress = $this->formatViettelStreetAddress($addressModel, $addressScheme);
+
+        if ($addressScheme !== 'new') {
+            return $streetAddress;
+        }
+
+        $adminNames = $this->getViettelAdministrativeNamesByCodes($provinceCode, $districtCode, $wardCode);
+
+        return trim(implode(', ', array_filter([
+            $streetAddress,
+            $adminNames['ward'] ?? null,
+            $adminNames['district'] ?? null,
+            $adminNames['city'] ?? null,
+        ])));
+    }
+
+    private function getViettelAdministrativeNamesByCodes($provinceCode, $districtCode, $wardCode)
+    {
+        $city = City::where('city_code', $provinceCode)->first();
+
+        $districtQuery = \App\District::where('district_code', $districtCode);
+        if ($city) {
+            $districtQuery->where('city_id', $city->id);
+        }
+        $district = $districtQuery->first();
+
+        $wardQuery = \App\Ward::where('ward_code', $wardCode);
+        if ($district) {
+            $wardQuery->where('district_id', $district->id);
+        }
+        $ward = $wardQuery->first();
+
+        return [
+            'city' => $city->city_name ?? null,
+            'district' => $district->district_name ?? null,
+            'ward' => $ward->ward_name ?? null,
+        ];
     }
 
     private function stripViettelAdministrativeSuffix($address, $addressModel)
