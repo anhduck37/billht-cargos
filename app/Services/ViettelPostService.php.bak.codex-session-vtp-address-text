@@ -91,8 +91,8 @@ class ViettelPostService
         $partnerConfig = PartnerConfig::where('partner_code', PartnerConfig::CODE_VIETTEL_POST)->first();
 
         $this->headers['Token'] = $partnerConfig->token ?? '';
-        $senderAddress = $this->formatViettelStreetAddress($order->sender, $order->address_scheme ?? 'old');
-        $receiverAddress = $this->formatViettelStreetAddress($order->receiver, $order->address_scheme ?? 'old');
+        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->city_name ?? '');
+        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward_name ?? '') . ' ' . ($order->receiver->city_name ?? '');
 
         $senderAddressScheme = $order->sender->address_scheme ?? $order->address_scheme ?? 'old';
         $senderWard = $order->sender->ward->ward_code ?? 0;
@@ -729,8 +729,8 @@ class ViettelPostService
     public function getPriceAllNlp($order, $orderService = true)
     {
         $path = '/v2/order/getPriceAllNlp';
-        $senderAddress = $this->formatViettelStreetAddress($order->sender, $order->address_scheme ?? 'old');
-        $receiverAddress = $this->formatViettelStreetAddress($order->receiver, $order->address_scheme ?? 'old');
+        $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->city_name ?? '');
+        $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward_name ?? '') . ' ' . ($order->receiver->city_name ?? '');
         $formatData = [
             "SENDER_ADDRESS" => $senderAddress,
             "RECEIVER_ADDRESS" => $receiverAddress,
@@ -784,79 +784,6 @@ class ViettelPostService
             }
         }
         return $groupId;
-    }
-
-    private function formatViettelStreetAddress($addressModel, $fallbackScheme = 'old')
-    {
-        if (!$addressModel) {
-            return '';
-        }
-
-        $addressScheme = $addressModel->address_scheme ?? $fallbackScheme;
-        $streetAddress = trim((string)($addressModel->address ?? ''));
-
-        if ($addressScheme === 'new') {
-            return $this->stripViettelAdministrativeSuffix($streetAddress, $addressModel);
-        }
-
-        return trim($streetAddress . ' ' . ($addressModel->ward_name ?? '') . ' ' . ($addressModel->city_name ?? ''));
-    }
-
-    private function stripViettelAdministrativeSuffix($address, $addressModel)
-    {
-        $parts = array_map('trim', explode(',', trim((string)$address, " \t\n\r\0\x0B,")));
-        $parts = array_values(array_filter($parts, function ($part) {
-            return $part !== '';
-        }));
-
-        if (count($parts) <= 1) {
-            return trim((string)$address);
-        }
-
-        $administrativeNames = array_filter([
-            optional($addressModel->newWard)->name,
-            optional($addressModel->newProvince)->name,
-            optional($addressModel->ward)->ward_name,
-            optional($addressModel->district)->district_name,
-            optional($addressModel->city)->city_name,
-            $addressModel->ward_name ?? null,
-            $addressModel->district_name ?? null,
-            $addressModel->city_name ?? null,
-        ]);
-
-        $normalizedAdministrativeNames = array_values(array_filter(array_unique(array_map(function ($name) {
-            return $this->normalizeViettelAddressPart($name);
-        }, $administrativeNames))));
-
-        while (count($parts) > 1) {
-            $lastPart = $this->normalizeViettelAddressPart(end($parts));
-            if (!$this->matchesViettelAdministrativePart($lastPart, $normalizedAdministrativeNames)) {
-                break;
-            }
-            array_pop($parts);
-        }
-
-        return trim(implode(', ', $parts));
-    }
-
-    private function matchesViettelAdministrativePart($part, array $administrativeNames)
-    {
-        foreach ($administrativeNames as $name) {
-            if ($part === $name || strpos($part, $name) !== false || strpos($name, $part) !== false) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function normalizeViettelAddressPart($value)
-    {
-        $value = strtolower($this->stripVN((string)$value));
-        $value = preg_replace('/\b(tinh|thanh pho|tp|quan|huyen|thi xa|xa|phuong|thi tran)\b/u', '', $value);
-        $value = preg_replace('/[^a-z0-9]+/', ' ', $value);
-
-        return trim(preg_replace('/\s+/', ' ', $value));
     }
 
     public function stripVN($str)
