@@ -832,25 +832,25 @@
                 });
         }
 
-        $('#mapping_province_id').on('change', function () {
+        $(document).on('change select2:select select2:clear', '#mapping_province_id', function () {
             loadWards($(this).val(), '#mapping_ward_id');
         });
 
-        $('#filter_province_id').on('change', function () {
+        $(document).on('change select2:select select2:clear', '#filter_province_id', function () {
             loadWards($(this).val(), '#filter_ward_id');
         });
 
-        $('#convert_new_province_id').on('change', function () {
+        $(document).on('change select2:select select2:clear', '#convert_new_province_id', function () {
             loadWards($(this).val(), '#convert_new_ward_id');
             $('#new_to_old_result').html('');
         });
 
-        $('#convert_old_city_id').on('change', function () {
+        $(document).on('change select2:select select2:clear', '#convert_old_city_id', function () {
             loadDistrictsTo($(this).val(), '#convert_old_district_id', '#convert_old_ward_id');
             $('#old_to_new_result').html('');
         });
 
-        $('#convert_old_district_id').on('change', function () {
+        $(document).on('change select2:select select2:clear', '#convert_old_district_id', function () {
             loadLegacyWardsTo($(this).val(), '#convert_old_ward_id');
             $('#old_to_new_result').html('');
         });
@@ -925,15 +925,15 @@
             $('html, body').animate({ scrollTop: $('#legacy_code_error').offset().top - 160 }, 250);
         });
 
-        $('#legacy_city_id').on('change', function () {
+        $(document).on('change select2:select select2:clear', '#legacy_city_id', function () {
             loadLegacyDistricts($(this).val());
         });
 
-        $('#legacy_district_id').on('change', function () {
+        $(document).on('change select2:select select2:clear', '#legacy_district_id', function () {
             loadLegacyWards($(this).val());
         });
 
-        $('#legacy_ward_id').on('change', function () {
+        $(document).on('change select2:select select2:clear', '#legacy_ward_id', function () {
             loadLegacyAddressCode($(this).val());
         });
 
@@ -974,6 +974,22 @@
 
             $('html, body').animate({ scrollTop: $('#mappingForm').offset().top - 120 }, 250);
         });
+
+        if ($('#convert_old_city_id').val()) {
+            loadDistrictsTo($('#convert_old_city_id').val(), '#convert_old_district_id', '#convert_old_ward_id');
+        }
+
+        if ($('#legacy_city_id').val()) {
+            loadLegacyDistricts($('#legacy_city_id').val());
+        }
+
+        if ($('#convert_new_province_id').val()) {
+            loadWards($('#convert_new_province_id').val(), '#convert_new_ward_id');
+        }
+
+        if ($('#mapping_province_id').val()) {
+            loadWards($('#mapping_province_id').val(), '#mapping_ward_id');
+        }
     });
 </script>
 @endsection
