@@ -74,6 +74,12 @@
                         <span class="nav-link-text">Nhập file Excel</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link @if(Request::url() == route('orders.addressImportTool')) active-custom @endif" href="{{route('orders.addressImportTool')}}">
+                        <i class="fas fa-search-location" style="color: #2dce89;"></i>
+                        <span class="nav-link-text">Kiểm tra địa chỉ</span>
+                    </a>
+                </li>
                 @endif
                 @if(in_array(auth()->user()->level, [\App\User::LEVEL_ADMIN, \App\User::LEVEL_STAFF]))
                     <li class="nav-item">

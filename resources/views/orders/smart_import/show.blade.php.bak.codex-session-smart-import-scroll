@@ -1,0 +1,198 @@
+@extends('layouts.app')
+
+@section('content')
+    @include('layouts.headers.cards')
+
+    <style>
+        .smart-table input, .smart-table select, .smart-table textarea { min-width: 160px; font-size: 12px; }
+        .smart-table textarea { min-width: 260px; min-height: 58px; }
+        .smart-sticky { position: sticky; left: 0; background: #fff; z-index: 2; }
+        .smart-error { background: #fff5f5; }
+        .smart-valid { background: #f4fff8; }
+        .smart-imported { background: #f7f8ff; }
+        .smart-summary-card { border-radius: 6px; background: #fff; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+    </style>
+
+    <div class="container-fluid mt--4">
+        <div class="row mt-5">
+            <div class="col-xl-12">
+                @include('flash::message')
+
+                <div class="card shadow border-0 mb-4">
+                    <div class="card-header bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <h1 class="mb-1 text-primary">Preview import thông minh</h1>
+                                <p class="text-muted mb-0">{{ $batch->file_name }} - {{ $batch->created_at ? $batch->created_at->format('d/m/Y H:i') : '' }}</p>
+                            </div>
+                            <div>
+                                <a href="{{ route('orders.smartImport.index') }}" class="btn btn-outline-primary">Upload file khác</a>
+                                <button data-toggle="modal" data-target="#openModalPrint" type="button" class="btn btn-outline-info" @if($batch->rows()->whereNotNull('order_id')->count() === 0) disabled @endif>
+                                    <i class="fas fa-print mr-1"></i> In đơn đã import
+                                </button>
+                                {!! Form::open(['route' => ['orders.smartImport.confirm', $batch->id], 'method' => 'POST', 'style' => 'display:inline']) !!}
+                                @csrf
+                                <button type="submit" class="btn btn-success" @if($batch->valid_rows === 0) disabled @endif>Import dòng hợp lệ</button>
+                                {!! Form::close() !!}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body bg-light">
+                        <div class="row">
+                            <div class="col-md-3 mb-3"><div class="smart-summary-card"><div class="text-muted">Tổng dòng</div><h2>{{ $batch->total_rows }}</h2></div></div>
+                            <div class="col-md-3 mb-3"><div class="smart-summary-card"><div class="text-muted">Hợp lệ</div><h2 class="text-success">{{ $batch->valid_rows }}</h2></div></div>
+                            <div class="col-md-3 mb-3"><div class="smart-summary-card"><div class="text-muted">Còn lỗi</div><h2 class="text-danger">{{ $batch->error_rows }}</h2></div></div>
+                            <div class="col-md-3 mb-3"><div class="smart-summary-card"><div class="text-muted">Đã import</div><h2 class="text-info">{{ $batch->imported_rows }}</h2></div></div>
+                        </div>
+                        <div class="btn-group">
+                            <a class="btn btn-sm {{ !$status ? 'btn-primary' : 'btn-outline-primary' }}" href="{{ route('orders.smartImport.show', $batch->id) }}">Tất cả</a>
+                            <a class="btn btn-sm {{ $status === 'error' ? 'btn-danger' : 'btn-outline-danger' }}" href="{{ route('orders.smartImport.show', ['batch' => $batch->id, 'status' => 'error']) }}">Dòng lỗi</a>
+                            <a class="btn btn-sm {{ $status === 'valid' ? 'btn-success' : 'btn-outline-success' }}" href="{{ route('orders.smartImport.show', ['batch' => $batch->id, 'status' => 'valid']) }}">Hợp lệ</a>
+                            <a class="btn btn-sm {{ $status === 'imported' ? 'btn-info' : 'btn-outline-info' }}" href="{{ route('orders.smartImport.show', ['batch' => $batch->id, 'status' => 'imported']) }}">Đã import</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow border-0">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-items-start smart-table">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th class="smart-sticky">Dòng</th>
+                                    <th>Trạng thái</th>
+                                    <th>Lỗi / cảnh báo</th>
+                                    <th>Mã đơn</th>
+                                    <th>Người gửi</th>
+                                    <th>SĐT gửi</th>
+                                    <th>Địa chỉ gửi</th>
+                                    <th>Người nhận</th>
+                                    <th>SĐT nhận</th>
+                                    <th>Địa chỉ nhận</th>
+                                    <th>Dịch vụ trong nước</th>
+                                    <th>Trọng lượng</th>
+                                    <th>Nội dung</th>
+                                    <th>Đối tác</th>
+                                    <th>Địa chỉ nhận diện</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($rows as $row)
+                                    @php
+                                        $data = $row->editable_data ?: [];
+                                        $analysis = $row->analysis ?: [];
+                                        $rowClass = $row->status === 'error' ? 'smart-error' : ($row->status === 'imported' ? 'smart-imported' : 'smart-valid');
+                                    @endphp
+                                    <tr class="{{ $rowClass }}">
+                                        {!! Form::open(['route' => ['orders.smartImport.rows.update', $batch->id, $row->id], 'method' => 'POST']) !!}
+                                        @csrf
+                                        <td class="smart-sticky font-weight-bold">{{ $row->row_number }}</td>
+                                        <td>
+                                            @if($row->status === 'error')
+                                                <span class="badge badge-danger">Lỗi</span>
+                                            @elseif($row->status === 'imported')
+                                                <span class="badge badge-info">Đã import</span>
+                                                @if($row->order)
+                                                    <div><a href="{{ route('orders.edit', $row->order_id) }}" target="_blank">{{ $row->order->order_code }}</a></div>
+                                                @endif
+                                            @else
+                                                <span class="badge badge-success">Hợp lệ</span>
+                                            @endif
+                                        </td>
+                                        <td style="min-width:260px">
+                                            @foreach(($row->errors ?: []) as $error)
+                                                <div class="text-danger small">- {{ $error }}</div>
+                                            @endforeach
+                                            @foreach(($row->warnings ?: []) as $warning)
+                                                <div class="text-warning small">- {{ $warning }}</div>
+                                            @endforeach
+                                        </td>
+                                        <td><input class="form-control form-control-sm" name="row[invoice_code]" value="{{ $data['invoice_code'] ?? '' }}"></td>
+                                        <td><input class="form-control form-control-sm" name="row[sender_name]" value="{{ $data['sender_name'] ?? '' }}"></td>
+                                        <td><input class="form-control form-control-sm" name="row[sender_phone]" value="{{ $data['sender_phone'] ?? '' }}"></td>
+                                        <td><textarea class="form-control form-control-sm" name="row[sender_address]">{{ $data['sender_address'] ?? '' }}</textarea></td>
+                                        <td><input class="form-control form-control-sm" name="row[receiver_name]" value="{{ $data['receiver_name'] ?? '' }}"></td>
+                                        <td><input class="form-control form-control-sm" name="row[receiver_phone]" value="{{ $data['receiver_phone'] ?? '' }}"></td>
+                                        <td><textarea class="form-control form-control-sm" name="row[receiver_address]">{{ $data['receiver_address'] ?? '' }}</textarea></td>
+                                        <td><input class="form-control form-control-sm" name="row[service_domestic]" value="{{ $data['service_domestic'] ?? '' }}" placeholder="Chuyển phát nhanh"></td>
+                                        <td><input class="form-control form-control-sm" name="row[weight]" value="{{ $data['weight'] ?? '' }}"></td>
+                                        <td><textarea class="form-control form-control-sm" name="row[note]">{{ $data['note'] ?? '' }}</textarea></td>
+                                        <td>
+                                            <select class="form-control form-control-sm" name="row[partner_code]">
+                                                <option value="" @if(($data['partner_code'] ?? '') === '') selected @endif>Không đẩy</option>
+                                                <option value="VTP" @if(($data['partner_code'] ?? '') === 'VTP') selected @endif>Viettel</option>
+                                                <option value="EMS" @if(($data['partner_code'] ?? '') === 'EMS') selected @endif>EMS</option>
+                                            </select>
+                                        </td>
+                                        <td style="min-width:300px">
+                                            <div class="small"><strong>Gửi:</strong> {{ $analysis['sender']['display_address'] ?? '' }}</div>
+                                            <div class="small"><strong>Nhận:</strong> {{ $analysis['receiver']['display_address'] ?? '' }}</div>
+                                        </td>
+                                        <td>
+                                            @foreach(['order_date','department','payment_method','service_extra','person_charge','quantity','type','total','collection'] as $hidden)
+                                                <input type="hidden" name="row[{{ $hidden }}]" value="{{ $data[$hidden] ?? '' }}">
+                                            @endforeach
+                                            <input type="hidden" name="status" value="{{ $status }}">
+                                            <button type="submit" class="btn btn-sm btn-primary mb-2">Lưu & kiểm tra</button>
+                                        </td>
+                                        {!! Form::close() !!}
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        {{ $rows->appends(['status' => $status])->links() }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="openModalPrint" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header bg-primary text-white">
+                        <h3 class="modal-title text-white">Chọn số liên in</h3>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="custom-control custom-radio mb-3">
+                            <input name="number" class="custom-control-input" id="number1" type="radio" value="1">
+                            <label class="custom-control-label" for="number1">In 1 liên</label>
+                        </div>
+                        <div class="custom-control custom-radio">
+                            <input name="number" class="custom-control-input" id="number2" checked type="radio" value="2">
+                            <label class="custom-control-label" for="number2">In 2 liên</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link text-muted" data-dismiss="modal">Hủy</button>
+                        <button type="button" id="printSmartBatch" class="btn btn-primary">Xác nhận in</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('js')
+<script type="text/javascript" src="{{ asset('js/render-print.js') }}?v={{ time() }}"></script>
+<script>
+    var smartImportOrderIds = {!! json_encode($batch->rows()->whereNotNull('order_id')->pluck('order_id')->values()) !!};
+    $.ajaxSetup({ headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') } });
+    $('#printSmartBatch').on('click', function () {
+        var number = $('input[name="number"]:checked').val();
+        $.ajax({
+            type: 'POST',
+            url: '/template/render',
+            data: { order: smartImportOrderIds, number: number },
+            success: function (res) {
+                var html = renderHtml(res);
+                var printDocument = window.open();
+                printDocument.document.write(html);
+                printDocument.document.close();
+            }
+        });
+    });
+</script>
+@endsection

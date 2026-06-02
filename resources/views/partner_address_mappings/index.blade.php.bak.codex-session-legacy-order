@@ -55,9 +55,12 @@
                         <div class="tab-pane fade show active" id="old-to-new-panel" role="tabpanel">
                             <div class="form-row">
                                 <div class="form-group col-lg-3 col-md-6">
-                                    <label>Xã/Phường cũ</label>
-                                    <select id="convert_old_ward_id" class="form-control">
-                                        <option value="">Vui lòng chọn tỉnh/huyện trước...</option>
+                                    <label>Tỉnh/Thành phố cũ</label>
+                                    <select id="convert_old_city_id" class="form-control">
+                                        <option value="">Vui lòng chọn...</option>
+                                        @foreach($legacyCities as $city)
+                                            <option value="{{ $city->id }}">{{ $city->city_name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                                 <div class="form-group col-lg-3 col-md-6">
@@ -67,12 +70,9 @@
                                     </select>
                                 </div>
                                 <div class="form-group col-lg-3 col-md-6">
-                                    <label>Tỉnh/Thành phố cũ</label>
-                                    <select id="convert_old_city_id" class="form-control">
-                                        <option value="">Vui lòng chọn...</option>
-                                        @foreach($legacyCities as $city)
-                                            <option value="{{ $city->id }}">{{ $city->city_name }}</option>
-                                        @endforeach
+                                    <label>Xã/Phường cũ</label>
+                                    <select id="convert_old_ward_id" class="form-control">
+                                        <option value="">Vui lòng chọn huyện trước...</option>
                                     </select>
                                 </div>
                                 <div class="form-group col-lg-3 col-md-6">
@@ -128,14 +128,17 @@
             <div class="card shadow">
                 <div class="card-header border-0">
                     <h3 class="mb-0">Tra mã địa chỉ cũ</h3>
-                    <p class="text-muted text-sm mb-0">Chọn xã/phường, huyện/quận cũ, tỉnh/thành phố để lấy mã VTP/EMS điền vào form mapping.</p>
+                    <p class="text-muted text-sm mb-0">Chọn tỉnh, huyện, xã cũ để lấy mã VTP/EMS điền vào form mapping.</p>
                 </div>
                 <div class="card-body">
                     <div class="form-row">
                         <div class="form-group col-lg-3 col-md-6">
-                            <label>Xã/Phường cũ</label>
-                            <select id="legacy_ward_id" class="form-control">
-                                <option value="">Vui lòng chọn tỉnh/huyện trước...</option>
+                            <label>Tỉnh/Thành phố cũ</label>
+                            <select id="legacy_city_id" class="form-control">
+                                <option value="">Vui lòng chọn...</option>
+                                @foreach($legacyCities as $city)
+                                    <option value="{{ $city->id }}">{{ $city->city_name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="form-group col-lg-3 col-md-6">
@@ -145,12 +148,9 @@
                             </select>
                         </div>
                         <div class="form-group col-lg-3 col-md-6">
-                            <label>Tỉnh/Thành phố cũ</label>
-                            <select id="legacy_city_id" class="form-control">
-                                <option value="">Vui lòng chọn...</option>
-                                @foreach($legacyCities as $city)
-                                    <option value="{{ $city->id }}">{{ $city->city_name }}</option>
-                                @endforeach
+                            <label>Xã/Phường cũ</label>
+                            <select id="legacy_ward_id" class="form-control">
+                                <option value="">Vui lòng chọn huyện trước...</option>
                             </select>
                         </div>
                         <div class="form-group col-lg-3 col-md-6">
@@ -210,18 +210,18 @@
                                 </select>
                             </div>
                             <div class="form-group col-lg-3 col-md-6">
-                                <label>Xã/Phường mới</label>
-                                <select name="new_ward_id" id="mapping_ward_id" class="form-control" required>
-                                    <option value="">Vui lòng chọn tỉnh trước...</option>
-                                </select>
-                            </div>
-                            <div class="form-group col-lg-3 col-md-6">
                                 <label>Tỉnh/Thành phố mới</label>
                                 <select id="mapping_province_id" class="form-control" required>
                                     <option value="">Vui lòng chọn...</option>
                                     @foreach($newProvinces as $province)
                                         <option value="{{ $province->id }}">{{ $province->name }}</option>
                                     @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group col-lg-3 col-md-6">
+                                <label>Xã/Phường mới</label>
+                                <select name="new_ward_id" id="mapping_ward_id" class="form-control" required>
+                                    <option value="">Vui lòng chọn tỉnh trước...</option>
                                 </select>
                             </div>
                             <div class="form-group col-lg-2 col-md-6">
@@ -332,20 +332,20 @@
                                 </select>
                             </div>
                             <div class="form-group col-lg-3 col-md-6">
-                                <label>Xã/Phường mới</label>
-                                <select name="new_ward_id" id="filter_ward_id" class="form-control form-control-sm">
-                                    <option value="">Tất cả</option>
-                                    @foreach($selectedWards as $ward)
-                                        <option value="{{ $ward->id }}" {{ (string)request('new_ward_id') === (string)$ward->id ? 'selected' : '' }}>{{ $ward->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group col-lg-3 col-md-6">
                                 <label>Tỉnh/Thành phố mới</label>
                                 <select name="new_province_id" id="filter_province_id" class="form-control form-control-sm">
                                     <option value="">Tất cả</option>
                                     @foreach($newProvinces as $province)
                                         <option value="{{ $province->id }}" {{ (string)request('new_province_id') === (string)$province->id ? 'selected' : '' }}>{{ $province->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group col-lg-3 col-md-6">
+                                <label>Xã/Phường mới</label>
+                                <select name="new_ward_id" id="filter_ward_id" class="form-control form-control-sm">
+                                    <option value="">Tất cả</option>
+                                    @foreach($selectedWards as $ward)
+                                        <option value="{{ $ward->id }}" {{ (string)request('new_ward_id') === (string)$ward->id ? 'selected' : '' }}>{{ $ward->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -369,8 +369,8 @@
                         <thead class="thead-light">
                             <tr>
                                 <th>Đối tác</th>
-                                <th>Xã/Phường mới</th>
                                 <th>Tỉnh mới</th>
+                                <th>Xã/Phường mới</th>
                                 <th>Mã tỉnh</th>
                                 <th>Mã huyện</th>
                                 <th>Mã xã</th>
@@ -384,8 +384,8 @@
                             @forelse($mappings as $mapping)
                                 <tr>
                                     <td><span class="badge {{ $mapping->partner_code === 'EMS' ? 'badge-info' : 'badge-warning' }}">{{ $mapping->partner_code === 'VTP' ? 'Viettel' : $mapping->partner_code }}</span></td>
-                                    <td>{{ optional($mapping->newWard)->name }}</td>
                                     <td>{{ optional($mapping->newProvince)->name }}</td>
+                                    <td>{{ optional($mapping->newWard)->name }}</td>
                                     <td>{{ $mapping->partner_province_code }}</td>
                                     <td>{{ $mapping->partner_district_code }}</td>
                                     <td>{{ $mapping->partner_ward_code }}</td>
@@ -450,8 +450,8 @@
                 <h4>Cách thêm mapping mới</h4>
                 <ol class="pl-3">
                     <li>Chọn đối tác: Viettel hoặc EMS.</li>
-                    <li>Chọn Xã/Phường mới và Tỉnh/Thành phố mới.</li>
-                    <li>Dùng khối <strong>Tra mã địa chỉ cũ</strong> để chọn xã/phường, huyện/quận cũ, tỉnh/thành phố.</li>
+                    <li>Chọn Tỉnh/Thành phố mới, sau đó chọn Xã/Phường mới.</li>
+                    <li>Dùng khối <strong>Tra mã địa chỉ cũ</strong> để chọn tỉnh, huyện, xã cũ.</li>
                     <li>Chọn đối tác cần dùng mã và bấm <strong>Dùng mã này</strong> để tự điền mã vào form.</li>
                     <li>Chọn trạng thái <strong>Đã map</strong> và bấm <strong>Lưu mapping</strong>.</li>
                 </ol>
@@ -805,14 +805,14 @@
             var html = '<div class="table-responsive">';
             html += '<table class="table table-sm align-items-center">';
             html += '<thead class="thead-light"><tr>';
-            html += '<th>Xã/Phường mới</th><th>Tỉnh mới</th><th>Thiếu</th><th>Đơn ảnh hưởng</th><th>Mã đơn mẫu</th><th class="text-right">Thao tác</th>';
+            html += '<th>Tỉnh mới</th><th>Xã/Phường mới</th><th>Thiếu</th><th>Đơn ảnh hưởng</th><th>Mã đơn mẫu</th><th class="text-right">Thao tác</th>';
             html += '</tr></thead><tbody>';
 
             results.forEach(function (item) {
                 var partners = item.missing_partners || [];
                 html += '<tr>';
-                html += '<td><strong>' + escapeHtml(item.new_ward_name || '') + '</strong></td>';
                 html += '<td>' + escapeHtml(item.new_province_name || '') + '</td>';
+                html += '<td><strong>' + escapeHtml(item.new_ward_name || '') + '</strong></td>';
                 html += '<td>';
                 partners.forEach(function (partner) {
                     html += '<span class="badge ' + (partner === 'EMS' ? 'badge-info' : 'badge-warning') + ' mr-1">' + escapeHtml(partner === 'VTP' ? 'Viettel' : partner) + '</span>';

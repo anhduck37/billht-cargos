@@ -61,7 +61,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('order/import-smart/{batch}', 'SmartImportController@show')->name('orders.smartImport.show');
     Route::post('order/import-smart/{batch}/confirm', 'SmartImportController@confirm')->name('orders.smartImport.confirm');
     Route::post('order/import-smart/{batch}/rows/{row}', 'SmartImportController@updateRow')->name('orders.smartImport.rows.update');
-    Route::post('order/import-smart/{batch}/delete', 'SmartImportController@destroy')->name('orders.smartImport.destroy');
     Route::get('order/import', 'OrderController@showFormImport')->name('orders.showFormImport');
     Route::get('order/export', 'OrderController@export')->name('orders.export');
     Route::post('/template/render', 'OrderController@renderTemplate');

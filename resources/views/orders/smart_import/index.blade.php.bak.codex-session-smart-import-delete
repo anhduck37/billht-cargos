@@ -1,0 +1,90 @@
+@extends('layouts.app')
+
+@section('content')
+    @include('layouts.headers.cards')
+
+    <div class="container-fluid mt--4">
+        <div class="row mt-5">
+            <div class="col-xl-12">
+                @include('flash::message')
+                <div class="card shadow border-0">
+                    <div class="card-header bg-white border-0">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div>
+                                <h1 class="mb-1 text-primary">Import thông minh</h1>
+                                <p class="text-muted mb-0">Upload Excel để kiểm tra, sửa lỗi, nhận diện địa chỉ và chỉ import khi dữ liệu hợp lệ.</p>
+                            </div>
+                            <a href="{{ route('orders.showFormImport') }}" class="btn btn-outline-primary">Quay lại import cũ</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {!! Form::open(['route' => 'orders.smartImport.preview', 'method' => 'POST', 'enctype' => 'multipart/form-data']) !!}
+                        @csrf
+                        <div class="row align-items-end">
+                            <div class="col-md-8">
+                                <label class="form-control-label">File Excel</label>
+                                <div class="custom-file">
+                                    <input type="file" name="file" class="custom-file-input" id="smartFile" required>
+                                    <label class="custom-file-label" for="smartFile">Chọn file cần kiểm tra...</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mt-3 mt-md-0">
+                                <button type="submit" class="btn btn-success btn-block">
+                                    <i class="fas fa-search mr-1"></i> Upload & preview
+                                </button>
+                            </div>
+                        </div>
+                        {!! Form::close() !!}
+                    </div>
+                </div>
+
+                <div class="card shadow border-0 mt-4">
+                    <div class="card-header bg-white">
+                        <h2 class="mb-0">Lô import gần đây</h2>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-items-center">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Thời gian</th>
+                                    <th>File</th>
+                                    <th>Trạng thái</th>
+                                    <th>Tổng</th>
+                                    <th>Hợp lệ</th>
+                                    <th>Lỗi</th>
+                                    <th>Đã import</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($batches as $batch)
+                                    <tr>
+                                        <td>{{ $batch->created_at ? $batch->created_at->format('d/m/Y H:i') : '' }}</td>
+                                        <td>{{ $batch->file_name }}</td>
+                                        <td><span class="badge badge-info">{{ $batch->status }}</span></td>
+                                        <td>{{ $batch->total_rows }}</td>
+                                        <td class="text-success font-weight-bold">{{ $batch->valid_rows }}</td>
+                                        <td class="text-danger font-weight-bold">{{ $batch->error_rows }}</td>
+                                        <td>{{ $batch->imported_rows }}</td>
+                                        <td><a href="{{ route('orders.smartImport.show', $batch->id) }}" class="btn btn-sm btn-primary">Mở</a></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="8" class="text-center text-muted">Chưa có lô import thông minh.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('js')
+<script>
+    $('#smartFile').on('change', function () {
+        var fileName = $(this).val().replace('C:\\fakepath\\', '');
+        $(this).next('.custom-file-label').html(fileName);
+    });
+</script>
+@endsection

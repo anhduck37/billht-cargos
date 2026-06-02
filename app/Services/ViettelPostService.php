@@ -249,25 +249,6 @@ class ViettelPostService
             return $result;
         }
 
-        if ((int)($formatData['PRODUCT_WEIGHT'] ?? 0) <= 0) {
-            $result = [
-                'error' => true,
-                'message' => 'Trọng lượng vận đơn phải lớn hơn 0 gram trước khi đẩy sang Viettel Post.',
-                'data' => []
-            ];
-
-            $orderPartnerLog = new OrderPartnerLog();
-            $orderPartnerLog->order_id = $order->id;
-            $orderPartnerLog->status = OrderPartnerLog::STATUS_FAILD;
-            $orderPartnerLog->partner_code = PartnerConfig::CODE_VIETTEL_POST;
-            $orderPartnerLog->payload = json_encode($formatData, JSON_UNESCAPED_UNICODE);
-            $orderPartnerLog->response = json_encode($result, JSON_UNESCAPED_UNICODE);
-            $orderPartnerLog->user_id = auth()->user()->id ?? 0;
-            $orderPartnerLog->save();
-
-            return $result;
-        }
-
         $client = new Client([
             'headers' => $this->headers,
             'timeout' => 30
