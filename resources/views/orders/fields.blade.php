@@ -519,6 +519,10 @@
             padding: 8px;
         }
 
+        .select2-container--default .select2-search--hide {
+            display: block !important;
+        }
+
         .select2-container--default .select2-search--dropdown .select2-search__field {
             display: block !important;
             width: 100% !important;
@@ -534,7 +538,15 @@
 
     $(document).ready(function(){
         if ($.fn.select2) {
-            $('#sender_city, #sender_district, #sender_ward, #receiver_city, #receiver_district, #receiver_ward').select2({
+            var $addressSelects = $('#sender_city, #sender_district, #sender_ward, #receiver_city, #receiver_district, #receiver_ward');
+            $addressSelects.each(function () {
+                var $select = $(this);
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.select2('destroy');
+                }
+            });
+
+            $addressSelects.select2({
                 placeholder: "Vui lòng chọn...",
                 allowClear: true,
                 minimumResultsForSearch: 0,

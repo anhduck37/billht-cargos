@@ -431,7 +431,7 @@
 </div>
 @endsection
 
-@section('javascript')
+@section('js')
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .address-convert-tabs.nav-pills .nav-link {
@@ -498,6 +498,10 @@
         padding: 8px;
     }
 
+    .select2-container--default .select2-search--hide {
+        display: block !important;
+    }
+
     .select2-container--default .select2-search--dropdown .select2-search__field {
         display: block !important;
         width: 100% !important;
@@ -519,7 +523,7 @@
             $(scope || document).find('select.form-control').each(function () {
                 var $select = $(this);
                 if ($select.hasClass('select2-hidden-accessible')) {
-                    return;
+                    $select.select2('destroy');
                 }
 
                 var placeholder = $select.find('option:first').text() || 'Vui long chon...';
