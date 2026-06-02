@@ -150,7 +150,7 @@ class ViettelPostService
         $formatData = [
             "ORDER_NUMBER" => !empty($order->invoice_code) ? $order->invoice_code : $order->order_code,
             "SENDER_FULLNAME" => $order->sender->sender_name ?? '',
-            "SENDER_ADDRESS" => $this->getGroupId($senderAddress) ??  trim($senderAddress),
+            "SENDER_ADDRESS" => $senderAddressScheme === 'new' ? trim($senderAddress) : ($this->getGroupId($senderAddress) ?? trim($senderAddress)),
             "SENDER_PHONE" => $order->sender->sender_phone ?? '',
             "SENDER_EMAIL" => $order->sender->sender_email ?? '',
             "SENDER_WARD" => $senderWard,
