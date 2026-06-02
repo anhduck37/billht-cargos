@@ -239,7 +239,7 @@ class ViettelPostService
             $response = $client->post(
                 $this->url . $path,
                 [
-                    'body' => json_encode($formatData)
+                    'body' => json_encode($formatData, JSON_UNESCAPED_UNICODE)
                 ]
             );
 
@@ -252,6 +252,7 @@ class ViettelPostService
                 'data' => []
             ];
         }
+
         $orderPartnerLog = new OrderPartnerLog();
         $status = OrderPartnerLog::STATUS_FAILD;
         if (!empty($result['data'])) {
@@ -263,8 +264,8 @@ class ViettelPostService
         $orderPartnerLog->order_id = $order->id;
         $orderPartnerLog->status = $status;
         $orderPartnerLog->partner_code = PartnerConfig::CODE_VIETTEL_POST;
-        $orderPartnerLog->payload = json_encode($formatData);
-        $orderPartnerLog->response = json_encode($result);
+        $orderPartnerLog->payload = json_encode($formatData, JSON_UNESCAPED_UNICODE);
+        $orderPartnerLog->response = json_encode($result, JSON_UNESCAPED_UNICODE);
         $orderPartnerLog->user_id = auth()->user()->id ?? 0;
         $orderPartnerLog->save();
         return $result;
