@@ -34,6 +34,7 @@ use App\Services\EmsService;
 use App\Services\GoogleDriveService;
 use App\Services\OrderHistoryService;
 use App\Services\OrderImageService;
+use App\Services\PartnerErrorMessageService;
 use App\Services\SendSMSService;
 use App\Services\ZaloService;
 use App\ZaloConfig;
@@ -1796,7 +1797,8 @@ class OrderController extends AppBaseController
         // check đơn trùng trên viettel
         $sendOrderViettelPost = new SendOrderViettelPostJob($order);
         $result = $sendOrderViettelPost->handle();
-        if ($result['error']) {
+        if (!empty($result['error'])) {
+            $result['message'] = app(PartnerErrorMessageService::class)->normalizeText(Order::CODE_VIETTEL_POST, $result['message'] ?? '');
             Flash::error('Xảy ra lỗi tạo vận đơn sang Viettel Post: Kiểm tra chi tiết đồng bộ API <a target="_blank" style="color: white" href="https://bill.ht-cargos.com/order-partner-logs">TẠI ĐÂY</a> - ' . ($result['message'] ?? ''));
         }
         else {
