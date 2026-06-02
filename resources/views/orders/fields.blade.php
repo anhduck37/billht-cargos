@@ -488,9 +488,60 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 <script type="text/javascript" src="{{ asset('js/barcode.js') }}"></script>
 @section('javascript')
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container .select2-selection--single {
+            height: calc(2.75rem + 2px);
+            border: 1px solid #cad1d7;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            background-color: #fff;
+            box-shadow: none;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: calc(2.75rem + 2px);
+            right: 0.75rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 1.5;
+            color: #8898aa;
+            padding-left: 0;
+        }
+
+        .select2-container--default .select2-search--dropdown {
+            display: block !important;
+            padding: 8px;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            display: block !important;
+            width: 100% !important;
+            height: 34px;
+            border: 1px solid #cad1d7;
+            border-radius: 0.25rem;
+            padding: 6px 10px;
+            outline: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script type="text/javascript">
 
     $(document).ready(function(){
+        if ($.fn.select2) {
+            $('#sender_city, #sender_district, #sender_ward, #receiver_city, #receiver_district, #receiver_ward').select2({
+                placeholder: "Vui lòng chọn...",
+                allowClear: true,
+                minimumResultsForSearch: 0,
+                width: '100%'
+            });
+        }
+
         $('#barcode-scanner').click(function() {
             $('#modal-camera-scanner').modal('show');
             startScanner()
@@ -702,6 +753,9 @@
                     html += `<option value="${item.id}" ${idUpdate == item.id ? 'selected' : ''}>${item[`${type}_name`]}</option>`
                 })
                 $(`#${name}`).html(html)
+                if ($(`#${name}`).hasClass('select2-hidden-accessible')) {
+                    $(`#${name}`).trigger('change.select2');
+                }
             })
         }
 

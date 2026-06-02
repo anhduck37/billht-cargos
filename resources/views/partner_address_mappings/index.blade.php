@@ -432,6 +432,7 @@
 @endsection
 
 @section('javascript')
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
     .address-convert-tabs.nav-pills .nav-link {
         color: #344767 !important;
@@ -463,14 +464,95 @@
         background: #5e72e4 !important;
         border-color: #5e72e4 !important;
     }
+
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container .select2-selection--single {
+        height: calc(2.75rem + 2px);
+        border: 1px solid #cad1d7;
+        border-radius: 0.375rem;
+        background-color: #fff;
+        box-shadow: none;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: calc(2.75rem + 2px);
+        color: #8898aa;
+        padding-left: .75rem;
+        padding-right: 2rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: calc(2.75rem + 2px);
+        right: .5rem;
+    }
+
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #5e72e4;
+    }
+
+    .select2-container--default .select2-search--dropdown {
+        display: block !important;
+        padding: 8px;
+    }
+
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        display: block !important;
+        width: 100% !important;
+        height: 34px;
+        border: 1px solid #cad1d7;
+        border-radius: 0.25rem;
+        padding: 6px 10px;
+        outline: none;
+    }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(function () {
+        function initSearchableSelects(scope) {
+            if (!$.fn.select2) {
+                return;
+            }
+
+            $(scope || document).find('select.form-control').each(function () {
+                var $select = $(this);
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    return;
+                }
+
+                var placeholder = $select.find('option:first').text() || 'Vui long chon...';
+                $select.select2({
+                    placeholder: placeholder,
+                    allowClear: true,
+                    minimumResultsForSearch: 0,
+                    width: '100%'
+                });
+            });
+        }
+
+        function refreshSearchableSelect($select) {
+            if ($.fn.select2 && $select.hasClass('select2-hidden-accessible')) {
+                $select.trigger('change.select2');
+            }
+        }
+
+        function setSearchableSelectValue(selector, value) {
+            var $select = $(selector);
+            $select.val(value || '');
+            refreshSearchableSelect($select);
+        }
+
+        initSearchableSelects(document);
+
         function loadWards(provinceId, targetSelector, selectedWardId) {
             var $target = $(targetSelector);
             $target.html('<option value="">Đang tải...</option>');
+            refreshSearchableSelect($target);
             if (!provinceId) {
                 $target.html('<option value="">Vui lòng chọn tỉnh trước...</option>');
+                refreshSearchableSelect($target);
                 return;
             }
 
@@ -482,9 +564,11 @@
                         html += '<option value="' + ward.id + '"' + selected + '>' + ward.name + '</option>';
                     });
                     $target.html(html);
+                    refreshSearchableSelect($target);
                 })
                 .fail(function () {
                     $target.html('<option value="">Không tải được xã/phường</option>');
+                    refreshSearchableSelect($target);
                 });
         }
 
@@ -515,12 +599,15 @@
         function loadDistrictsTo(cityId, targetSelector, wardSelector) {
             var $target = $(targetSelector);
             $target.html('<option value="">Đang tải...</option>');
+            refreshSearchableSelect($target);
             if (wardSelector) {
                 $(wardSelector).html('<option value="">Vui lòng chọn huyện trước...</option>');
+                refreshSearchableSelect($(wardSelector));
             }
 
             if (!cityId) {
                 $target.html('<option value="">Vui lòng chọn tỉnh trước...</option>');
+                refreshSearchableSelect($target);
                 return;
             }
 
@@ -531,18 +618,22 @@
                         html += '<option value="' + district.id + '">' + escapeHtml(district.district_name) + '</option>';
                     });
                     $target.html(html);
+                    refreshSearchableSelect($target);
                 })
                 .fail(function () {
                     $target.html('<option value="">Không tải được huyện/quận</option>');
+                    refreshSearchableSelect($target);
                 });
         }
 
         function loadLegacyWardsTo(districtId, targetSelector) {
             var $target = $(targetSelector);
             $target.html('<option value="">Đang tải...</option>');
+            refreshSearchableSelect($target);
 
             if (!districtId) {
                 $target.html('<option value="">Vui lòng chọn huyện trước...</option>');
+                refreshSearchableSelect($target);
                 return;
             }
 
@@ -553,9 +644,11 @@
                         html += '<option value="' + ward.id + '">' + escapeHtml(ward.ward_name) + '</option>';
                     });
                     $target.html(html);
+                    refreshSearchableSelect($target);
                 })
                 .fail(function () {
                     $target.html('<option value="">Không tải được xã/phường</option>');
+                    refreshSearchableSelect($target);
                 });
         }
 
@@ -632,7 +725,7 @@
                 html += ' data-province-code="' + escapeHtml(codes.province_code || '') + '"';
                 html += ' data-district-code="' + escapeHtml(codes.district_code || '') + '"';
                 html += ' data-ward-code="' + escapeHtml(codes.ward_code || '') + '"';
-                html += ' data-local-missing="' + (item.mapping_status === 'local_code_missing' ? '1' : '0') + '">Dùng mapping</button>';
+                html += ' data-local-missing="' + (item.mapping_status === 'local_code_missing' ? '1' : '0') + '">Xem mapping</button>';
                 if (item.mapping_status === 'local_code_missing') {
                     html += '<button type="button" class="btn btn-sm btn-outline-secondary ml-2 fill-legacy-search"';
                     html += ' data-city="' + escapeHtml(legacyAddress.city_name || '') + '"';
@@ -646,25 +739,28 @@
         }
 
         function fillMappingForm(partner, newProvinceId, newWardId, provinceCode, districtCode, wardCode) {
-            $('#partner_code').val(partner || 'VTP');
-            $('#mapping_province_id').val(newProvinceId || '');
+            setSearchableSelectValue('#partner_code', partner || 'VTP');
+            setSearchableSelectValue('#mapping_province_id', newProvinceId || '');
             if (newProvinceId) {
                 loadWards(newProvinceId, '#mapping_ward_id', newWardId);
             }
             $('#partner_province_code').val(provinceCode || '');
             $('#partner_district_code').val(districtCode || '');
             $('#partner_ward_code').val(wardCode || '');
-            $('#mapping_status').val('mapped');
+            setSearchableSelectValue('#mapping_status', 'mapped');
             $('html, body').animate({ scrollTop: $('#mappingForm').offset().top - 120 }, 250);
         }
 
         function loadLegacyDistricts(cityId) {
             $('#legacy_district_id').html('<option value="">Đang tải...</option>');
             $('#legacy_ward_id').html('<option value="">Vui lòng chọn huyện trước...</option>');
+            refreshSearchableSelect($('#legacy_district_id'));
+            refreshSearchableSelect($('#legacy_ward_id'));
             resetLegacyCodeResult();
 
             if (!cityId) {
                 $('#legacy_district_id').html('<option value="">Vui lòng chọn tỉnh trước...</option>');
+                refreshSearchableSelect($('#legacy_district_id'));
                 return;
             }
 
@@ -675,18 +771,22 @@
                         html += '<option value="' + district.id + '">' + district.district_name + '</option>';
                     });
                     $('#legacy_district_id').html(html);
+                    refreshSearchableSelect($('#legacy_district_id'));
                 })
                 .fail(function () {
                     $('#legacy_district_id').html('<option value="">Không tải được huyện/quận</option>');
+                    refreshSearchableSelect($('#legacy_district_id'));
                 });
         }
 
         function loadLegacyWards(districtId) {
             $('#legacy_ward_id').html('<option value="">Đang tải...</option>');
+            refreshSearchableSelect($('#legacy_ward_id'));
             resetLegacyCodeResult();
 
             if (!districtId) {
                 $('#legacy_ward_id').html('<option value="">Vui lòng chọn huyện trước...</option>');
+                refreshSearchableSelect($('#legacy_ward_id'));
                 return;
             }
 
@@ -697,9 +797,11 @@
                         html += '<option value="' + ward.id + '">' + ward.ward_name + '</option>';
                     });
                     $('#legacy_ward_id').html(html);
+                    refreshSearchableSelect($('#legacy_ward_id'));
                 })
                 .fail(function () {
                     $('#legacy_ward_id').html('<option value="">Không tải được xã/phường</option>');
+                    refreshSearchableSelect($('#legacy_ward_id'));
                 });
         }
 
@@ -843,7 +945,7 @@
                 $(this).data('district-code'),
                 $(this).data('ward-code')
             );
-            $('#mapping_status').val($(this).data('status'));
+            setSearchableSelectValue('#mapping_status', $(this).data('status'));
             $('#mapping_note').val($(this).data('note'));
         });
 
@@ -854,7 +956,7 @@
             }
 
             var partner = $('#legacy_partner_code').val();
-            $('#partner_code').val(partner);
+            setSearchableSelectValue('#partner_code', partner);
             if (partner === 'EMS') {
                 $('#partner_province_code').val(selectedLegacyCode.ems_province_code || '');
                 $('#partner_district_code').val(selectedLegacyCode.ems_district_code || '');
@@ -864,7 +966,7 @@
                 $('#partner_district_code').val(selectedLegacyCode.vtp_district_code || '');
                 $('#partner_ward_code').val(selectedLegacyCode.vtp_ward_code || '');
             }
-            $('#mapping_status').val('mapped');
+            setSearchableSelectValue('#mapping_status', 'mapped');
 
             $('html, body').animate({ scrollTop: $('#mappingForm').offset().top - 120 }, 250);
         });
