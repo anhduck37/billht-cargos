@@ -804,15 +804,6 @@ class ViettelPostService
 
     private function stripViettelAdministrativeSuffix($address, $addressModel)
     {
-        $parts = array_map('trim', explode(',', trim((string)$address, " \t\n\r\0\x0B,")));
-        $parts = array_values(array_filter($parts, function ($part) {
-            return $part !== '';
-        }));
-
-        if (count($parts) <= 1) {
-            return trim((string)$address);
-        }
-
         $administrativeNames = array_filter([
             optional($addressModel->newWard)->name,
             optional($addressModel->newProvince)->name,
@@ -824,13 +815,20 @@ class ViettelPostService
             $addressModel->city_name ?? null,
         ]);
 
-        $normalizedAdministrativeNames = array_values(array_filter(array_unique(array_map(function ($name) {
-            return $this->normalizeViettelAddressPart($name);
-        }, $administrativeNames))));
+        $address = trim((string)$address, " \t\n\r\0\x0B,");
+
+        foreach ($administrativeNames as $name) {
+            $address = $this->removeViettelAdministrativeText($address, $name);
+        }
+
+        $parts = array_map('trim', explode(',', trim($address, " \t\n\r\0\x0B,")));
+        $parts = array_values(array_filter($parts, function ($part) {
+            return $part !== '';
+        }));
 
         while (count($parts) > 1) {
             $lastPart = $this->normalizeViettelAddressPart(end($parts));
-            if (!$this->matchesViettelAdministrativePart($lastPart, $normalizedAdministrativeNames)) {
+            if ($lastPart !== '') {
                 break;
             }
             array_pop($parts);
@@ -839,15 +837,26 @@ class ViettelPostService
         return trim(implode(', ', $parts));
     }
 
-    private function matchesViettelAdministrativePart($part, array $administrativeNames)
+    private function removeViettelAdministrativeText($address, $name)
     {
-        foreach ($administrativeNames as $name) {
-            if ($part === $name || strpos($part, $name) !== false || strpos($name, $part) !== false) {
-                return true;
-            }
+        $name = trim((string)$name);
+        if ($name === '') {
+            return $address;
         }
 
-        return false;
+        $variants = array_filter(array_unique([
+            $name,
+            preg_replace('/^(Tỉnh|Thành phố|TP|Quận|Huyện|Thị xã|Xã|Phường|Thị trấn)\s+/iu', '', $name),
+        ]));
+
+        foreach ($variants as $variant) {
+            $address = preg_replace('/(?:^|[\s,]+)' . preg_quote($variant, '/') . '(?=$|[\s,]+)/iu', ' ', $address);
+        }
+
+        $address = preg_replace('/\s*,\s*,+/', ', ', $address);
+        $address = preg_replace('/\s+/', ' ', $address);
+
+        return trim($address, " \t\n\r\0\x0B,");
     }
 
     private function normalizeViettelAddressPart($value)
