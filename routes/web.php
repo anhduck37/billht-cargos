@@ -82,6 +82,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/partner-address-mappings', 'PartnerAddressMappingController@index')->name('partner_address_mappings.index');
     Route::get('/partner-address-mappings/convert-old-to-new', 'PartnerAddressMappingController@convertOldToNew')->name('partner_address_mappings.convert_old_to_new');
     Route::get('/partner-address-mappings/convert-new-to-old', 'PartnerAddressMappingController@convertNewToOld')->name('partner_address_mappings.convert_new_to_old');
+    Route::get('/partner-address-mappings/missing', 'PartnerAddressMappingController@missing')->name('partner_address_mappings.missing');
     Route::post('/partner-address-mappings', 'PartnerAddressMappingController@store')->name('partner_address_mappings.store');
     Route::patch('/partner-address-mappings/{partnerAddressMapping}', 'PartnerAddressMappingController@update')->name('partner_address_mappings.update');
     Route::get('/order/status-change', 'OrderStatusChangeController@index')->name('order_status_changes.index');

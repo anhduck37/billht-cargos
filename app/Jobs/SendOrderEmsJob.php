@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Services\EmsService;
+use App\Services\PartnerErrorMessageService;
+use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -56,6 +58,7 @@ class SendOrderEmsJob implements ShouldQueue
             if (empty($errors)) {
                 $errors = $result['message'] ?? 'Push EMS thất bại (không có chi tiết lỗi)';
             }
+            $errors = app(PartnerErrorMessageService::class)->normalizeText(Order::CODE_EMS, $errors);
             $this->order->push_error = $errors;
             $this->order->save();
             

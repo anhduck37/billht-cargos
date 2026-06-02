@@ -94,26 +94,6 @@ class ViettelPostService
         $senderAddress = ($order->sender->address ?? '') . ' ' . ($order->sender->ward_name ?? '') . ' ' . ($order->sender->city_name ?? '');
         $receiverAddress = ($order->receiver->address ?? '') . ' ' . ($order->receiver->ward_name ?? '') . ' ' . ($order->receiver->city_name ?? '');
 
-        $senderAddressScheme = $order->sender->address_scheme ?? $order->address_scheme ?? 'old';
-        $senderWard = $order->sender->ward->ward_code ?? 0;
-        $senderDistrict = $order->sender->district->district_code ?? 0;
-        $senderProvince = $order->sender->city->city_code ?? 0;
-
-        if ($senderAddressScheme === 'new') {
-            $senderWard = 0;
-            $senderDistrict = 0;
-            $senderProvince = 0;
-
-            if (isset($order->sender->new_ward_id)) {
-                $mapping = app(\App\Services\Address2025Service::class)->getPartnerMapping($order->sender->new_ward_id, 'VTP');
-                if ($mapping) {
-                    $senderWard = $mapping->partner_ward_code ?? $senderWard;
-                    $senderDistrict = $mapping->partner_district_code ?? $senderDistrict;
-                    $senderProvince = $mapping->partner_province_code ?? $senderProvince;
-                }
-            }
-        }
-
         $receiverAddressScheme = $order->receiver->address_scheme ?? $order->address_scheme ?? 'old';
         $receiverWard = $order->receiver->ward->ward_code ?? 0;
         $receiverDistrict = $order->receiver->district->district_code ?? 0;
@@ -153,9 +133,9 @@ class ViettelPostService
             "SENDER_ADDRESS" => $this->getGroupId($senderAddress) ??  trim($senderAddress),
             "SENDER_PHONE" => $order->sender->sender_phone ?? '',
             "SENDER_EMAIL" => $order->sender->sender_email ?? '',
-            "SENDER_WARD" => $senderWard,
-            "SENDER_DISTRICT" => $senderDistrict,
-            "SENDER_PROVINCE" => $senderProvince,
+            // "SENDER_WARD" => $order->sender->ward->ward_code ?? 0,
+            // "SENDER_DISTRICT" => $order->sender->district->district_code ?? 0,
+            // "SENDER_PROVINCE" => $order->sender->city->city_code ?? 0,
             "RECEIVER_FULLNAME" => $order->receiver->receiver_name ?? 0,
             "RECEIVER_ADDRESS" => $receiverAddress,
             "RECEIVER_PHONE" => $order->receiver->receiver_phone,
@@ -184,29 +164,6 @@ class ViettelPostService
             "MONEY_TOTALVAT" => 0,
             "MONEY_TOTAL" => 0
         ];
-
-        if ($senderAddressScheme !== 'new') {
-            unset($formatData['SENDER_WARD'], $formatData['SENDER_DISTRICT'], $formatData['SENDER_PROVINCE']);
-        }
-
-        if ($senderAddressScheme === 'new' && (!$senderWard || !$senderDistrict || !$senderProvince)) {
-            $result = [
-                'error' => true,
-                'message' => 'Địa chỉ người gửi dùng địa chỉ mới nhưng chưa có mapping Viettel Post đầy đủ cho xã/phường. Vui lòng chọn lại Xã/Phường hoặc bổ sung mapping VTP trước khi đồng bộ.',
-                'data' => []
-            ];
-
-            $orderPartnerLog = new OrderPartnerLog();
-            $orderPartnerLog->order_id = $order->id;
-            $orderPartnerLog->status = OrderPartnerLog::STATUS_FAILD;
-            $orderPartnerLog->partner_code = PartnerConfig::CODE_VIETTEL_POST;
-            $orderPartnerLog->payload = json_encode($formatData, JSON_UNESCAPED_UNICODE);
-            $orderPartnerLog->response = json_encode($result, JSON_UNESCAPED_UNICODE);
-            $orderPartnerLog->user_id = auth()->user()->id ?? 0;
-            $orderPartnerLog->save();
-
-            return $result;
-        }
 
         if ($receiverAddressScheme === 'new' && (!$receiverWard || !$receiverDistrict || !$receiverProvince)) {
             $result = [
@@ -301,8 +258,6 @@ class ViettelPostService
                 'data' => [],
             ];
         }
-
-        $result = app(PartnerErrorMessageService::class)->normalizeResult(Order::CODE_VIETTEL_POST, $result, $formatData);
 
         $orderPartnerLog = new OrderPartnerLog();
         $orderPartnerLog->order_id = $order->id ?? 0;

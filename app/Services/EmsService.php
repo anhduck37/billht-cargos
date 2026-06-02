@@ -150,6 +150,8 @@ class EmsService
             ]);
         }
 
+        $result = app(PartnerErrorMessageService::class)->normalizeResult(Order::CODE_EMS, $result, $formatData);
+
         $orderPartnerLog = new OrderPartnerLog();
         $statusLog = OrderPartnerLog::STATUS_FAILD;
         

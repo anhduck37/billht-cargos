@@ -261,57 +261,6 @@
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col">
-            <div class="card shadow">
-                <div class="card-header border-0">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h3 class="mb-0">Quét địa danh thiếu mapping</h3>
-                            <p class="text-muted text-sm mb-0">Quét các xã/phường mới đang phát sinh vận đơn nhưng chưa có mapping VTP/EMS đầy đủ.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="form-row align-items-end">
-                        <div class="form-group col-lg-3 col-md-6">
-                            <label>Đối tác cần quét</label>
-                            <select id="missing_mapping_partner" class="form-control">
-                                <option value="">Tất cả</option>
-                                <option value="VTP">Viettel</option>
-                                <option value="EMS">EMS</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-lg-3 col-md-6">
-                            <label>Phạm vi</label>
-                            <select id="missing_mapping_error_only" class="form-control">
-                                <option value="0">Tất cả đơn địa chỉ mới</option>
-                                <option value="1">Chỉ đơn đang lỗi đồng bộ</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-lg-2 col-md-6">
-                            <label>Giới hạn</label>
-                            <select id="missing_mapping_limit" class="form-control">
-                                <option value="50">50 dòng</option>
-                                <option value="100" selected>100 dòng</option>
-                                <option value="200">200 dòng</option>
-                                <option value="500">500 dòng</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-lg-4 col-md-6">
-                            <button type="button" id="scan_missing_mapping_btn" class="btn btn-success btn-block">
-                                Quét thiếu mapping
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="missing_mapping_summary" class="text-muted text-sm mb-3"></div>
-                    <div id="missing_mapping_result"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="row">
         <div class="col">
             <div class="card shadow">
@@ -793,54 +742,6 @@
             $(targetSelector).html(html);
         }
 
-        function renderMissingMappingResults(payload) {
-            var results = payload && payload.results ? payload.results : [];
-            $('#missing_mapping_summary').text('Tìm thấy ' + (payload.total || 0) + ' xã/phường thiếu mapping.');
-
-            if (!results.length) {
-                $('#missing_mapping_result').html('<div class="alert alert-success mb-0">Chưa phát hiện địa danh thiếu mapping theo điều kiện đã chọn.</div>');
-                return;
-            }
-
-            var html = '<div class="table-responsive">';
-            html += '<table class="table table-sm align-items-center">';
-            html += '<thead class="thead-light"><tr>';
-            html += '<th>Tỉnh mới</th><th>Xã/Phường mới</th><th>Thiếu</th><th>Đơn ảnh hưởng</th><th>Mã đơn mẫu</th><th class="text-right">Thao tác</th>';
-            html += '</tr></thead><tbody>';
-
-            results.forEach(function (item) {
-                var partners = item.missing_partners || [];
-                html += '<tr>';
-                html += '<td>' + escapeHtml(item.new_province_name || '') + '</td>';
-                html += '<td><strong>' + escapeHtml(item.new_ward_name || '') + '</strong></td>';
-                html += '<td>';
-                partners.forEach(function (partner) {
-                    html += '<span class="badge ' + (partner === 'EMS' ? 'badge-info' : 'badge-warning') + ' mr-1">' + escapeHtml(partner === 'VTP' ? 'Viettel' : partner) + '</span>';
-                });
-                html += '</td>';
-                html += '<td>';
-                html += '<div>Tổng: <strong>' + escapeHtml(item.order_count || 0) + '</strong></div>';
-                html += '<div class="text-muted text-xs">Gửi: ' + escapeHtml(item.sender_count || 0) + ' | Nhận: ' + escapeHtml(item.receiver_count || 0) + '</div>';
-                html += '</td>';
-                html += '<td style="white-space: normal; max-width: 260px;">' + escapeHtml((item.sample_order_codes || []).join(', ')) + '</td>';
-                html += '<td class="text-right">';
-                partners.forEach(function (partner) {
-                    html += '<button type="button" class="btn btn-sm btn-outline-primary fill-missing-mapping mb-1"';
-                    html += ' data-partner="' + escapeHtml(partner) + '"';
-                    html += ' data-province="' + escapeHtml(item.new_province_id || '') + '"';
-                    html += ' data-ward="' + escapeHtml(item.new_ward_id || '') + '">Mapping ' + escapeHtml(partner === 'VTP' ? 'VTP' : 'EMS') + '</button> ';
-                });
-                html += '<button type="button" class="btn btn-sm btn-outline-secondary convert-missing-new-to-old mb-1"';
-                html += ' data-province="' + escapeHtml(item.new_province_id || '') + '"';
-                html += ' data-ward="' + escapeHtml(item.new_ward_id || '') + '">Chuyển mới → cũ</button>';
-                html += '</td>';
-                html += '</tr>';
-            });
-
-            html += '</tbody></table></div>';
-            $('#missing_mapping_result').html(html);
-        }
-
         function fillMappingForm(partner, newProvinceId, newWardId, provinceCode, districtCode, wardCode) {
             setSearchableSelectValue('#partner_code', partner || 'VTP');
             setSearchableSelectValue('#mapping_province_id', newProvinceId || '');
@@ -999,26 +900,6 @@
             });
         });
 
-        $('#scan_missing_mapping_btn').on('click', function () {
-            var $button = $(this);
-            $button.prop('disabled', true).text('Đang quét...');
-            $('#missing_mapping_summary').text('');
-            $('#missing_mapping_result').html('<div class="text-muted">Đang quét địa danh thiếu mapping...</div>');
-
-            $.get('{{ route('partner_address_mappings.missing') }}', {
-                partner_code: $('#missing_mapping_partner').val(),
-                error_only: $('#missing_mapping_error_only').val(),
-                limit: $('#missing_mapping_limit').val()
-            }).done(function (data) {
-                renderMissingMappingResults(data);
-            }).fail(function (xhr) {
-                var message = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Không quét được địa danh thiếu mapping.';
-                $('#missing_mapping_result').html('<div class="alert alert-danger mb-0">' + escapeHtml(message) + '</div>');
-            }).always(function () {
-                $button.prop('disabled', false).text('Quét thiếu mapping');
-            });
-        });
-
         $(document).on('click', '.use-conversion-mapping', function () {
             if (String($(this).data('local-missing')) === '1') {
                 alert('Chưa thể dùng mapping vì BillHT chưa tìm thấy mã VTP/EMS local tương ứng. Hãy bấm "Tìm mã local" để tra cứu mã cũ trước.');
@@ -1042,29 +923,6 @@
 
             $('#legacy_code_error').text('Hãy dùng khối Tra mã địa chỉ cũ để tìm: ' + text).show();
             $('html, body').animate({ scrollTop: $('#legacy_code_error').offset().top - 160 }, 250);
-        });
-
-        $(document).on('click', '.fill-missing-mapping', function () {
-            fillMappingForm(
-                $(this).data('partner'),
-                $(this).data('province'),
-                $(this).data('ward'),
-                '',
-                '',
-                ''
-            );
-            $('#mapping_note').val('Tạo từ danh sách quét thiếu mapping');
-        });
-
-        $(document).on('click', '.convert-missing-new-to-old', function () {
-            var provinceId = $(this).data('province');
-            var wardId = $(this).data('ward');
-
-            $('#new-to-old-tab').tab('show');
-            setSearchableSelectValue('#convert_new_province_id', provinceId);
-            loadWards(provinceId, '#convert_new_ward_id', wardId);
-            $('#new_to_old_result').html('<div class="text-muted">Đã chọn địa chỉ mới. Bấm Chuyển đổi để tra địa chỉ cũ tương ứng.</div>');
-            $('html, body').animate({ scrollTop: $('#new-to-old-panel').offset().top - 160 }, 250);
         });
 
         $(document).on('change select2:select select2:clear', '#legacy_city_id', function () {

@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Service;
+use App\Models\Order;
+use App\Services\PartnerErrorMessageService;
 use App\Services\ViettelPostService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -57,6 +59,7 @@ class SendOrderViettelPostJob implements ShouldQueue
         } else {
             // Push thất bại → ghi lỗi chi tiết vào DB
             $errors = $result['message'] ?? 'Push VTP thất bại (không có chi tiết lỗi)';
+            $errors = app(PartnerErrorMessageService::class)->normalizeText(Order::CODE_VIETTEL_POST, $errors);
             $this->order->push_error = '[VTP] ' . $errors;
             $this->order->save();
         }
