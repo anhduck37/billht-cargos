@@ -215,6 +215,57 @@
                         @endif
                     </form>
 
+                    <div class="row mt-3 partner-log-summary">
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-2">
+                            <div class="border rounded p-2 h-100">
+                                <div class="text-muted text-xs">Tá»•ng log</div>
+                                <strong>{{ number_format($logSummary['total'] ?? 0) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-2">
+                            <div class="border rounded p-2 h-100">
+                                <div class="text-muted text-xs">Äang hiá»ƒn thá»‹</div>
+                                <strong>{{ number_format($logs->count()) }}/{{ number_format($logSummary['total'] ?? 0) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-2">
+                            <div class="border rounded p-2 h-100">
+                                <div class="text-muted text-xs">ThÃ nh cÃ´ng</div>
+                                <strong class="text-success">{{ number_format($logSummary['success'] ?? 0) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-lg-3 col-md-4 col-6 mb-2">
+                            <div class="border rounded p-2 h-100">
+                                <div class="text-muted text-xs">Tháº¥t báº¡i</div>
+                                <strong class="text-danger">{{ number_format($logSummary['failed'] ?? 0) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-xl-1 col-lg-3 col-md-4 col-6 mb-2">
+                            <div class="border rounded p-2 h-100">
+                                <div class="text-muted text-xs">Viettel</div>
+                                <strong>{{ number_format($logSummary['vtp'] ?? 0) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-xl-1 col-lg-3 col-md-4 col-6 mb-2">
+                            <div class="border rounded p-2 h-100">
+                                <div class="text-muted text-xs">EMS</div>
+                                <strong>{{ number_format($logSummary['ems'] ?? 0) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-xl-1 col-lg-3 col-md-4 col-6 mb-2">
+                            <div class="border rounded p-2 h-100">
+                                <div class="text-muted text-xs">Mickey</div>
+                                <strong>{{ number_format($logSummary['mickey'] ?? 0) }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-xl-1 col-lg-3 col-md-4 col-6 mb-2">
+                            <div class="border rounded p-2 h-100">
+                                <div class="text-muted text-xs">CÃ³ thá»ƒ huá»·</div>
+                                <strong>{{ number_format($logSummary['cancelable'] ?? 0) }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <div class="table-responsive d-none d-lg-block">

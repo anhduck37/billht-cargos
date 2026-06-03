@@ -76,6 +76,8 @@ class OrderPartnerLogController extends Controller
             });
         }
 
+        $logSummary = $this->buildFilteredLogSummary(clone $query);
+
         // Paginate results
         $logs = $query->orderBy('updated_at', 'desc')->paginate(50);
         
@@ -121,7 +123,50 @@ class OrderPartnerLogController extends Controller
             ->limit(90)
             ->pluck('log_date');
 
-        return view('order_partner_logs.index', compact('logs', 'successCount', 'errorCount', 'apiStatuses', 'logDates'));
+        return view('order_partner_logs.index', compact('logs', 'successCount', 'errorCount', 'apiStatuses', 'logDates', 'logSummary'));
+    }
+
+    private function buildFilteredLogSummary($query)
+    {
+        $baseQuery = clone $query;
+        $total = (clone $baseQuery)->count();
+
+        return [
+            'total' => $total,
+            'displayed' => min($total, 50),
+            'success' => (clone $baseQuery)->where('status', OrderPartnerLog::STATUS_SUCCESS)->count(),
+            'failed' => (clone $baseQuery)->where('status', OrderPartnerLog::STATUS_FAILD)->count(),
+            'vtp' => (clone $baseQuery)->whereIn('partner_code', [PartnerConfig::CODE_VIETTEL_POST, Order::CODE_VIETTEL_POST])->count(),
+            'ems' => (clone $baseQuery)->where('partner_code', PartnerConfig::CODE_EMS)->count(),
+            'mickey' => (clone $baseQuery)->where('partner_code', Order::TRACKING_PROVIDER_MICKEY)->count(),
+            'cancelable' => $this->countCancelableLogs(clone $baseQuery),
+        ];
+    }
+
+    private function countCancelableLogs($query)
+    {
+        return $query
+            ->where('status', OrderPartnerLog::STATUS_SUCCESS)
+            ->whereHas('order', function ($orderQuery) {
+                $orderQuery->whereNotNull('order_partner_code')
+                    ->where('order_partner_code', '<>', '')
+                    ->whereNotNull('partner_code')
+                    ->where('partner_code', '<>', '');
+            })
+            ->where(function ($partnerQuery) {
+                $partnerQuery->where(function ($q) {
+                    $q->whereIn('partner_code', [PartnerConfig::CODE_VIETTEL_POST, Order::CODE_VIETTEL_POST])
+                        ->whereHas('order', function ($orderQuery) {
+                            $orderQuery->where('partner_code', Order::CODE_VIETTEL_POST);
+                        });
+                })->orWhere(function ($q) {
+                    $q->where('partner_code', PartnerConfig::CODE_EMS)
+                        ->whereHas('order', function ($orderQuery) {
+                            $orderQuery->where('partner_code', Order::CODE_EMS);
+                        });
+                });
+            })
+            ->count();
     }
 
     private function formatAppReceiverAddress($order)
