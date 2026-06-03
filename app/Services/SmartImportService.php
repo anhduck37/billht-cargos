@@ -11,6 +11,7 @@ use App\Partner;
 use App\Receiver;
 use App\Sender;
 use App\Service;
+use App\Services\ApiSenderAddressService;
 use App\SmartImportBatch;
 use App\SmartImportRow;
 use App\User;
@@ -628,8 +629,10 @@ class SmartImportService
                 $info = app(OrderService::class)->getKeyService($data['service_domestic']);
                 $serviceViettel = Service::VIETTEL_POST_SERVICE[$info['service_key'] ?? null] ?? null;
             }
+            app(ApiSenderAddressService::class)->ensureDefaultSenderAddressForApi($order, Order::CODE_VIETTEL_POST);
             dispatch(new SendOrderViettelPostJob($order, $serviceViettel));
         } elseif ($data['partner_code'] === Order::CODE_EMS) {
+            app(ApiSenderAddressService::class)->ensureDefaultSenderAddressForApi($order, Order::CODE_EMS);
             dispatch(new SendOrderEmsJob($order));
         }
 

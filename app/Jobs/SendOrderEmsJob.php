@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Services\ApiSenderAddressService;
 use App\Services\EmsService;
 use App\Services\PartnerErrorMessageService;
 use App\Models\Order;
@@ -24,6 +25,8 @@ class SendOrderEmsJob implements ShouldQueue
 
     public function handle()
     {
+        app(ApiSenderAddressService::class)->ensureDefaultSenderAddressForApi($this->order, Order::CODE_EMS);
+
         $emsService = new EmsService();
         $result = $emsService->createOrder($this->order);
 
