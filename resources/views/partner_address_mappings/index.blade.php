@@ -274,13 +274,17 @@
                 </div>
                 <div class="card-body">
                     <div class="form-row align-items-end">
-                        <div class="form-group col-lg-3 col-md-6">
+                        <div class="form-group col-lg-2 col-md-6">
                             <label>Đối tác cần quét</label>
                             <select id="missing_mapping_partner" class="form-control">
                                 <option value="">Tất cả</option>
                                 <option value="VTP">Viettel</option>
                                 <option value="EMS">EMS</option>
                             </select>
+                        </div>
+                        <div class="form-group col-lg-2 col-md-6">
+                            <label>Ngày gửi</label>
+                            <input type="date" id="missing_mapping_date" class="form-control">
                         </div>
                         <div class="form-group col-lg-3 col-md-6">
                             <label>Phạm vi</label>
@@ -298,7 +302,7 @@
                                 <option value="500">500 dòng</option>
                             </select>
                         </div>
-                        <div class="form-group col-lg-4 col-md-6">
+                        <div class="form-group col-lg-3 col-md-6">
                             <button type="button" id="scan_missing_mapping_btn" class="btn btn-success btn-block">
                                 Quét thiếu mapping
                             </button>
@@ -795,7 +799,13 @@
 
         function renderMissingMappingResults(payload) {
             var results = payload && payload.results ? payload.results : [];
-            $('#missing_mapping_summary').text('Tìm thấy ' + (payload.total || 0) + ' xã/phường thiếu mapping.');
+            var summary = 'Tìm thấy ' + (payload.total || 0) + ' xã/phường thiếu mapping.';
+            if (payload && payload.scan_date) {
+                var dateParts = String(payload.scan_date).split('-');
+                var displayDate = dateParts.length === 3 ? (dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0]) : payload.scan_date;
+                summary += ' Ngày gửi: ' + displayDate + '.';
+            }
+            $('#missing_mapping_summary').text(summary);
 
             if (!results.length) {
                 $('#missing_mapping_result').html('<div class="alert alert-success mb-0">Chưa phát hiện địa danh thiếu mapping theo điều kiện đã chọn.</div>');
@@ -805,11 +815,15 @@
             var html = '<div class="table-responsive">';
             html += '<table class="table table-sm align-items-center">';
             html += '<thead class="thead-light"><tr>';
-            html += '<th>Xã/Phường mới</th><th>Tỉnh mới</th><th>Thiếu</th><th>Đơn ảnh hưởng</th><th>Mã đơn mẫu</th><th class="text-right">Thao tác</th>';
+            html += '<th>Xã/Phường mới</th><th>Tỉnh mới</th><th>Thiếu</th><th>Đơn ảnh hưởng</th><th>Ngày gửi</th><th>Mã đơn mẫu</th><th class="text-right">Thao tác</th>';
             html += '</tr></thead><tbody>';
 
             results.forEach(function (item) {
                 var partners = item.missing_partners || [];
+                var sampleDates = (item.sample_order_dates || []).map(function (date) {
+                    var parts = String(date).split('-');
+                    return parts.length === 3 ? (parts[2] + '/' + parts[1] + '/' + parts[0]) : date;
+                });
                 html += '<tr>';
                 html += '<td><strong>' + escapeHtml(item.new_ward_name || '') + '</strong></td>';
                 html += '<td>' + escapeHtml(item.new_province_name || '') + '</td>';
@@ -822,6 +836,7 @@
                 html += '<div>Tổng: <strong>' + escapeHtml(item.order_count || 0) + '</strong></div>';
                 html += '<div class="text-muted text-xs">Gửi: ' + escapeHtml(item.sender_count || 0) + ' | Nhận: ' + escapeHtml(item.receiver_count || 0) + '</div>';
                 html += '</td>';
+                html += '<td style="white-space: normal; max-width: 150px;">' + escapeHtml(sampleDates.join(', ')) + '</td>';
                 html += '<td style="white-space: normal; max-width: 260px;">' + escapeHtml((item.sample_order_codes || []).join(', ')) + '</td>';
                 html += '<td class="text-right">';
                 partners.forEach(function (partner) {
@@ -1008,7 +1023,8 @@
             $.get('{{ route('partner_address_mappings.missing') }}', {
                 partner_code: $('#missing_mapping_partner').val(),
                 error_only: $('#missing_mapping_error_only').val(),
-                limit: $('#missing_mapping_limit').val()
+                limit: $('#missing_mapping_limit').val(),
+                scan_date: $('#missing_mapping_date').val()
             }).done(function (data) {
                 renderMissingMappingResults(data);
             }).fail(function (xhr) {

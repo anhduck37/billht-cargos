@@ -223,18 +223,21 @@ class PartnerAddressMappingController extends Controller
             'partner_code' => 'nullable|string|in:VTP,EMS',
             'error_only' => 'nullable|boolean',
             'limit' => 'nullable|integer|min:1|max:500',
+            'scan_date' => 'nullable|date_format:Y-m-d',
         ]);
 
         $partners = !empty($data['partner_code']) ? [strtoupper($data['partner_code'])] : ['VTP', 'EMS'];
         $limit = $data['limit'] ?? 100;
         $errorOnly = !empty($data['error_only']);
-        $usage = $this->newAddressUsage($errorOnly);
+        $scanDate = $data['scan_date'] ?? null;
+        $usage = $this->newAddressUsage($errorOnly, $scanDate);
         $wardIds = $usage->pluck('new_ward_id')->filter()->unique()->values()->all();
 
         if (empty($wardIds)) {
             return response()->json([
                 'total' => 0,
                 'results' => [],
+                'scan_date' => $scanDate,
             ]);
         }
 
@@ -268,6 +271,7 @@ class PartnerAddressMappingController extends Controller
                 'sender_count' => $item['sender_count'],
                 'receiver_count' => $item['receiver_count'],
                 'order_count' => $item['order_count'],
+                'sample_order_dates' => array_slice($item['order_dates'], 0, 5),
                 'sample_order_codes' => array_slice($item['order_codes'], 0, 5),
             ];
         }
@@ -283,6 +287,7 @@ class PartnerAddressMappingController extends Controller
         return response()->json([
             'total' => count($results),
             'results' => array_slice($results, 0, $limit),
+            'scan_date' => $scanDate,
         ]);
     }
 
@@ -307,24 +312,27 @@ class PartnerAddressMappingController extends Controller
         return $data;
     }
 
-    private function newAddressUsage($errorOnly = false)
+    private function newAddressUsage($errorOnly = false, $scanDate = null)
     {
         $rows = collect()
-            ->merge($this->newAddressUsageRows('senders', 'sender', $errorOnly))
-            ->merge($this->newAddressUsageRows('receivers', 'receiver', $errorOnly));
+            ->merge($this->newAddressUsageRows('senders', 'sender', $errorOnly, $scanDate))
+            ->merge($this->newAddressUsageRows('receivers', 'receiver', $errorOnly, $scanDate));
 
         return $rows->groupBy('new_ward_id')->map(function ($group) {
             $first = $group->first();
             $orderCodes = collect();
             $orderIds = collect();
+            $orderDates = collect();
             $senderCount = 0;
             $receiverCount = 0;
 
             foreach ($group as $row) {
                 $codes = array_filter(array_map('trim', explode(',', (string)$row->order_codes)));
                 $ids = array_filter(array_map('trim', explode(',', (string)$row->order_ids)));
+                $dates = array_filter(array_map('trim', explode(',', (string)$row->order_dates)));
                 $orderCodes = $orderCodes->merge($codes);
                 $orderIds = $orderIds->merge($ids);
+                $orderDates = $orderDates->merge($dates);
 
                 if ($row->address_role === 'sender') {
                     $senderCount += (int)$row->address_count;
@@ -342,11 +350,12 @@ class PartnerAddressMappingController extends Controller
                 'receiver_count' => $receiverCount,
                 'order_count' => $orderIds->unique()->count(),
                 'order_codes' => $orderCodes->unique()->values()->all(),
+                'order_dates' => $orderDates->unique()->values()->all(),
             ];
         })->values();
     }
 
-    private function newAddressUsageRows($addressTable, $role, $errorOnly)
+    private function newAddressUsageRows($addressTable, $role, $errorOnly, $scanDate = null)
     {
         $query = DB::table('orders')
             ->join($addressTable, $addressTable . '.id', '=', 'orders.' . rtrim($addressTable, 's') . '_id')
@@ -354,6 +363,16 @@ class PartnerAddressMappingController extends Controller
             ->leftJoin('new_provinces', 'new_provinces.id', '=', 'new_wards.new_province_id')
             ->where($addressTable . '.address_scheme', 'new')
             ->whereNotNull($addressTable . '.new_ward_id');
+
+        if ($scanDate) {
+            $query->where(function ($q) use ($scanDate) {
+                $q->whereDate('orders.order_date', $scanDate)
+                    ->orWhere(function ($fallbackQuery) use ($scanDate) {
+                        $fallbackQuery->whereNull('orders.order_date')
+                            ->whereDate('orders.created_at', $scanDate);
+                    });
+            });
+        }
 
         if ($errorOnly) {
             $query->where(function ($q) {
@@ -382,6 +401,7 @@ class PartnerAddressMappingController extends Controller
                 DB::raw('COUNT(DISTINCT orders.id) as address_count'),
                 DB::raw('GROUP_CONCAT(DISTINCT orders.id ORDER BY orders.id DESC SEPARATOR ",") as order_ids'),
                 DB::raw('GROUP_CONCAT(DISTINCT orders.order_code ORDER BY orders.id DESC SEPARATOR ",") as order_codes'),
+                DB::raw('GROUP_CONCAT(DISTINCT COALESCE(orders.order_date, DATE(orders.created_at)) ORDER BY orders.id DESC SEPARATOR ",") as order_dates'),
             ])
             ->get();
     }
