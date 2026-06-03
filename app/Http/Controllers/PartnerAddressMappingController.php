@@ -238,6 +238,7 @@ class PartnerAddressMappingController extends Controller
                 'total' => 0,
                 'results' => [],
                 'scan_date' => $scanDate,
+                'summary' => $this->missingMappingSummary([]),
             ]);
         }
 
@@ -284,11 +285,44 @@ class PartnerAddressMappingController extends Controller
             return $b['order_count'] <=> $a['order_count'];
         });
 
+        $limitedResults = array_slice($results, 0, $limit);
+
         return response()->json([
             'total' => count($results),
-            'results' => array_slice($results, 0, $limit),
+            'results' => $limitedResults,
             'scan_date' => $scanDate,
+            'summary' => $this->missingMappingSummary($results, count($limitedResults)),
         ]);
+    }
+
+    private function missingMappingSummary(array $results, $displayedCount = 0)
+    {
+        $summary = [
+            'ward_count' => count($results),
+            'displayed_count' => $displayedCount,
+            'order_count' => 0,
+            'sender_count' => 0,
+            'receiver_count' => 0,
+            'missing_vtp_count' => 0,
+            'missing_ems_count' => 0,
+        ];
+
+        foreach ($results as $item) {
+            $summary['order_count'] += (int)($item['order_count'] ?? 0);
+            $summary['sender_count'] += (int)($item['sender_count'] ?? 0);
+            $summary['receiver_count'] += (int)($item['receiver_count'] ?? 0);
+            $missingPartners = $item['missing_partners'] ?? [];
+
+            if (in_array('VTP', $missingPartners, true)) {
+                $summary['missing_vtp_count']++;
+            }
+
+            if (in_array('EMS', $missingPartners, true)) {
+                $summary['missing_ems_count']++;
+            }
+        }
+
+        return $summary;
     }
 
     private function validateMapping(Request $request)

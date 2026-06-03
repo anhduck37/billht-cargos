@@ -812,7 +812,18 @@
                 return;
             }
 
-            var html = '<div class="table-responsive">';
+            var counters = payload && payload.summary ? payload.summary : {};
+            var html = '<div class="row mb-3">';
+            html += '<div class="col-lg-2 col-md-4 col-6 mb-2"><div class="border rounded p-2 h-100"><div class="text-muted text-xs">Tổng địa danh</div><strong>' + escapeHtml(counters.ward_count || 0) + '</strong></div></div>';
+            html += '<div class="col-lg-2 col-md-4 col-6 mb-2"><div class="border rounded p-2 h-100"><div class="text-muted text-xs">Đang hiển thị</div><strong>' + escapeHtml(counters.displayed_count || results.length) + '</strong></div></div>';
+            html += '<div class="col-lg-2 col-md-4 col-6 mb-2"><div class="border rounded p-2 h-100"><div class="text-muted text-xs">Tổng đơn</div><strong>' + escapeHtml(counters.order_count || 0) + '</strong></div></div>';
+            html += '<div class="col-lg-2 col-md-4 col-6 mb-2"><div class="border rounded p-2 h-100"><div class="text-muted text-xs">Người gửi</div><strong>' + escapeHtml(counters.sender_count || 0) + '</strong></div></div>';
+            html += '<div class="col-lg-2 col-md-4 col-6 mb-2"><div class="border rounded p-2 h-100"><div class="text-muted text-xs">Người nhận</div><strong>' + escapeHtml(counters.receiver_count || 0) + '</strong></div></div>';
+            html += '<div class="col-lg-1 col-md-4 col-6 mb-2"><div class="border rounded p-2 h-100"><div class="text-muted text-xs">Thiếu VTP</div><strong>' + escapeHtml(counters.missing_vtp_count || 0) + '</strong></div></div>';
+            html += '<div class="col-lg-1 col-md-4 col-6 mb-2"><div class="border rounded p-2 h-100"><div class="text-muted text-xs">Thiếu EMS</div><strong>' + escapeHtml(counters.missing_ems_count || 0) + '</strong></div></div>';
+            html += '</div>';
+
+            html += '<div class="table-responsive">';
             html += '<table class="table table-sm align-items-center">';
             html += '<thead class="thead-light"><tr>';
             html += '<th>Xã/Phường mới</th><th>Tỉnh mới</th><th>Thiếu</th><th>Đơn ảnh hưởng</th><th>Ngày gửi</th><th>Mã đơn mẫu</th><th class="text-right">Thao tác</th>';
