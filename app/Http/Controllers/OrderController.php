@@ -16,6 +16,7 @@ use App\Jobs\SendOrderEmsJob;
 use App\Jobs\SendOrderViettelPostJob;
 use App\Jobs\SendSMSJob;
 use App\Jobs\UploadGoogleDriveJob;
+use App\NewAddressPartnerMapping;
 use App\Sender;
 use App\Service;
 use App\Services\OrderService;
@@ -387,6 +388,291 @@ class OrderController extends AppBaseController
     {
         $allowedOrderIds = session($this->postmanSearchAccessSessionKey($postmanId), []);
         return in_array((int)$order->id, array_map('intval', $allowedOrderIds), true);
+    }
+
+    public function convertToLegacyAddress($id)
+    {
+        $order = Order::with(['sender', 'receiver'])->find($id);
+        if (empty($order)) {
+            Flash::error('Vận đơn không tồn tại.');
+            return redirect(route('orders.index'));
+        }
+
+        $user = auth()->user();
+        if ($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
+            return abort(403);
+        }
+        if ($user->level == User::LEVEL_POSTMAN && !$this->postmanCanAccessOrder($order, $user->id)) {
+            return abort(403, 'Bạn không có quyền cập nhật vận đơn này.');
+        }
+
+        $senderOld = $order->sender ? clone $order->sender : null;
+        $receiverOld = $order->receiver ? clone $order->receiver : null;
+        $orderOld = clone $order;
+        $errors = [];
+        $changed = false;
+
+        DB::beginTransaction();
+        try {
+            $senderResult = $this->convertAddressModelToLegacy($order->sender, 'người gửi');
+            $receiverResult = $this->convertAddressModelToLegacy($order->receiver, 'người nhận');
+
+            $errors = array_merge($senderResult['errors'], $receiverResult['errors']);
+            if (!empty($errors)) {
+                DB::rollBack();
+                Flash::error(implode('<br>', $errors));
+                return redirect()->route('orders.edit', [$order->id]);
+            }
+
+            $changed = $senderResult['changed'] || $receiverResult['changed'];
+            if ($changed) {
+                $order->address_scheme = 'old';
+                $order->save();
+                app(OrderHistoryService::class)->createOrderHistory(
+                    $orderOld,
+                    $order,
+                    null,
+                    OrderHistory::NOT_TOTAL_ORDER,
+                    OrderHistory::TYPE_ORDER_UPDATE,
+                    'UPDATE',
+                    ['action_desc' => 'Chuyển vận đơn về form địa chỉ cũ'],
+                    null,
+                    null,
+                    $senderOld,
+                    $order->sender,
+                    $receiverOld,
+                    $order->receiver
+                );
+            }
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Flash::error('Chuyển về form địa chỉ cũ thất bại. ' . $e->getMessage());
+            return redirect()->route('orders.edit', [$order->id]);
+        }
+
+        if ($changed) {
+            Flash::success('Đã chuyển vận đơn về form địa chỉ cũ. Vui lòng kiểm tra lại các thông tin để đảm bảo chính xác.');
+        } else {
+            Flash::warning('Vận đơn này đã dùng form địa chỉ cũ, không cần chuyển.');
+        }
+
+        return redirect()->route('orders.edit', [$order->id]);
+    }
+
+    public function convertToNewAddress($id)
+    {
+        $order = Order::with(['sender', 'receiver'])->find($id);
+        if (empty($order)) {
+            Flash::error('Vận đơn không tồn tại.');
+            return redirect(route('orders.index'));
+        }
+
+        $user = auth()->user();
+        if ($user->level == User::LEVEL_USER && $order->user_id != $user->id) {
+            return abort(403);
+        }
+        if ($user->level == User::LEVEL_POSTMAN && !$this->postmanCanAccessOrder($order, $user->id)) {
+            return abort(403, 'Bạn không có quyền cập nhật vận đơn này.');
+        }
+
+        $senderOld = $order->sender ? clone $order->sender : null;
+        $receiverOld = $order->receiver ? clone $order->receiver : null;
+        $orderOld = clone $order;
+        $changed = false;
+
+        DB::beginTransaction();
+        try {
+            $senderResult = $this->convertAddressModelToNew($order->sender, 'người gửi');
+            $receiverResult = $this->convertAddressModelToNew($order->receiver, 'người nhận');
+
+            $errors = array_merge($senderResult['errors'], $receiverResult['errors']);
+            if (!empty($errors)) {
+                DB::rollBack();
+                Flash::error(implode('<br>', $errors));
+                return redirect()->route('orders.edit', [$order->id]);
+            }
+
+            $changed = $senderResult['changed'] || $receiverResult['changed'];
+            if ($changed) {
+                $order->address_scheme = 'new';
+                $order->save();
+                app(OrderHistoryService::class)->createOrderHistory(
+                    $orderOld,
+                    $order,
+                    null,
+                    OrderHistory::NOT_TOTAL_ORDER,
+                    OrderHistory::TYPE_ORDER_UPDATE,
+                    'UPDATE',
+                    ['action_desc' => 'Chuyển vận đơn sang form địa chỉ mới'],
+                    null,
+                    null,
+                    $senderOld,
+                    $order->sender,
+                    $receiverOld,
+                    $order->receiver
+                );
+            }
+
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Flash::error('Chuyển sang form địa chỉ mới thất bại. ' . $e->getMessage());
+            return redirect()->route('orders.edit', [$order->id]);
+        }
+
+        if ($changed) {
+            Flash::success('Đã chuyển vận đơn sang form địa chỉ mới. Vui lòng kiểm tra lại các thông tin để đảm bảo chính xác.');
+        } else {
+            Flash::warning('Vận đơn này đã dùng form địa chỉ mới, không cần chuyển.');
+        }
+
+        return redirect()->route('orders.edit', [$order->id]);
+    }
+
+    private function convertAddressModelToLegacy($addressModel, $label)
+    {
+        if (!$addressModel || $addressModel->address_scheme !== 'new') {
+            return ['changed' => false, 'errors' => []];
+        }
+
+        if (empty($addressModel->new_ward_id)) {
+            return [
+                'changed' => false,
+                'errors' => ['Địa chỉ ' . $label . ' chưa có Xã/Phường mới để chuyển về địa chỉ cũ.'],
+            ];
+        }
+
+        $mapping = NewAddressPartnerMapping::where('new_ward_id', $addressModel->new_ward_id)
+            ->where('partner_code', Order::CODE_VIETTEL_POST)
+            ->where('mapping_status', 'mapped')
+            ->whereNotNull('partner_province_code')
+            ->whereNotNull('partner_district_code')
+            ->whereNotNull('partner_ward_code')
+            ->latest('id')
+            ->first();
+
+        if (!$mapping) {
+            return [
+                'changed' => false,
+                'errors' => ['Địa chỉ ' . $label . ' chưa có mapping VTP đầy đủ để chuyển về địa chỉ cũ.'],
+            ];
+        }
+
+        $legacy = $this->legacyAddressFromVtpMapping($mapping);
+        if (!$legacy || empty($legacy->city_id) || empty($legacy->district_id) || empty($legacy->ward_id)) {
+            return [
+                'changed' => false,
+                'errors' => ['Mapping VTP của địa chỉ ' . $label . ' không khớp bảng địa chỉ cũ local. Vui lòng kiểm tra lại mapping.'],
+            ];
+        }
+
+        $addressModel->address_scheme = 'old';
+        $addressModel->city_id = $legacy->city_id;
+        $addressModel->district_id = $legacy->district_id;
+        $addressModel->ward_id = $legacy->ward_id;
+        $addressModel->save();
+
+        return ['changed' => true, 'errors' => []];
+    }
+
+    private function legacyAddressFromVtpMapping($mapping)
+    {
+        $city = City::where('city_code', $mapping->partner_province_code)->first();
+        $district = null;
+        $ward = null;
+
+        if ($city) {
+            $district = District::where('district_code', $mapping->partner_district_code)
+                ->where('city_id', $city->id)
+                ->first();
+        }
+
+        if ($district) {
+            $ward = Ward::where('ward_code', $mapping->partner_ward_code)
+                ->where('district_id', $district->id)
+                ->first();
+        }
+
+        return (object) [
+            'city_id' => $city->id ?? null,
+            'district_id' => $district->id ?? null,
+            'ward_id' => $ward->id ?? null,
+        ];
+    }
+
+    private function convertAddressModelToNew($addressModel, $label)
+    {
+        if (!$addressModel || $addressModel->address_scheme === 'new') {
+            return ['changed' => false, 'errors' => []];
+        }
+
+        if (empty($addressModel->city_id) || empty($addressModel->district_id) || empty($addressModel->ward_id)) {
+            return [
+                'changed' => false,
+                'errors' => ['Địa chỉ ' . $label . ' chưa đủ Tỉnh/Huyện/Xã cũ để chuyển sang địa chỉ mới.'],
+            ];
+        }
+
+        $legacyCodes = $this->legacyCodesFromAddressModel($addressModel);
+        if (!$legacyCodes) {
+            return [
+                'changed' => false,
+                'errors' => ['Địa chỉ ' . $label . ' không tìm thấy mã địa chỉ cũ local để chuyển sang địa chỉ mới.'],
+            ];
+        }
+
+        $mapping = NewAddressPartnerMapping::where('partner_code', Order::CODE_VIETTEL_POST)
+            ->where('mapping_status', 'mapped')
+            ->where('partner_province_code', $legacyCodes->province_code)
+            ->where('partner_district_code', $legacyCodes->district_code)
+            ->where('partner_ward_code', $legacyCodes->ward_code)
+            ->latest('id')
+            ->first();
+
+        if (!$mapping || empty($mapping->new_ward_id)) {
+            return [
+                'changed' => false,
+                'errors' => ['Địa chỉ ' . $label . ' chưa có mapping VTP từ địa chỉ cũ sang địa chỉ mới.'],
+            ];
+        }
+
+        $newWard = \App\NewWard::find($mapping->new_ward_id);
+        if (!$newWard) {
+            return [
+                'changed' => false,
+                'errors' => ['Mapping VTP của địa chỉ ' . $label . ' không khớp bảng địa chỉ mới local. Vui lòng kiểm tra lại mapping.'],
+            ];
+        }
+
+        $addressModel->address_scheme = 'new';
+        $addressModel->new_province_id = $mapping->new_province_id ?: $newWard->new_province_id;
+        $addressModel->new_ward_id = $newWard->id;
+        $addressModel->save();
+
+        return ['changed' => true, 'errors' => []];
+    }
+
+    private function legacyCodesFromAddressModel($addressModel)
+    {
+        $city = City::find($addressModel->city_id);
+        $district = District::where('id', $addressModel->district_id)
+            ->where('city_id', $addressModel->city_id)
+            ->first();
+        $ward = Ward::where('id', $addressModel->ward_id)
+            ->where('district_id', $addressModel->district_id)
+            ->first();
+
+        if (!$city || !$district || !$ward) {
+            return null;
+        }
+
+        return (object) [
+            'province_code' => $city->city_code,
+            'district_code' => $district->district_code,
+            'ward_code' => $ward->ward_code,
+        ];
     }
 
     public function destroy($id)

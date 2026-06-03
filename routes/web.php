@@ -49,6 +49,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('orders/create-new', 'OrderController@createNew')->name('orders.createNew');
     Route::resource('orders', 'OrderController');
     Route::post('orders/{id}/upload-image', 'OrderController@uploadImage')->name('orders.upload-image');
+    Route::post('orders/{id}/convert-to-legacy-address', 'OrderController@convertToLegacyAddress')->name('orders.convertToLegacyAddress');
+    Route::post('orders/{id}/convert-to-new-address', 'OrderController@convertToNewAddress')->name('orders.convertToNewAddress');
     Route::post('orders/import', 'OrderController@import')->name('orders.import');
     Route::post('orders/import-old', 'OrderController@importOld')->name('orders.importOld');
     Route::post('orders/import-new', 'OrderController@importNew')->name('orders.importNew');

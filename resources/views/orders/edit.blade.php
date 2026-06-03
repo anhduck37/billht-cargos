@@ -50,8 +50,30 @@
                 <div class="card shadow">
                     <div class="card-header border-0">
                         <div class="row align-items-center">
-                            <div class="col">
+                            <div class="col-md-8">
                                 <h1 class="text-center">Cập nhật vận đơn</h1>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                @if(isset($order) && (($order->sender && $order->sender->address_scheme === 'new') || ($order->receiver && $order->receiver->address_scheme === 'new')))
+                                    <form method="POST"
+                                          action="{{ route('orders.convertToLegacyAddress', $order->id) }}"
+                                          onsubmit="return confirm('Chuyển vận đơn này về form địa chỉ cũ? Thông tin đơn sẽ được giữ nguyên.');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-warning mb-2">
+                                            Chuyển về form địa chỉ cũ
+                                        </button>
+                                    </form>
+                                @endif
+                                @if(isset($order) && (($order->sender && $order->sender->address_scheme !== 'new') || ($order->receiver && $order->receiver->address_scheme !== 'new')))
+                                    <form method="POST"
+                                          action="{{ route('orders.convertToNewAddress', $order->id) }}"
+                                          onsubmit="return confirm('Chuyển vận đơn này sang form địa chỉ mới? Thông tin đơn sẽ được giữ nguyên.');">
+                                        @csrf
+                                        <button type="submit" class="btn btn-info mb-2">
+                                            Chuyển sang form địa chỉ mới
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>
