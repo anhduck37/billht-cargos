@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Service;
 use App\Models\Order;
-use App\Services\ApiSenderAddressService;
 use App\Services\PartnerErrorMessageService;
 use App\Services\ViettelPostService;
 use Illuminate\Bus\Queueable;
@@ -33,8 +32,6 @@ class SendOrderViettelPostJob implements ShouldQueue
 
     public function handle()
     {
-        app(ApiSenderAddressService::class)->ensureDefaultSenderAddressForApi($this->order, Order::CODE_VIETTEL_POST);
-
         if (empty($this->service_viettel)) {
             $orderService = Service::where('order_id', $this->order->id)
             ->where('type', Service::SERVICE_DOMESTIC)

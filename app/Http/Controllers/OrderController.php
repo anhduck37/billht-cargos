@@ -764,10 +764,8 @@ class OrderController extends AppBaseController
                                     if ($partnerCode == Order::CODE_VIETTEL_POST) {
                                         $infoService = app(OrderService::class)->getKeyService($sheet->getCell('J' . $row)->getValue());
                                         $serviceViettel = Service::VIETTEL_POST_SERVICE[$infoService['service_key']] ?? null;
-                                        $this->ensureDefaultSenderAddressForApi($order, Order::CODE_VIETTEL_POST);
                                         dispatch(new SendOrderViettelPostJob($order, $serviceViettel));
                                     } else if ($partnerCode == Order::CODE_EMS) {
-                                        $this->ensureDefaultSenderAddressForApi($order, Order::CODE_EMS);
                                         dispatch(new SendOrderEmsJob($order));
                                     }
                                 }
@@ -958,7 +956,6 @@ class OrderController extends AppBaseController
                                         // $serviceViettel = isset(Service::VIETTEL_POST_SERVICE_ADD[$serviceField]) ? $serviceField : (Service::VIETTEL_POST_SERVICE[$infoService['service_key']] ?? null);
                                         // dispatch(new SendOrderViettelPostJob($order, $serviceViettel));
                                         $serviceViettel = Service::VIETTEL_POST_SERVICE[$infoService['service_key']] ?? null;
-                                        $this->ensureDefaultSenderAddressForApi($order, Order::CODE_VIETTEL_POST);
                                         dispatch(new SendOrderViettelPostJob($order, $serviceViettel));
                                     // $sendOrderViettelPost = new SendOrderViettelPostJob($order, $serviceViettel);
                                     // $sendOrderViettelPost->handle();
@@ -967,7 +964,6 @@ class OrderController extends AppBaseController
                                         // Đẩy qua queue async để không bị timeout khi file lớn.
                                         // Queue worker chạy mỗi phút qua Kernel scheduler.
                                         // Icon lỗi sẽ hiện sau ~1 phút nếu push thất bại.
-                                        $this->ensureDefaultSenderAddressForApi($order, Order::CODE_EMS);
                                         dispatch(new SendOrderEmsJob($order));
                                     } // end else if CODE_EMS
                                 } // end if ($partnerCode)
@@ -1792,16 +1788,13 @@ class OrderController extends AppBaseController
 
     public function createOrderViettelPost($id)
     {
-        $order = Order::with(['sender', 'receiver'])->findOrFail($id);
+        $order = Order::findOrFail($id);
         // check đơn trùng trên viettel
         if ($order->order_partner_code) {
             Flash::error('Vận đơn đã có trên Viettel Post.');
             return back();
         }
         // check đơn trùng trên viettel
-        $this->resolveLegacyAddressIdsForOrder($order);
-        $this->ensureDefaultSenderAddressForApi($order, Order::CODE_VIETTEL_POST);
-        $order = Order::with(['sender', 'receiver'])->findOrFail($id);
         $sendOrderViettelPost = new SendOrderViettelPostJob($order);
         $result = $sendOrderViettelPost->handle();
         if (!empty($result['error'])) {
@@ -1825,7 +1818,6 @@ class OrderController extends AppBaseController
             $orders = Order::with(['sender', 'receiver'])->whereIn('id', $orderIds)->get();
             foreach ($orders as $order) {
                 $this->resolveLegacyAddressIdsForOrder($order);
-                $this->ensureDefaultSenderAddressForApi($order, Order::CODE_VIETTEL_POST);
                 dispatch(new SendOrderViettelPostJob($order));
             // $sendOrderViettelPost = new SendOrderViettelPostJob($order);
             // $result = $sendOrderViettelPost->handle();
@@ -1849,7 +1841,6 @@ class OrderController extends AppBaseController
             $orders = Order::with(['sender', 'receiver'])->whereIn('id', $orderIds)->get();
             foreach ($orders as $order) {
                 $this->resolveLegacyAddressIdsForOrder($order);
-                $this->ensureDefaultSenderAddressForApi($order, Order::CODE_EMS);
                 dispatch(new SendOrderEmsJob($order));
             // $sendOrderEms = new SendOrderEmsJob($order);
             // $result = $sendOrderEms->handle();
@@ -1872,7 +1863,6 @@ class OrderController extends AppBaseController
         }
         // check đơn trùng trên viettel
         $this->resolveLegacyAddressIdsForOrder($order);
-        $this->ensureDefaultSenderAddressForApi($order, Order::CODE_EMS);
         $order = Order::with(['sender', 'receiver'])->findOrFail($id);
         $sendOrderEms = new SendOrderEmsJob($order);
         $result = $sendOrderEms->handle();
@@ -2275,11 +2265,6 @@ class OrderController extends AppBaseController
         }
 
         return ['updated_addresses' => $updatedAddresses];
-    }
-
-    public function ensureDefaultSenderAddressForApi(Order $order, $partnerCode = null): array
-    {
-        return app(\App\Services\ApiSenderAddressService::class)->ensureDefaultSenderAddressForApi($order, $partnerCode);
     }
 
     private function hydrateLegacyAddressIdsForDisplay($order): void

@@ -625,16 +625,9 @@ class OrderPartnerLogController extends Controller
 
         foreach ($orders as $order) {
             $result = $orderController->resolveLegacyAddressIdsForOrder($order);
-            $partnerCode = $action === 'viettel' ? Order::CODE_VIETTEL_POST : ($action === 'ems' ? Order::CODE_EMS : null);
-            $defaultSenderResult = ['updated' => false];
-            if ($partnerCode) {
-                $defaultSenderResult = $orderController->ensureDefaultSenderAddressForApi($order, $partnerCode);
-            }
-
-            $updatedAddressCount = (int)$result['updated_addresses'] + (!empty($defaultSenderResult['updated']) ? 1 : 0);
-            if ($updatedAddressCount > 0) {
+            if ($result['updated_addresses'] > 0) {
                 $resolvedOrders++;
-                $resolvedAddresses += $updatedAddressCount;
+                $resolvedAddresses += $result['updated_addresses'];
             }
 
             if ($action === 'viettel') {
