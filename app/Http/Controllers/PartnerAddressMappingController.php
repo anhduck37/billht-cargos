@@ -230,7 +230,7 @@ class PartnerAddressMappingController extends Controller
         $limit = $data['limit'] ?? 100;
         $errorOnly = !empty($data['error_only']);
         $scanDate = $data['scan_date'] ?? null;
-        $usage = $this->newAddressUsage($errorOnly, $scanDate);
+        $usage = $this->newAddressUsage($errorOnly, $scanDate, $partners);
         $wardIds = $usage->pluck('new_ward_id')->filter()->unique()->values()->all();
 
         if (empty($wardIds)) {
@@ -346,11 +346,11 @@ class PartnerAddressMappingController extends Controller
         return $data;
     }
 
-    private function newAddressUsage($errorOnly = false, $scanDate = null)
+    private function newAddressUsage($errorOnly = false, $scanDate = null, array $partners = ['VTP', 'EMS'])
     {
         $rows = collect()
-            ->merge($this->newAddressUsageRows('senders', 'sender', $errorOnly, $scanDate))
-            ->merge($this->newAddressUsageRows('receivers', 'receiver', $errorOnly, $scanDate));
+            ->merge($this->newAddressUsageRows('senders', 'sender', $errorOnly, $scanDate, $partners))
+            ->merge($this->newAddressUsageRows('receivers', 'receiver', $errorOnly, $scanDate, $partners));
 
         return $rows->groupBy('new_ward_id')->map(function ($group) {
             $first = $group->first();
@@ -389,14 +389,22 @@ class PartnerAddressMappingController extends Controller
         })->values();
     }
 
-    private function newAddressUsageRows($addressTable, $role, $errorOnly, $scanDate = null)
+    private function newAddressUsageRows($addressTable, $role, $errorOnly, $scanDate = null, array $partners = ['VTP', 'EMS'])
     {
+        $logPartnerCodes = $this->logPartnerCodesForMissingScan($partners);
+
         $query = DB::table('orders')
             ->join($addressTable, $addressTable . '.id', '=', 'orders.' . rtrim($addressTable, 's') . '_id')
             ->join('new_wards', 'new_wards.id', '=', $addressTable . '.new_ward_id')
             ->leftJoin('new_provinces', 'new_provinces.id', '=', 'new_wards.new_province_id')
             ->where($addressTable . '.address_scheme', 'new')
-            ->whereNotNull($addressTable . '.new_ward_id');
+            ->whereNotNull($addressTable . '.new_ward_id')
+            ->whereExists(function ($existsQuery) use ($logPartnerCodes) {
+                $existsQuery->select(DB::raw(1))
+                    ->from('order_partner_logs')
+                    ->whereColumn('order_partner_logs.order_id', 'orders.id')
+                    ->whereIn('order_partner_logs.partner_code', $logPartnerCodes);
+            });
 
         if ($scanDate) {
             $query->where(function ($q) use ($scanDate) {
@@ -438,6 +446,25 @@ class PartnerAddressMappingController extends Controller
                 DB::raw('GROUP_CONCAT(DISTINCT COALESCE(orders.order_date, DATE(orders.created_at)) ORDER BY orders.id DESC SEPARATOR ",") as order_dates'),
             ])
             ->get();
+    }
+
+    private function logPartnerCodesForMissingScan(array $partners)
+    {
+        $codes = [];
+
+        foreach ($partners as $partner) {
+            if ($partner === 'VTP') {
+                $codes[] = 'VTP';
+                $codes[] = 'VIETTEL_POST';
+                continue;
+            }
+
+            if ($partner === 'EMS') {
+                $codes[] = 'EMS';
+            }
+        }
+
+        return array_values(array_unique($codes));
     }
 
     private function isCompletePartnerMapping($mapping, $partnerCode)

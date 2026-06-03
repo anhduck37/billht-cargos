@@ -268,7 +268,7 @@
                     <div class="row align-items-center">
                         <div class="col">
                             <h3 class="mb-0">Quét địa danh thiếu mapping</h3>
-                            <p class="text-muted text-sm mb-0">Quét các xã/phường mới đang phát sinh vận đơn nhưng chưa có mapping VTP/EMS đầy đủ.</p>
+                            <p class="text-muted text-sm mb-0">Quét các xã/phường mới của những vận đơn đã có log đẩy API Viettel/EMS nhưng chưa có mapping đầy đủ.</p>
                         </div>
                     </div>
                 </div>
