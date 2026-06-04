@@ -325,7 +325,7 @@
         <div class="form-group">
             <div class="form-row">
                 <div class="col-md-3 mb-3">
-                    <label for="validationDefault01">Trọng lượng</label>
+                    <label for="validationDefault01">Trọng lượng <span style="color: red; font-weight: bold;">(*)</span></label>
                     <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif type="text" class="form-control" name="order[weight]" placeholder="Trọng lượng" value="{{old('order.weight') ? old('order.weight') : ( isset($order->weight) ? $order->weight : 0)}}">
                     @if ($errors->has('order.weight'))
                         <span class="invalid-feedback" style="display: block;" role="alert">
@@ -374,7 +374,7 @@
     <div class="form-row">
         @foreach(\App\Service::SERVICE_MAP as $type => $service)
         <div class="col-md-4 mb-3">
-            <h4>{!! $service['name'] !!}</h4>
+            <h4>{!! $service['name'] !!}@if($type == \App\Service::SERVICE_DOMESTIC) <span style="color: red; font-weight: bold;">(*)</span>@endif</h4>
             @foreach($service['value'] as $key => $item)
             <div class="form-check">
                 <input @if(auth()->user()->level == \App\User::LEVEL_POSTMAN) disabled @endif name="order_service[{{$type}}][]" value="{{$key}}" @if(in_array($key, $order->getService($order))) checked @endif type="checkbox" class="form-check-input">

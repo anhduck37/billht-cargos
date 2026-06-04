@@ -51,9 +51,7 @@ class OrderFormRequestLevelPosman extends FormRequest
         $formData = request()->all();
         $rule = [];
 
-        // Các trường có dấu (*) trên form tạo/sửa đơn phải được chặn ở backend.
-        // Bưu tá có luồng tạo/cập nhật đơn riêng nên giữ rule riêng bên dưới.
-        if (auth()->user()->level != User::LEVEL_POSTMAN) {
+        if (auth()->user()->level == User::LEVEL_USER) {
             $rule = [
                 'sender.sender_name' => 'required',
                 'sender.sender_phone' => 'required',
