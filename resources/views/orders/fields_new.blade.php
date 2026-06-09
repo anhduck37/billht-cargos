@@ -524,6 +524,14 @@
             display: flex;
         }
 
+        .barcode-scanner-overlay.is-closing {
+            background: transparent;
+        }
+
+        .barcode-scanner-overlay.is-closing .barcode-scanner-dialog {
+            visibility: hidden;
+        }
+
         .barcode-scanner-dialog {
             background: #fff;
             border-radius: 6px;
@@ -576,6 +584,8 @@
     var barcodeScannerProcessedHandler = null;
     var barcodeScannerRequestId = 0;
     var barcodeScannerOpen = false;
+    var barcodeScannerIgnoreOpenUntil = 0;
+    var barcodeScannerHideTimer = null;
 
     function stopBarcodeScanner() {
         barcodeScannerRequestId++;
@@ -600,9 +610,19 @@
     function hideBarcodeScanner() {
         stopBarcodeScanner();
         var scannerOverlay = document.getElementById('modal-camera-scanner');
-        scannerOverlay.classList.remove('is-open');
+        barcodeScannerIgnoreOpenUntil = Date.now() + 800;
+        scannerOverlay.classList.add('is-closing');
         scannerOverlay.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+
+        if (barcodeScannerHideTimer) {
+            clearTimeout(barcodeScannerHideTimer);
+        }
+
+        barcodeScannerHideTimer = setTimeout(function() {
+            scannerOverlay.classList.remove('is-open', 'is-closing');
+            barcodeScannerHideTimer = null;
+        }, 450);
     }
 
     function openBarcodeScanner(event) {
@@ -611,8 +631,13 @@
             event.stopPropagation();
         }
 
-        if (barcodeScannerOpen || barcodeScannerStarting) {
+        if (Date.now() < barcodeScannerIgnoreOpenUntil || barcodeScannerOpen || barcodeScannerStarting) {
             return;
+        }
+
+        if (barcodeScannerHideTimer) {
+            clearTimeout(barcodeScannerHideTimer);
+            barcodeScannerHideTimer = null;
         }
 
         barcodeScannerOpen = true;
@@ -620,6 +645,7 @@
         var requestId = ++barcodeScannerRequestId;
         var scannerOverlay = document.getElementById('modal-camera-scanner');
 
+        scannerOverlay.classList.remove('is-closing');
         scannerOverlay.classList.add('is-open');
         scannerOverlay.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
@@ -645,10 +671,21 @@
         }
 
         if (closeButton) {
-            closeButton.addEventListener('click', function(event) {
+            var closeScanner = function(event) {
                 event.preventDefault();
                 event.stopPropagation();
                 hideBarcodeScanner();
+            };
+
+            closeButton.addEventListener('touchend', closeScanner, {passive: false});
+            closeButton.addEventListener('click', function(event) {
+                if (Date.now() < barcodeScannerIgnoreOpenUntil) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    return;
+                }
+
+                closeScanner(event);
             });
         }
 
