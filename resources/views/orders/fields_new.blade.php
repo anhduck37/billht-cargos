@@ -491,21 +491,82 @@
         </div>
     </div>
 
-    <div id="modal-camera-scanner" class="modal fade" data-toggle="modal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header" style="padding-bottom:0">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <div id="modal-camera-scanner" class="barcode-scanner-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+        <div class="barcode-scanner-dialog">
+            <div class="barcode-scanner-header">
+                <button type="button" class="close" id="barcode-scanner-close" aria-label="Đóng">
                     <span style="font-size: 2.25rem" aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" style="padding-top:0">
+                </button>
+            </div>
+            <div class="barcode-scanner-body">
                 <h3 style="text-align: center;margin-bottom: 15px;">Bạn vui lòng điều chỉnh mã vạch vào chính giữa</h3>
-                    <div id="camera-scanner" class="mb-4"></div>
-                </div>
+                <div id="camera-scanner" class="mb-4"></div>
             </div>
         </div>
     </div>
+    <style>
+        .barcode-scanner-overlay {
+            align-items: center;
+            background: rgba(0, 0, 0, .55);
+            display: none;
+            height: 100%;
+            justify-content: center;
+            left: 0;
+            overflow-y: auto;
+            padding: 16px;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1100;
+        }
+
+        .barcode-scanner-overlay.is-open {
+            display: flex;
+        }
+
+        .barcode-scanner-dialog {
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 12px 36px rgba(0, 0, 0, .28);
+            margin: auto;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .barcode-scanner-header {
+            min-height: 48px;
+            padding: 8px 16px 0;
+            text-align: right;
+        }
+
+        .barcode-scanner-header .close {
+            float: none;
+            touch-action: manipulation;
+        }
+
+        .barcode-scanner-body {
+            padding: 0 16px 16px;
+        }
+
+        #camera-scanner {
+            min-height: 280px;
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+        }
+
+        #camera-scanner video {
+            display: block;
+            height: auto;
+            max-width: 100%;
+            width: 100%;
+        }
+
+        #camera-scanner canvas {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 <script type="text/javascript" src="{{ asset('js/barcode.js') }}"></script>
 @section('javascript')
@@ -513,14 +574,19 @@
 
     var barcodeScannerStarting = false;
     var barcodeScannerProcessedHandler = null;
+    var barcodeScannerRequestId = 0;
+    var barcodeScannerOpen = false;
 
     function stopBarcodeScanner() {
+        barcodeScannerRequestId++;
+        barcodeScannerOpen = false;
+        barcodeScannerStarting = false;
+
         if (barcodeScannerProcessedHandler && typeof Quagga.offProcessed === 'function') {
             Quagga.offProcessed(barcodeScannerProcessedHandler);
         }
 
         barcodeScannerProcessedHandler = null;
-        barcodeScannerStarting = false;
 
         try {
             Quagga.stop();
@@ -528,35 +594,75 @@
             console.log(error);
         }
 
-        $('#camera-scanner').html('');
+        document.getElementById('camera-scanner').innerHTML = '';
     }
 
-    $(document).ready(function(){
-        var $scannerModal = $('#modal-camera-scanner');
+    function hideBarcodeScanner() {
+        stopBarcodeScanner();
+        var scannerOverlay = document.getElementById('modal-camera-scanner');
+        scannerOverlay.classList.remove('is-open');
+        scannerOverlay.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
 
-        $('#barcode-scanner').click(function() {
-            if (!$scannerModal.hasClass('show')) {
-                $scannerModal.modal('show');
-            }
-        })
+    function openBarcodeScanner(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
 
-        $scannerModal.on('shown.bs.modal', function() {
-            if (barcodeScannerStarting) {
-                return;
-            }
+        if (barcodeScannerOpen || barcodeScannerStarting) {
+            return;
+        }
 
-            barcodeScannerStarting = true;
-            setTimeout(function() {
-                startScanner();
-            }, 100);
-        })
+        barcodeScannerOpen = true;
+        barcodeScannerStarting = true;
+        var requestId = ++barcodeScannerRequestId;
+        var scannerOverlay = document.getElementById('modal-camera-scanner');
 
-        $scannerModal.on('hidden.bs.modal', function() {
-            stopBarcodeScanner();
-        })
-    })
+        scannerOverlay.classList.add('is-open');
+        scannerOverlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
 
-    function startScanner() {
+        window.requestAnimationFrame(function() {
+            window.requestAnimationFrame(function() {
+                setTimeout(function() {
+                    if (barcodeScannerOpen && requestId === barcodeScannerRequestId) {
+                        startScanner(requestId);
+                    }
+                }, 150);
+            });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var openButton = document.getElementById('barcode-scanner');
+        var closeButton = document.getElementById('barcode-scanner-close');
+        var scannerModal = document.getElementById('modal-camera-scanner');
+
+        if (openButton) {
+            openButton.addEventListener('click', openBarcodeScanner);
+        }
+
+        if (closeButton) {
+            closeButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                hideBarcodeScanner();
+            });
+        }
+
+        if (scannerModal) {
+            scannerModal.addEventListener('click', function(event) {
+                if (event.target === scannerModal) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        }
+    });
+
+    function startScanner(requestId) {
         Quagga.init({
             inputStream: {
                 name: "Live",
@@ -574,17 +680,22 @@
             },
         },
         function (err) {
-            barcodeScannerStarting = false;
-
             if (err) {
+                barcodeScannerStarting = false;
                 console.log(err)
                 return
             }
 
-            if (!$('#modal-camera-scanner').hasClass('show')) {
+            if (!barcodeScannerOpen || requestId !== barcodeScannerRequestId) {
+                try {
+                    Quagga.stop();
+                } catch (error) {
+                    console.log(error);
+                }
                 return
             }
 
+            barcodeScannerStarting = false;
             Quagga.start();
         });
 
@@ -595,9 +706,11 @@
         barcodeScannerProcessedHandler = function (result) {
             if (result) {
                 if (result.codeResult && result.codeResult.code) {
-                    $('#invoice_code').val(result.codeResult.code)
-                    stopBarcodeScanner()
-                    $('#modal-camera-scanner').modal('hide');
+                    var invoiceCode = document.getElementById('invoice_code');
+                    if (invoiceCode) {
+                        invoiceCode.value = result.codeResult.code;
+                    }
+                    hideBarcodeScanner();
                 }
             }
         };
