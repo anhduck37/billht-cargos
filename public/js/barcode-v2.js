@@ -1,81 +1,85 @@
-(function ($, window, document) {
+(function (window, document) {
     'use strict';
 
+    var stream = null;
+    var detector = null;
+    var scanTimer = null;
     var selectedDeviceId = null;
-    var detectedHandler = null;
-    var scannerRunning = false;
-    var isRestarting = false;
+    var scanning = false;
+
+    function element(id) {
+        return document.getElementById(id);
+    }
 
     function setStatus(message, type) {
-        var statusClass = 'alert-info';
+        var status = element('barcode-scanner-v2-status');
 
-        if (type === 'error') {
-            statusClass = 'alert-danger';
-        } else if (type === 'success') {
-            statusClass = 'alert-success';
+        if (!status) {
+            return;
         }
 
-        $('#barcode-scanner-v2-status')
-            .removeClass('alert-info alert-danger alert-success')
-            .addClass(statusClass)
-            .text(message);
+        status.className = 'alert py-2 ' + (
+            type === 'error' ? 'alert-danger' :
+            type === 'success' ? 'alert-success' :
+            'alert-info'
+        );
+        status.textContent = message;
     }
 
-    function stopScannerV2() {
-        if (detectedHandler && window.Quagga && typeof window.Quagga.offDetected === 'function') {
-            window.Quagga.offDetected(detectedHandler);
+    function stopScanner() {
+        scanning = false;
+
+        if (scanTimer) {
+            window.clearTimeout(scanTimer);
+            scanTimer = null;
         }
 
-        detectedHandler = null;
-
-        if (window.Quagga && scannerRunning) {
-            try {
-                window.Quagga.stop();
-            } catch (error) {
-                console.warn('Không thể dừng camera quét mã vạch 2.', error);
-            }
+        if (stream) {
+            stream.getTracks().forEach(function (track) {
+                track.stop();
+            });
+            stream = null;
         }
 
-        scannerRunning = false;
-        $('#camera-scanner-v2').empty();
+        var video = element('barcode-scanner-v2-video');
+        if (video) {
+            video.pause();
+            video.srcObject = null;
+        }
     }
 
-    function getVideoTrack() {
-        var video = document.querySelector('#camera-scanner-v2 video');
-
-        if (!video || !video.srcObject || typeof video.srcObject.getVideoTracks !== 'function') {
-            return null;
+    function hideModal() {
+        if (window.jQuery && window.jQuery.fn.modal) {
+            window.jQuery('#modal-camera-scanner-v2').modal('hide');
         }
-
-        return video.srcObject.getVideoTracks()[0] || null;
     }
 
-    function improveCameraFocus() {
-        var track = getVideoTrack();
-
-        if (!track || typeof track.getCapabilities !== 'function' || typeof track.applyConstraints !== 'function') {
+    function applyCameraEnhancements(track) {
+        if (!track || typeof track.getCapabilities !== 'function' ||
+            typeof track.applyConstraints !== 'function') {
             return;
         }
 
         var capabilities = track.getCapabilities();
-        var advanced = {};
+        var settings = {};
 
-        if (Array.isArray(capabilities.focusMode) && capabilities.focusMode.indexOf('continuous') !== -1) {
-            advanced.focusMode = 'continuous';
+        if (Array.isArray(capabilities.focusMode) &&
+            capabilities.focusMode.indexOf('continuous') !== -1) {
+            settings.focusMode = 'continuous';
         }
 
         if (capabilities.zoom && typeof capabilities.zoom.min === 'number') {
-            var preferredZoom = Math.max(capabilities.zoom.min, 1.5);
-            advanced.zoom = Math.min(capabilities.zoom.max, preferredZoom);
+            settings.zoom = Math.min(
+                capabilities.zoom.max,
+                Math.max(capabilities.zoom.min, 1.5)
+            );
         }
 
-        if (!Object.keys(advanced).length) {
-            return;
+        if (Object.keys(settings).length) {
+            track.applyConstraints({ advanced: [settings] }).catch(function () {
+                // Camera vẫn hoạt động nếu thiết bị từ chối autofocus hoặc zoom.
+            });
         }
-
-        track.applyConstraints({ advanced: [advanced] }).catch(function (error) {
-            console.warn('Thiết bị không áp dụng được autofocus/zoom nâng cao.', error);
-        });
     }
 
     function cameraScore(device) {
@@ -85,11 +89,9 @@
         if (/back|rear|environment|mặt sau|camera 0/.test(label)) {
             score += 20;
         }
-
         if (/front|user|mặt trước/.test(label)) {
             score -= 30;
         }
-
         if (/ultra|wide|tele|macro|depth/.test(label)) {
             score -= 10;
         }
@@ -97,157 +99,189 @@
         return score;
     }
 
-    function populateCameraOptions(devices) {
-        var cameras = devices.filter(function (device) {
-            return device.kind === 'videoinput';
+    function populateCameras() {
+        return navigator.mediaDevices.enumerateDevices().then(function (devices) {
+            var cameras = devices.filter(function (device) {
+                return device.kind === 'videoinput';
+            }).sort(function (left, right) {
+                return cameraScore(right) - cameraScore(left);
+            });
+
+            var select = element('barcode-scanner-v2-camera');
+            var group = document.querySelector('.barcode-scanner-v2-camera-group');
+
+            if (!select || !group) {
+                return;
+            }
+
+            select.innerHTML = '';
+            cameras.forEach(function (camera, index) {
+                var option = document.createElement('option');
+                option.value = camera.deviceId;
+                option.textContent = camera.label || ('Camera ' + (index + 1));
+                select.appendChild(option);
+            });
+
+            if (!selectedDeviceId && cameras.length) {
+                selectedDeviceId = cameras[0].deviceId;
+            }
+
+            if (selectedDeviceId) {
+                select.value = selectedDeviceId;
+            }
+
+            group.style.display = cameras.length > 1 ? '' : 'none';
         });
-
-        cameras.sort(function (left, right) {
-            return cameraScore(right) - cameraScore(left);
-        });
-
-        var $select = $('#barcode-scanner-v2-camera');
-        $select.empty();
-
-        cameras.forEach(function (camera, index) {
-            $('<option>')
-                .val(camera.deviceId)
-                .text(camera.label || ('Camera ' + (index + 1)))
-                .appendTo($select);
-        });
-
-        if (!selectedDeviceId && cameras.length) {
-            selectedDeviceId = cameras[0].deviceId;
-        }
-
-        if (selectedDeviceId) {
-            $select.val(selectedDeviceId);
-        }
-
-        $('.barcode-scanner-v2-camera-group').toggle(cameras.length > 1);
     }
 
-    function refreshCameraList() {
-        if (!window.Quagga || !window.Quagga.CameraAccess ||
-            typeof window.Quagga.CameraAccess.enumerateVideoDevices !== 'function') {
+    function scanFrame() {
+        if (!scanning || !detector) {
+            return;
+        }
+
+        var video = element('barcode-scanner-v2-video');
+
+        if (!video || video.readyState < 2) {
+            scanTimer = window.setTimeout(scanFrame, 150);
+            return;
+        }
+
+        detector.detect(video).then(function (barcodes) {
+            if (!scanning) {
+                return;
+            }
+
+            if (barcodes && barcodes.length && barcodes[0].rawValue) {
+                var code = String(barcodes[0].rawValue).toUpperCase().replace(/\s/g, '');
+                var invoiceCode = element('invoice_code');
+
+                if (invoiceCode) {
+                    invoiceCode.value = code;
+                    invoiceCode.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                setStatus('Đã đọc mã: ' + code, 'success');
+                stopScanner();
+                window.setTimeout(hideModal, 250);
+                return;
+            }
+
+            scanTimer = window.setTimeout(scanFrame, 120);
+        }).catch(function () {
+            scanTimer = window.setTimeout(scanFrame, 250);
+        });
+    }
+
+    function createDetector() {
+        if (!('BarcodeDetector' in window)) {
+            return Promise.reject(new Error('BARCODE_DETECTOR_UNSUPPORTED'));
+        }
+
+        if (typeof window.BarcodeDetector.getSupportedFormats !== 'function') {
+            detector = new window.BarcodeDetector();
             return Promise.resolve();
         }
 
-        return window.Quagga.CameraAccess.enumerateVideoDevices()
-            .then(function (devices) {
-                populateCameraOptions(devices || []);
-            })
-            .catch(function (error) {
-                console.warn('Không thể lấy danh sách camera.', error);
-            });
+        return window.BarcodeDetector.getSupportedFormats().then(function (formats) {
+            if (formats.indexOf('code_128') === -1) {
+                throw new Error('CODE_128_UNSUPPORTED');
+            }
+
+            detector = new window.BarcodeDetector({ formats: ['code_128'] });
+        });
     }
 
-    function buildConstraints() {
-        var constraints = {
-            facingMode: { ideal: 'environment' },
-            width: { ideal: 1920, min: 640 },
-            height: { ideal: 1080, min: 480 }
-        };
+    function startScanner() {
+        stopScanner();
+        setStatus('Đang mở camera...', 'info');
 
-        if (selectedDeviceId) {
-            constraints.deviceId = { exact: selectedDeviceId };
-            delete constraints.facingMode;
-        }
-
-        return constraints;
-    }
-
-    function startScannerV2() {
-        if (!window.Quagga) {
-            setStatus('Không tải được thư viện quét mã vạch. Vui lòng tải lại trang.', 'error');
+        if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+            setStatus('Trình duyệt không hỗ trợ mở camera. Vui lòng dùng Chrome mới nhất.', 'error');
             return;
         }
 
-        stopScannerV2();
-        setStatus('Đang mở camera...', 'info');
+        createDetector().then(function () {
+            var videoConstraints = {
+                facingMode: { ideal: 'environment' },
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            };
 
-        window.Quagga.init({
-            locate: true,
-            inputStream: {
-                name: 'Live',
-                type: 'LiveStream',
-                target: document.querySelector('#camera-scanner-v2'),
-                constraints: buildConstraints()
-            },
-            locator: {
-                patchSize: 'medium',
-                halfSample: true
-            },
-            frequency: 10,
-            decoder: {
-                readers: ['code_128_reader'],
-                multiple: false
+            if (selectedDeviceId) {
+                delete videoConstraints.facingMode;
+                videoConstraints.deviceId = { exact: selectedDeviceId };
             }
-        }, function (error) {
-            if (error) {
+
+            return navigator.mediaDevices.getUserMedia({
+                audio: false,
+                video: videoConstraints
+            });
+        }).then(function (cameraStream) {
+            stream = cameraStream;
+
+            var video = element('barcode-scanner-v2-video');
+            video.srcObject = stream;
+
+            return video.play().then(function () {
+                scanning = true;
+                setStatus('Camera đã sẵn sàng. Đang tìm mã vạch...', 'info');
+                applyCameraEnhancements(stream.getVideoTracks()[0]);
+                populateCameras();
+                scanFrame();
+            });
+        }).catch(function (error) {
+            stopScanner();
+
+            if (error && error.message === 'BARCODE_DETECTOR_UNSUPPORTED') {
+                setStatus('Thiết bị này chưa hỗ trợ bộ quét mã vạch 2. Vui lòng dùng nút quét cũ.', 'error');
+            } else if (error && error.message === 'CODE_128_UNSUPPORTED') {
+                setStatus('Trình duyệt chưa hỗ trợ đọc mã Code 128. Vui lòng dùng nút quét cũ.', 'error');
+            } else if (error && error.name === 'NotAllowedError') {
+                setStatus('Chưa được cấp quyền camera. Vui lòng cho phép truy cập camera.', 'error');
+            } else {
+                setStatus('Không mở được camera. Hãy thử chọn camera khác hoặc tải lại trang.', 'error');
                 console.error(error);
-                setStatus('Không mở được camera. Hãy cấp quyền camera hoặc chọn camera khác.', 'error');
-                return;
+            }
+        });
+    }
+
+    function initialize() {
+        var button = element('barcode-scanner-v2');
+        var modal = element('modal-camera-scanner-v2');
+        var select = element('barcode-scanner-v2-camera');
+
+        if (!button || !modal) {
+            return;
+        }
+
+        button.addEventListener('click', function () {
+            selectedDeviceId = null;
+
+            if (window.jQuery && window.jQuery.fn.modal) {
+                window.jQuery(modal).modal('show');
             }
 
-            window.Quagga.start();
-            scannerRunning = true;
-            setStatus('Camera đã sẵn sàng. Đang tìm mã vạch...', 'info');
-
-            window.setTimeout(improveCameraFocus, 400);
-            refreshCameraList();
+            startScanner();
         });
 
-        detectedHandler = function (result) {
-            var code = result && result.codeResult && result.codeResult.code;
-
-            if (!code) {
-                return;
-            }
-
-            $('#invoice_code').val(String(code).toUpperCase().replace(/\s/g, '')).trigger('change');
-            setStatus('Đã đọc mã: ' + code, 'success');
-            stopScannerV2();
-
-            window.setTimeout(function () {
-                $('#modal-camera-scanner-v2').modal('hide');
-            }, 250);
-        };
-
-        window.Quagga.onDetected(detectedHandler);
-    }
-
-    $(document).on('click', '#barcode-scanner-v2', function () {
-        selectedDeviceId = null;
-        $('#modal-camera-scanner-v2').modal('show');
-        startScannerV2();
-    });
-
-    $(document).on('change', '#barcode-scanner-v2-camera', function () {
-        if (isRestarting) {
-            return;
+        if (select) {
+            select.addEventListener('change', function () {
+                selectedDeviceId = select.value || null;
+                startScanner();
+            });
         }
 
-        selectedDeviceId = $(this).val() || null;
-        isRestarting = true;
-        startScannerV2();
-        window.setTimeout(function () {
-            isRestarting = false;
-        }, 500);
-    });
+        if (window.jQuery) {
+            window.jQuery(modal).on('hidden.bs.modal', function () {
+                stopScanner();
+                setStatus('Đang mở camera...', 'info');
+            });
+        }
+    }
 
-    $('#modal-camera-scanner-v2').on('hidden.bs.modal', function () {
-        stopScannerV2();
-        setStatus('Đang mở camera...', 'info');
-    });
-
-    $('<style>')
-        .text(
-            '#camera-scanner-v2{position:relative;overflow:hidden;background:#111;min-height:260px;border-radius:4px}' +
-            '#camera-scanner-v2 video,#camera-scanner-v2 canvas{width:100%;height:auto;display:block}' +
-            '#camera-scanner-v2 canvas.drawingBuffer{position:absolute;top:0;left:0}' +
-            '@media (max-width:575.98px){#modal-camera-scanner-v2 .modal-dialog{margin:.5rem}' +
-            '#camera-scanner-v2{min-height:220px}}'
-        )
-        .appendTo(document.head);
-})(jQuery, window, document);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initialize);
+    } else {
+        initialize();
+    }
+})(window, document);

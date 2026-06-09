@@ -502,14 +502,16 @@
                         <select id="barcode-scanner-v2-camera" class="form-control"></select>
                     </div>
                     <div id="barcode-scanner-v2-status" class="alert alert-info py-2">Đang mở camera...</div>
-                    <div id="camera-scanner-v2"></div>
+                    <div id="camera-scanner-v2" style="overflow: hidden; background: #111; border-radius: 4px;">
+                        <video id="barcode-scanner-v2-video" autoplay muted playsinline style="display: block; width: 100%; min-height: 260px; object-fit: cover;"></video>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 <script type="text/javascript" src="{{ asset('js/barcode.js') }}"></script>
-<script type="text/javascript" src="{{ asset('js/barcode-v2.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/barcode-v2.js') }}?v=20260609-2"></script>
 @section('javascript')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
@@ -582,7 +584,7 @@
             startScanner()
         })
 
-        $('.close').click(function() {
+        $('#modal-camera-scanner .close').click(function() {
             $('#camera-scanner').html('')
             Quagga.stop()
         })
