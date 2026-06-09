@@ -268,6 +268,7 @@
                         </span>
                     @endif
                     <button type="button" id="barcode-scanner" class="btn btn-primary mb-2 mt-2">Quét mã vạch</button>
+                    <button type="button" id="barcode-scanner-v2" class="btn btn-info mb-2 mt-2">Quét mã vạch 2</button>
                     
                 </div>
                 @endif
@@ -506,8 +507,30 @@
             </div>
         </div>
     </div>
+    <div id="modal-camera-scanner-v2" class="modal fade" data-toggle="modal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Quét mã vạch 2</h4>
+                    <button type="button" class="close barcode-scanner-v2-close" data-dismiss="modal" aria-label="Đóng">
+                        <span style="font-size: 2.25rem" aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center mb-2">Đưa mã vạch vào giữa khung hình và giữ điện thoại ổn định.</p>
+                    <div class="form-group barcode-scanner-v2-camera-group" style="display: none;">
+                        <label for="barcode-scanner-v2-camera">Camera</label>
+                        <select id="barcode-scanner-v2-camera" class="form-control"></select>
+                    </div>
+                    <div id="barcode-scanner-v2-status" class="alert alert-info py-2">Đang mở camera...</div>
+                    <div id="camera-scanner-v2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js"></script>
 <script type="text/javascript" src="{{ asset('js/barcode.js') }}"></script>
+<script type="text/javascript" src="{{ asset('js/barcode-v2.js') }}"></script>
 @section('javascript')
     <script type="text/javascript">
 
