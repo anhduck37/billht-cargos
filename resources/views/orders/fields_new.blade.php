@@ -511,17 +511,49 @@
 @section('javascript')
     <script type="text/javascript">
 
+    var barcodeScannerStarting = false;
+    var barcodeScannerProcessedHandler = null;
+
+    function stopBarcodeScanner() {
+        if (barcodeScannerProcessedHandler && typeof Quagga.offProcessed === 'function') {
+            Quagga.offProcessed(barcodeScannerProcessedHandler);
+        }
+
+        barcodeScannerProcessedHandler = null;
+        barcodeScannerStarting = false;
+
+        try {
+            Quagga.stop();
+        } catch (error) {
+            console.log(error);
+        }
+
+        $('#camera-scanner').html('');
+    }
+
     $(document).ready(function(){
+        var $scannerModal = $('#modal-camera-scanner');
+
         $('#barcode-scanner').click(function() {
-            $('#modal-camera-scanner').modal('show');
-            startScanner()
+            if (!$scannerModal.hasClass('show')) {
+                $scannerModal.modal('show');
+            }
         })
 
-        $('.close').click(function() {
-            $('#camera-scanner').html('')
-            Quagga.stop()
+        $scannerModal.on('shown.bs.modal', function() {
+            if (barcodeScannerStarting) {
+                return;
+            }
+
+            barcodeScannerStarting = true;
+            setTimeout(function() {
+                startScanner();
+            }, 100);
         })
-        
+
+        $scannerModal.on('hidden.bs.modal', function() {
+            stopBarcodeScanner();
+        })
     })
 
     function startScanner() {
@@ -542,23 +574,35 @@
             },
         },
         function (err) {
+            barcodeScannerStarting = false;
+
             if (err) {
                 console.log(err)
                 return
             }
+
+            if (!$('#modal-camera-scanner').hasClass('show')) {
+                return
+            }
+
             Quagga.start();
         });
 
-        Quagga.onProcessed(function (result) {
+        if (barcodeScannerProcessedHandler && typeof Quagga.offProcessed === 'function') {
+            Quagga.offProcessed(barcodeScannerProcessedHandler);
+        }
+
+        barcodeScannerProcessedHandler = function (result) {
             if (result) {
                 if (result.codeResult && result.codeResult.code) {
                     $('#invoice_code').val(result.codeResult.code)
-                    Quagga.stop()
-                    $('#camera-scanner').html('')
+                    stopBarcodeScanner()
                     $('#modal-camera-scanner').modal('hide');
                 }
             }
-        }); 
+        };
+
+        Quagga.onProcessed(barcodeScannerProcessedHandler);
     }
 
         $(function() {
