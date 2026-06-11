@@ -31,7 +31,7 @@
                                         <label class="custom-file-label border-primary" for="file" style="height: 50px; line-height: 35px;"><i class="fas fa-file-excel mr-2 text-primary"></i>Chọn tệp tin vận đơn...</label>
                                     </div>
                                     <a href="{{route('fileDemo')}}" class="btn btn-link btn-sm text-primary mt-2"><i class="fas fa-download mr-1"></i>Tải File Excel Mẫu Chuẩn</a>
-                                    <a href="{{route('orders.smartImport.index')}}" class="btn btn-link btn-sm text-info mt-2"><i class="fas fa-magic mr-1"></i>Import thông minh</a>
+                                    <!-- <a href="{{route('orders.smartImport.index')}}" class="btn btn-link btn-sm text-info mt-2"><i class="fas fa-magic mr-1"></i>Import thông minh</a> -->
                                 </div>
                             </div>
                         </div>
