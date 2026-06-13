@@ -11,9 +11,14 @@
                 <div class="card shadow">
                     <div class="card-header border-0">
                         <div class="row align-items-center">
-                            <div class="col">
+                            <div class="col-md-8">
                                 <h1 class="text-center">Tạo vận đơn mới</h1>
                                 <center><p style="color: red;">(Lưu ý: Tất cả các trường được đánh dấu * là bắt buộc)</p></center>
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <a href="{{ route('orders.createNew') }}" class="btn btn-sm btn-outline-primary shadow-sm">
+                                    <i class="fas fa-exchange-alt mr-1"></i> Chuyển sang trang tạo đơn mới
+                                </a>
                             </div>
                         </div>
                     </div>
