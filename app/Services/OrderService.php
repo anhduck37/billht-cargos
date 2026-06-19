@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Partner;
 use App\Service;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 class OrderService
@@ -12,18 +13,71 @@ class OrderService
     public $order_id_current = 1;
 
     public function getOrderCode($prefix) {
-        $order = Order::orderBy('id', 'DESC')->first();
-        if($order){
-            $this->order_id_current = (int)$order->id + 1;
+        $prefix = (string) $prefix;
+
+        if (DB::transactionLevel() === 0) {
+            return DB::transaction(function () use ($prefix) {
+                return $this->reserveOrderCode($prefix);
+            });
         }
-        $order_code = $this->genCode($prefix);
-        $checkOrder = Order::where('order_code', $order_code)->first();
+
+        return $this->reserveOrderCode($prefix);
+    }
+
+    private function reserveOrderCode($prefix)
+    {
+        $this->ensureOrderCodeCounter($prefix);
+
+        $counter = DB::table('order_code_counters')
+            ->where('prefix', $prefix)
+            ->lockForUpdate()
+            ->first();
+
+        $nextNumber = max((int) $counter->next_number, $this->getInitialNextNumber($prefix));
+
         do {
+            $this->order_id_current = $nextNumber;
             $order_code = $this->genCode($prefix);
-            $checkOrder = Order::where('order_code', $order_code)->first();
-            $this->order_id_current += 1;
-        } while(isset($checkOrder));
+            $nextNumber++;
+        } while (Order::where('order_code', $order_code)->exists());
+
+        DB::table('order_code_counters')
+            ->where('prefix', $prefix)
+            ->update([
+                'next_number' => $nextNumber,
+                'updated_at' => now(),
+            ]);
+
         return $order_code;
+    }
+
+    private function ensureOrderCodeCounter($prefix)
+    {
+        if (DB::table('order_code_counters')->where('prefix', $prefix)->exists()) {
+            return;
+        }
+
+        $now = now()->format('Y-m-d H:i:s');
+        DB::statement(
+            'INSERT IGNORE INTO order_code_counters (`prefix`, `next_number`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?)',
+            [$prefix, $this->getInitialNextNumber($prefix), $now, $now]
+        );
+    }
+
+    private function getInitialNextNumber($prefix)
+    {
+        $maxIdNext = ((int) Order::max('id')) + 1;
+        $maxPrefixNumber = 0;
+
+        if ($prefix !== '') {
+            $start = strlen($prefix) + 1;
+            $result = Order::where('order_code', 'LIKE', $prefix . '%')
+                ->selectRaw('MAX(CAST(SUBSTRING(order_code, ' . (int) $start . ') AS UNSIGNED)) as max_number')
+                ->first();
+            $maxPrefixNumber = $result ? (int) $result->max_number : 0;
+        }
+
+        return max(1, $maxIdNext, $maxPrefixNumber + 1);
     }
 
     public function genCode($prefix) {
