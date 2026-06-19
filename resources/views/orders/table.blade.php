@@ -307,33 +307,32 @@
                     });
                 }
             })
-            $('#export').on('click', function () {
-                    if(paramFilters.length == 0) paramFilters = {}
-                    let url = {!! json_encode(route('orders.export')) !!};
-                    let search = $("input[name='search'").val();
+            $('#export').on('click', function (e) {
+                    e.preventDefault();
+                    let url = new URL({!! json_encode(route('orders.export')) !!});
+                    let search = $("input[name='search']").val();
                     let order_code_from = $("input[name='order_code_from']").val();
                     let order_code_to = $("input[name='order_code_to']").val();
                     let delivery_status = $('select[name="delivery_status"]').val();
                     let partner_code = $('select[name="partner_code"]').val();
                     let order_date = $("#order_date").val();
 
-                    url += '?'
-                    if(url.includes('&')) {
-                        url += '&'
-                    }
-                    if(search) url += `search=${search}&`
+                    if(search) url.searchParams.set('search', search);
                     if(order_code_from && order_code_to) {
-                        url += `order_code_from=${order_code_from}&order_code_to=${order_code_to}&`
+                        url.searchParams.set('order_code_from', order_code_from);
+                        url.searchParams.set('order_code_to', order_code_to);
                     }
-                    if(delivery_status) url += `delivery_status=${delivery_status}&`
-                    if(partner_code) url += `partner_code=${partner_code}&`
+                    if(delivery_status) url.searchParams.set('delivery_status', delivery_status);
+                    if(partner_code) url.searchParams.set('partner_code', partner_code);
 
                     if(order_date) {
-                        let splitOrderDate = order_date.split(' - ')
-                        url += `start_date=${splitOrderDate[0]}&end_date=${splitOrderDate[1]}`
+                        let splitOrderDate = order_date.split(' - ');
+                        if(splitOrderDate.length === 2) {
+                            url.searchParams.set('start_date', splitOrderDate[0]);
+                            url.searchParams.set('end_date', splitOrderDate[1]);
+                        }
                     }
-                    console.log('url', url)
-                    $('#export').attr('href', url)
+                    window.location.href = url.toString();
             })
             $('#sendEmail').on('click', function () {
                 let typeEmail = $('input[name="type_email"]:checked').val()

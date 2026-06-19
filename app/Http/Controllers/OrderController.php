@@ -137,7 +137,7 @@ class OrderController extends AppBaseController
                     ->where('orders.order_date', '<=', $endDate);
             }
         }
-        if (array_key_exists('delivery_status', $formFilter) && $formFilter['delivery_status']) {
+        if (array_key_exists('delivery_status', $formFilter) && $formFilter['delivery_status'] !== null && $formFilter['delivery_status'] !== '') {
             $orders->where('delivery_status', $formFilter['delivery_status']);
         }
         if (array_key_exists('partner_code', $formFilter) && $formFilter['partner_code']) {
@@ -1079,7 +1079,17 @@ class OrderController extends AppBaseController
 
         $formFilter = $request->all();
 
-        if (!array_filter($formFilter)) {
+        $hasFilter = array_filter($formFilter, function ($value) {
+            if (is_array($value)) {
+                return !empty(array_filter($value, function ($item) {
+                    return trim((string) $item) !== '';
+                }));
+            }
+
+            return trim((string) $value) !== '';
+        });
+
+        if (empty($hasFilter)) {
             Flash::error('Bạn vui lòng nhập mục tìm kiếm');
             return back();
         }

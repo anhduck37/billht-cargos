@@ -36,9 +36,9 @@
                             <div class="col-lg col-md-6 mb-3">
                                 <label>Trạng thái vận đơn</label>
                                 <select name="delivery_status" class="form-control">
-                                    <option value=""></option>
+                                    <option value="" @if(!request()->filled('delivery_status')) selected @endif>Tất cả trạng thái</option>
                                     @foreach(\App\Models\Order::DELIVERY_MAP as $key => $status)
-                                        <option value="{{$key}}" @if(request('delivery_status') == $key) selected @endif>{{$status}}</option>
+                                        <option value="{{$key}}" @if(request()->filled('delivery_status') && (string) request('delivery_status') === (string) $key) selected @endif>{{$status}}</option>
                                     @endforeach
                                 </select>
                             </div>

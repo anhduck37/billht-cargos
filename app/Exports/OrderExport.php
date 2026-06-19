@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Service;
 use App\Services\OrderService;
 use App\User;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -26,20 +27,29 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
     public function collection()
     {
         $orders = Order::with(['services']);
-        if (isset($this->form_filter['start_date']) && isset($this->form_filter['end_date'])) {
+        $monthsAgo = Carbon::now()->subMonths(config('order_manager.months_ago_to_get_bill'));
+        $firstMonthAgo = $monthsAgo->startOfMonth();
+        $orders->where(function ($q) use ($firstMonthAgo) {
+            $q->where('orders.created_at', '>=', $firstMonthAgo)
+                ->orWhere('orders.updated_at', '>=', $firstMonthAgo);
+        });
+
+        if (!empty($this->form_filter['start_date']) && !empty($this->form_filter['end_date'])) {
             $start_date = app(OrderService::class)->explodeDate($this->form_filter['start_date']);
             $end_date = app(OrderService::class)->explodeDate($this->form_filter['end_date']);
-            $orders->where('orders.order_date', '>=', $start_date)->where('orders.order_date', '<=', $end_date);
+            if ($start_date && $end_date) {
+                $orders->where('orders.order_date', '>=', $start_date)->where('orders.order_date', '<=', $end_date);
+            }
         }
 
-        if (isset($this->form_filter['order_code_from']) && isset($this->form_filter['order_code_to'])) {
+        if (!empty($this->form_filter['order_code_from']) && !empty($this->form_filter['order_code_to'])) {
             $prefix_code = config('order_manager.prefix_code');
             $order_id_from = (int)str_replace($prefix_code, '', $this->form_filter['order_code_from']);
             $order_id_to = (int)str_replace($prefix_code, '', $this->form_filter['order_code_to']);
             $orders->where('orders.id', '>=', $order_id_from)->where('orders.id', '<=',  $order_id_to)->where('order_code', 'LIKE', $prefix_code . '%');
         }
 
-        if (isset($this->form_filter['search'])) {
+        if (!empty($this->form_filter['search'])) {
             $orders->join('senders', 'senders.id', '=', 'orders.sender_id')
                 ->join('receivers', 'receivers.id', '=', 'orders.receiver_id')
                 ->where(function ($q) {
@@ -49,10 +59,11 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
                         ->orWhere('receivers.receiver_name', 'LIKE', '%' . $this->form_filter['search'] . '%')
                         ->orWhere('receivers.receiver_phone', 'LIKE', '%' . $this->form_filter['search'] . '%')
                         ->orWhere('receivers.address', 'LIKE', '%' . $this->form_filter['search'] . '%')
-                        ->orWhere('orders.order_code', 'LIKE', '%' . $this->form_filter['search'] . '%');
+                        ->orWhere('orders.order_code', 'LIKE', '%' . $this->form_filter['search'] . '%')
+                        ->orWhere('orders.invoice_code', 'LIKE', '%' . $this->form_filter['search'] . '%');
                 });
         }
-        if (isset($this->form_filter['delivery_status'])) {
+        if (array_key_exists('delivery_status', $this->form_filter) && $this->form_filter['delivery_status'] !== null && $this->form_filter['delivery_status'] !== '') {
             $orders->where('orders.delivery_status', $this->form_filter['delivery_status']);
         }
         if (isset($this->form_filter['partner_code']) && $this->form_filter['partner_code']) {
@@ -67,7 +78,7 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
             $orders->where('orders.user_id', auth()->user()->id);
         }
 
-        $orders = $orders->select('orders.*')->groupBy('orders.id')->get();
+        $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->groupBy('orders.id')->get();
         $order = [];
         foreach ($orders as $item) {
             $services = isset($item->services) ? $item->services : [];
