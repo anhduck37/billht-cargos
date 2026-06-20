@@ -24,6 +24,7 @@ class FixDuplicateOrderCodesCommand extends Command
         {--code= : Chỉ xử lý một mã vận đơn cụ thể}
         {--apply : Chạy thật. Không có option này thì chỉ xem trước}
         {--include-new : Cho phép xử lý cả nhóm có đơn sau mốc cutoff}
+        {--include-same-content : Cho phép đổi mã cả nhóm nghi duplicate toàn bộ nội dung}
         {--export= : Xuất kế hoạch/kết quả ra file .xlsx hoặc .csv}';
 
     /**
@@ -39,10 +40,12 @@ class FixDuplicateOrderCodesCommand extends Command
         $code = trim((string) $this->option('code'));
         $apply = (bool) $this->option('apply');
         $includeNew = (bool) $this->option('include-new');
+        $includeSameContent = (bool) $this->option('include-same-content');
         $exportPath = trim((string) $this->option('export'));
         $rows = [];
         $changed = 0;
         $skippedGroups = 0;
+        $skippedSameContentGroups = 0;
 
         $duplicateQuery = Order::query()
             ->select('order_code', DB::raw('COUNT(*) as total'))
@@ -73,15 +76,22 @@ class FixDuplicateOrderCodesCommand extends Command
                 return !$order->created_at || $order->created_at->gt($cutoff);
             });
 
-            $canFixGroup = !$hasNewOrder || $includeNew;
+            $allSameContent = $orders->map(function ($order) {
+                return $this->buildDuplicateSignature($order);
+            })->unique()->count() === 1;
+
+            $canFixGroup = (!$hasNewOrder || $includeNew) && (!$allSameContent || $includeSameContent);
             if (!$canFixGroup) {
                 $skippedGroups++;
+                if ($allSameContent && !$includeSameContent) {
+                    $skippedSameContentGroups++;
+                }
             }
 
             $keepOrder = $this->chooseOrderToKeep($orders);
 
             foreach ($orders as $order) {
-                $action = $order->id == $keepOrder->id ? 'Giữ nguyên' : ($canFixGroup ? 'Đổi mã' : 'Bỏ qua - có đơn sau mốc cutoff');
+                $action = $order->id == $keepOrder->id ? 'Giữ nguyên' : ($canFixGroup ? 'Đổi mã' : $this->getSkipReason($hasNewOrder, $allSameContent));
                 $newCode = '';
 
                 if ($apply && $action === 'Đổi mã') {
@@ -94,6 +104,7 @@ class FixDuplicateOrderCodesCommand extends Command
                 $rows[] = [
                     'Nhóm mã trùng' => $duplicate->order_code,
                     'Số đơn trùng' => $duplicate->total,
+                    'Phân loại nội dung' => $allSameContent ? 'Nghi duplicate cả đơn' : 'Trùng mã nhưng nội dung khác',
                     'Hành động' => $action,
                     'ID giữ lại' => $keepOrder->id,
                     'ID' => $order->id,
@@ -123,8 +134,21 @@ class FixDuplicateOrderCodesCommand extends Command
 
         $this->info($apply ? "Đã đổi mã {$changed} vận đơn." : 'Đây là bản xem trước. Thêm --apply để chạy thật.');
         $this->info("Nhóm bỏ qua do có đơn sau mốc cutoff: {$skippedGroups}");
+        $this->info("Nhóm bỏ qua do nghi duplicate cả đơn: {$skippedSameContentGroups}");
 
         return 0;
+    }
+
+    private function getSkipReason($hasNewOrder, $allSameContent)
+    {
+        if ($hasNewOrder) {
+            return 'Bỏ qua - có đơn sau mốc cutoff';
+        }
+        if ($allSameContent) {
+            return 'Bỏ qua - nghi duplicate cả đơn';
+        }
+
+        return 'Bỏ qua';
     }
 
     private function chooseOrderToKeep($orders)
@@ -153,6 +177,44 @@ class FixDuplicateOrderCodesCommand extends Command
 
             return $newCode;
         });
+    }
+
+    private function buildDuplicateSignature(Order $order)
+    {
+        $order->loadMissing(['sender', 'receiver', 'services']);
+
+        $services = $order->services
+            ? $order->services->map(function ($service) {
+                return $service->type . ':' . $service->service;
+            })->sort()->values()->implode('|')
+            : '';
+
+        $parts = [
+            $order->user_id,
+            $order->order_date,
+            $order->payment_method,
+            $order->delivery_status,
+            $order->weight,
+            $order->quantity,
+            $order->type,
+            $order->total,
+            $order->collection,
+            $this->normalizeText($order->note),
+            $this->normalizeText($order->sender ? $order->sender->sender_name : ''),
+            $this->normalizeText($order->sender ? $order->sender->sender_phone : ''),
+            $this->normalizeText($order->sender ? $order->sender->address : ''),
+            $this->normalizeText($order->receiver ? $order->receiver->receiver_name : ''),
+            $this->normalizeText($order->receiver ? $order->receiver->receiver_phone : ''),
+            $this->normalizeText($order->receiver ? $order->receiver->address : ''),
+            $services,
+        ];
+
+        return sha1(json_encode($parts));
+    }
+
+    private function normalizeText($value)
+    {
+        return preg_replace('/\s+/u', ' ', trim(mb_strtolower((string) $value, 'UTF-8')));
     }
 
     private function exportRows(array $rows, $exportPath)
