@@ -14,6 +14,7 @@ use App\OrderHistory;
 use App\Ward;
 use App\Services\EmsService;
 use App\Services\ApiStatusService;
+use App\Services\OrderCodeAliasService;
 use App\Services\OrderHistoryService;
 use App\Services\ViettelPostService;
 use App\User;
@@ -67,8 +68,9 @@ class OrderPartnerLogController extends Controller
             $query->where(function ($q) use ($keyword) {
                 $q->where('payload', 'LIKE', '%' . $keyword . '%')
                     ->orWhereHas('order', function ($orderQuery) use ($keyword) {
-                        $orderQuery->where('order_code', 'LIKE', '%' . $keyword . '%')
-                            ->orWhere('invoice_code', 'LIKE', '%' . $keyword . '%')
+                        $orderQuery->where(function ($codeQuery) use ($keyword) {
+                                app(OrderCodeAliasService::class)->applySearchFilter($codeQuery, $keyword);
+                            })
                             ->orWhereHas('sender', function ($senderQuery) use ($keyword) {
                                 $senderQuery->where('sender_name', 'LIKE', '%' . $keyword . '%');
                             });

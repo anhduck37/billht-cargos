@@ -20,6 +20,7 @@ use App\NewAddressPartnerMapping;
 use App\Sender;
 use App\Service;
 use App\Services\OrderService;
+use App\Services\OrderCodeAliasService;
 use App\Services\OrderTrackingService;
 use Exception;
 use Illuminate\Http\Request;
@@ -96,7 +97,8 @@ class OrderController extends AppBaseController
             'receiver.ward',
             'receiver.district',
             'order_print',
-            'services'
+            'services',
+            'code_aliases'
         ])->join('senders', 'senders.id', '=', 'orders.sender_id')
             ->join('receivers', 'receivers.id', '=', 'orders.receiver_id')
             ->where(function ($q) use ($firstMonthAgo) {
@@ -112,8 +114,9 @@ class OrderController extends AppBaseController
                     ->orWhere('receivers.receiver_name', 'LIKE', '%' . $formFilter['search'] . '%')
                     ->orWhere('receivers.receiver_phone', 'LIKE', '%' . $formFilter['search'] . '%')
                     ->orWhere('receivers.address', 'LIKE', '%' . $formFilter['search'] . '%')
-                    ->orWhere('orders.order_code', 'LIKE', '%' . $formFilter['search'] . '%')
-                    ->orWhere('orders.invoice_code', 'LIKE', '%' . $formFilter['search'] . '%');
+                    ->orWhere(function ($codeQuery) use ($formFilter) {
+                        app(OrderCodeAliasService::class)->applySearchFilter($codeQuery, $formFilter['search']);
+                    });
             });
         }
         // if(array_key_exists('name', $formFilter) && $formFilter['name']){
@@ -177,7 +180,7 @@ class OrderController extends AppBaseController
 
     public function show($id)
     {
-        $order = $this->orderRepository->with(['sender', 'receiver', 'services'])->find($id);
+        $order = $this->orderRepository->with(['sender', 'receiver', 'services', 'code_aliases'])->find($id);
         if (empty($order)) {
             Flash::error('Vận đơn không tồn tại.');
 

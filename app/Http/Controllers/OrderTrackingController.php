@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\OrderTracking;
+use App\OrderCodeAlias;
 use App\PartnerTracking;
+use App\Services\OrderCodeAliasService;
 use App\Services\MickeyService;
 use App\Services\MickeyTrackingSyncService;
 use App\Services\ViettelPostService;
@@ -61,7 +63,9 @@ class OrderTrackingController extends Controller
                         ->orWhere('senders.sender_phone', '=', trim($request->search))
                         ->orWhere('receivers.receiver_name', 'LIKE', '%' . $request->search . '%')
                         ->orWhere('receivers.receiver_phone', '=', trim($request->search))
-                        ->orWhere('orders.order_code', 'LIKE', '%' . trim($request->search) . '%');
+                        ->orWhere(function ($codeQuery) use ($request) {
+                            app(OrderCodeAliasService::class)->applySearchFilter($codeQuery, $request->search);
+                        });
                 });
             }
             $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->groupBy('orders.id')->paginate($pageSize);
@@ -74,11 +78,30 @@ class OrderTrackingController extends Controller
                 //     $delivery_status = $order_trackings[count($order_trackings) - 1]->delivery_status;
                 // }
 
-                $order = Order::with(['order_trackings'])->where('order_code', $order_code)
-                    // ->orWhere('invoice_code', $order_code)
-                    ->first();
+                $directOrder = Order::where('order_code', $order_code)->first();
+                $aliasOrderIds = OrderCodeAlias::where('old_code', trim($order_code))->pluck('order_id')->unique()->values();
+                $matchedOrderIds = $aliasOrderIds->all();
+                if ($directOrder) {
+                    $matchedOrderIds[] = $directOrder->id;
+                    $matchedOrderIds = array_values(array_unique($matchedOrderIds));
+                }
+
+                if (count($matchedOrderIds) > 1) {
+                    $orders = Order::with([
+                        'sender.city',
+                        'sender.ward',
+                        'sender.district',
+                        'receiver.city',
+                        'receiver.ward',
+                        'receiver.district'
+                    ])->whereIn('id', $matchedOrderIds)
+                        ->orderBy('id', 'DESC')
+                        ->paginate(config('order_manager.page_size'));
+                } elseif (count($matchedOrderIds) === 1) {
+                    $order = Order::with(['order_trackings'])->where('id', $matchedOrderIds[0])->first();
+                }
             }
-            if ($order || $order_code) {
+            if ($order || ($order_code && empty($orders))) {
                 if (
                     isset($order) && (isset($order->order_partner_code) || (isset(Order::MAP_MESSAGE_NOTI_PARTNER[$order->partner_code])))
                 ) {
@@ -101,7 +124,7 @@ class OrderTrackingController extends Controller
                     }
                 }
             }
-            if (!$order && $order_code && empty($mickey_tracking['table']) && empty($mickey_tracking['table1'])) {
+            if (!$order && empty($orders) && $order_code && empty($mickey_tracking['table']) && empty($mickey_tracking['table1'])) {
                 Flash::warning('Mã vận đơn không tồn tại hoặc chưa chính xác, vui lòng kiểm tra lại.');
             } else if ($order) {
                 $order_trackings = $order->order_trackings;

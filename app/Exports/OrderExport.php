@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Order;
 use App\Service;
+use App\Services\OrderCodeAliasService;
 use App\Services\OrderService;
 use App\User;
 use Carbon\Carbon;
@@ -59,8 +60,9 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
                         ->orWhere('receivers.receiver_name', 'LIKE', '%' . $this->form_filter['search'] . '%')
                         ->orWhere('receivers.receiver_phone', 'LIKE', '%' . $this->form_filter['search'] . '%')
                         ->orWhere('receivers.address', 'LIKE', '%' . $this->form_filter['search'] . '%')
-                        ->orWhere('orders.order_code', 'LIKE', '%' . $this->form_filter['search'] . '%')
-                        ->orWhere('orders.invoice_code', 'LIKE', '%' . $this->form_filter['search'] . '%');
+                        ->orWhere(function ($codeQuery) {
+                            app(OrderCodeAliasService::class)->applySearchFilter($codeQuery, $this->form_filter['search']);
+                        });
                 });
         }
         if (array_key_exists('delivery_status', $this->form_filter) && $this->form_filter['delivery_status'] !== null && $this->form_filter['delivery_status'] !== '') {

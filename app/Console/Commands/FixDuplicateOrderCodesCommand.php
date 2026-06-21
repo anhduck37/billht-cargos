@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Order;
 use App\OrderTracking;
+use App\Services\OrderCodeAliasService;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -22,6 +23,7 @@ class FixDuplicateOrderCodesCommand extends Command
     protected $signature = 'orders:fix-duplicate-codes
         {--cutoff=2025-01-03 16:55:30 : Chỉ tự xử lý nhóm có toàn bộ đơn tạo trước hoặc bằng mốc này}
         {--code= : Chỉ xử lý một mã vận đơn cụ thể}
+        {--exclude= : Bỏ qua một hoặc nhiều mã, phân tách bằng dấu phẩy}
         {--apply : Chạy thật. Không có option này thì chỉ xem trước}
         {--include-new : Cho phép xử lý cả nhóm có đơn sau mốc cutoff}
         {--include-same-content : Cho phép đổi mã cả nhóm nghi duplicate toàn bộ nội dung}
@@ -38,6 +40,13 @@ class FixDuplicateOrderCodesCommand extends Command
     {
         $cutoff = Carbon::parse($this->option('cutoff'));
         $code = trim((string) $this->option('code'));
+        $excludeCodes = collect(explode(',', (string) $this->option('exclude')))
+            ->map(function ($item) {
+                return trim($item);
+            })
+            ->filter()
+            ->values()
+            ->all();
         $apply = (bool) $this->option('apply');
         $includeNew = (bool) $this->option('include-new');
         $includeSameContent = (bool) $this->option('include-same-content');
@@ -57,6 +66,9 @@ class FixDuplicateOrderCodesCommand extends Command
 
         if ($code !== '') {
             $duplicateQuery->where('order_code', $code);
+        }
+        if (!empty($excludeCodes)) {
+            $duplicateQuery->whereNotIn('order_code', $excludeCodes);
         }
 
         $duplicates = $duplicateQuery->get();
@@ -110,6 +122,7 @@ class FixDuplicateOrderCodesCommand extends Command
                     'ID' => $order->id,
                     'Mã cũ' => $duplicate->order_code,
                     'Mã mới' => $newCode,
+                    'Alias tra cứu mã cũ' => $action === 'Đổi mã' ? $duplicate->order_code : '',
                     'Mã tham chiếu' => $order->invoice_code,
                     'Mã đối tác' => $order->order_partner_code,
                     'Đối tác' => $order->partner_code,
@@ -174,6 +187,12 @@ class FixDuplicateOrderCodesCommand extends Command
             $order->save();
 
             OrderTracking::where('order_id', $order->id)->update(['order_code' => $newCode]);
+            app(OrderCodeAliasService::class)->createAlias(
+                $order,
+                $oldCode,
+                $newCode,
+                'fix_duplicate_order_code'
+            );
 
             return $newCode;
         });

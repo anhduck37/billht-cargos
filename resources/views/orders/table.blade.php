@@ -41,6 +41,11 @@
                             <div class="media align-items-center">
                                 <div class="media-body">
                                     <span class="mb-0 text-sm font-weight-bold">{{$order->order_code}}</span>
+                                    @if(isset($order->code_aliases) && $order->code_aliases->count())
+                                        <div class="text-muted" style="font-size: 11px;">
+                                            Mã cũ: {{ $order->code_aliases->pluck('old_code')->unique()->implode(', ') }}
+                                        </div>
+                                    @endif
                                     @if($order->push_error)
                                     <span data-toggle="tooltip" data-placement="right" title="{{$order->push_error}}" style="color:#dc3545; cursor:pointer;">
                                         <i class="fas fa-exclamation-triangle"></i>

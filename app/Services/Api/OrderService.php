@@ -4,20 +4,21 @@ namespace App\Services\Api;
 
 use App\Services\_Abstract\BaseService;
 use App\Models\Order;
+use App\Services\OrderCodeAliasService;
 
 class OrderService extends BaseService
 {
 
     public function detail($order_code)
     {
-        $order = Order::with([
+        $order = app(OrderCodeAliasService::class)->findOrderByCode($order_code, [
             'sender.city',
             'sender.district',
             'sender.ward',
             'receiver.city',
             'receiver.district',
             'receiver.ward',
-        ])->where('order_code', '=', $order_code)->first();
+        ]);
         if (!$order) {
             return $this->sendErrorResponse('Mã vận đơn không tồn tại');
         }

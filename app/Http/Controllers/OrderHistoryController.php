@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\OrderHistory;
+use App\Services\OrderCodeAliasService;
 use Illuminate\Http\Request;
 
 class OrderHistoryController extends Controller
@@ -64,7 +65,9 @@ class OrderHistoryController extends Controller
         if ($request->has('search') && $request->search != null) {
             $orderHistorys = $orderHistorys->where(function ($query) use ($request) {
                 $query->whereHas('order', function ($orderQuery) use ($request) {
-                    $orderQuery->where('order_code', 'LIKE', '%' . $request->search . '%')
+                    $orderQuery->where(function ($codeQuery) use ($request) {
+                            app(OrderCodeAliasService::class)->applySearchFilter($codeQuery, $request->search);
+                        })
                         ->orWhere('tracking_code', 'LIKE', '%' . $request->search . '%');
                 })->orWhere('tracking_code', 'LIKE', '%' . $request->search . '%');
             });

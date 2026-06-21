@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\PartnerTracking;
 use App\Services\MickeyService;
 use App\Services\MickeyTrackingSyncService;
+use App\Services\OrderCodeAliasService;
 use App\Services\ViettelPostService;
 
 class OrderTrackinService extends BaseService
@@ -28,7 +29,7 @@ class OrderTrackinService extends BaseService
 
     public function list($order_code)
     {
-        $order = Order::with(['order_trackings'])->where('order_code', $order_code)->first();
+        $order = app(OrderCodeAliasService::class)->findOrderByCode($order_code, ['order_trackings']);
         if (!$order) {
             return $this->sendErrorResponse('Mã vận đơn không tồn tại hoặc chưa chính xác, vui lòng kiểm tra lại.');
         }

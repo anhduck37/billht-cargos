@@ -2,6 +2,12 @@
 <div class="col-sm-3">
     {!! Form::label('order_code', __('order.invoice_code')) !!}
     <p>{{ $order->order_code }}</p>
+    @if(isset($order->code_aliases) && $order->code_aliases->count())
+        <small class="text-muted">
+            Mã cũ:
+            {{ $order->code_aliases->pluck('old_code')->unique()->implode(', ') }}
+        </small>
+    @endif
 </div>
 <div class="col-sm-3">
     {!! Form::label('invoice_code', __('order.tracking_code')) !!}

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\OrderHistory;
 use App\OrderImage;
+use App\OrderCodeAlias;
 use App\OrderTracking;
 use App\Partner;
 use App\Receiver;
@@ -229,5 +230,10 @@ class Order extends Model
         return $this->hasOne(OrderHistory::class, 'order_id', 'id')
             ->where('type_order', OrderHistory::TYPE_ORDER_PRINT)
             ->orderBy('created_at', 'desc');
+    }
+
+    public function code_aliases()
+    {
+        return $this->hasMany(OrderCodeAlias::class, 'order_id', 'id');
     }
 }
