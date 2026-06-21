@@ -23,6 +23,7 @@ class FixDuplicateOrderCodesCommand extends Command
     protected $signature = 'orders:fix-duplicate-codes
         {--cutoff=2025-01-03 16:55:30 : Chỉ tự xử lý nhóm có toàn bộ đơn tạo trước hoặc bằng mốc này}
         {--code= : Chỉ xử lý một mã vận đơn cụ thể}
+        {--codes= : Chỉ xử lý nhiều mã vận đơn, phân tách bằng dấu phẩy}
         {--exclude= : Bỏ qua một hoặc nhiều mã, phân tách bằng dấu phẩy}
         {--apply : Chạy thật. Không có option này thì chỉ xem trước}
         {--include-new : Cho phép xử lý cả nhóm có đơn sau mốc cutoff}
@@ -40,6 +41,13 @@ class FixDuplicateOrderCodesCommand extends Command
     {
         $cutoff = Carbon::parse($this->option('cutoff'));
         $code = trim((string) $this->option('code'));
+        $codes = collect(explode(',', (string) $this->option('codes')))
+            ->map(function ($item) {
+                return trim($item);
+            })
+            ->filter()
+            ->values()
+            ->all();
         $excludeCodes = collect(explode(',', (string) $this->option('exclude')))
             ->map(function ($item) {
                 return trim($item);
@@ -66,6 +74,9 @@ class FixDuplicateOrderCodesCommand extends Command
 
         if ($code !== '') {
             $duplicateQuery->where('order_code', $code);
+        }
+        if (!empty($codes)) {
+            $duplicateQuery->whereIn('order_code', $codes);
         }
         if (!empty($excludeCodes)) {
             $duplicateQuery->whereNotIn('order_code', $excludeCodes);
