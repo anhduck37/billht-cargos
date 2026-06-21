@@ -16,6 +16,7 @@ class MarkDuplicateOrderCopiesCommand extends Command
     protected $signature = 'orders:mark-duplicate-copies
         {--before=2026-04-01 00:00:00 : Chỉ xử lý nhóm có toàn bộ đơn tạo trước mốc này}
         {--code= : Chỉ xử lý một mã vận đơn}
+        {--codes= : Chỉ xử lý nhiều mã vận đơn, phân tách bằng dấu phẩy}
         {--apply : Chạy thật. Không có option này thì chỉ xem trước}
         {--export= : Xuất kế hoạch/kết quả ra file .xlsx hoặc .csv}';
 
@@ -25,6 +26,13 @@ class MarkDuplicateOrderCopiesCommand extends Command
     {
         $before = Carbon::parse($this->option('before'));
         $code = trim((string) $this->option('code'));
+        $codes = collect(explode(',', (string) $this->option('codes')))
+            ->map(function ($item) {
+                return trim($item);
+            })
+            ->filter()
+            ->values()
+            ->all();
         $apply = (bool) $this->option('apply');
         $exportPath = trim((string) $this->option('export'));
         $rows = [];
@@ -41,6 +49,9 @@ class MarkDuplicateOrderCopiesCommand extends Command
 
         if ($code !== '') {
             $duplicateQuery->where('order_code', $code);
+        }
+        if (!empty($codes)) {
+            $duplicateQuery->whereIn('order_code', $codes);
         }
 
         $duplicates = $duplicateQuery->get();
