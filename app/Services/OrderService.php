@@ -64,14 +64,17 @@ class OrderService
         );
     }
 
-    private function getInitialNextNumber($prefix)
+    public function getInitialNextNumber($prefix)
     {
         $maxIdNext = ((int) Order::max('id')) + 1;
         $maxPrefixNumber = 0;
 
         if ($prefix !== '') {
             $start = strlen($prefix) + 1;
+            $maxSuffixLength = max(6, strlen((string) $maxIdNext));
             $result = Order::where('order_code', 'LIKE', $prefix . '%')
+                ->whereRaw('SUBSTRING(order_code, ' . (int) $start . ') REGEXP "^[0-9]+$"')
+                ->whereRaw('CHAR_LENGTH(SUBSTRING(order_code, ' . (int) $start . ')) <= ?', [$maxSuffixLength])
                 ->selectRaw('MAX(CAST(SUBSTRING(order_code, ' . (int) $start . ') AS UNSIGNED)) as max_number')
                 ->first();
             $maxPrefixNumber = $result ? (int) $result->max_number : 0;
