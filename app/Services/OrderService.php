@@ -90,6 +90,68 @@ class OrderService
         return $prefix.($this->order_id_current);
     }
 
+    public function applyOrderCodeRangeFilter($query, $fromCode, $toCode, $defaultPrefix = null)
+    {
+        $range = $this->parseOrderCodeRange($fromCode, $toCode, $defaultPrefix ?: config('order_manager.prefix_code'));
+
+        if (!$range) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        $start = strlen($range['prefix']) + 1;
+
+        return $query
+            ->where('orders.order_code', 'LIKE', $range['prefix'] . '%')
+            ->whereRaw('SUBSTRING(orders.order_code, ' . (int) $start . ') REGEXP "^[0-9]+$"')
+            ->whereRaw('CAST(SUBSTRING(orders.order_code, ' . (int) $start . ') AS UNSIGNED) BETWEEN ? AND ?', [
+                $range['from'],
+                $range['to'],
+            ]);
+    }
+
+    public function parseOrderCodeRange($fromCode, $toCode, $defaultPrefix = null)
+    {
+        $from = $this->parseOrderCodeValue($fromCode, $defaultPrefix);
+        $to = $this->parseOrderCodeValue($toCode, $defaultPrefix);
+
+        if (!$from || !$to || $from['prefix'] !== $to['prefix']) {
+            return null;
+        }
+
+        $fromNumber = min($from['number'], $to['number']);
+        $toNumber = max($from['number'], $to['number']);
+
+        return [
+            'prefix' => $from['prefix'],
+            'from' => $fromNumber,
+            'to' => $toNumber,
+        ];
+    }
+
+    private function parseOrderCodeValue($value, $defaultPrefix = null)
+    {
+        $value = strtoupper(trim((string) $value));
+        $defaultPrefix = strtoupper(trim((string) $defaultPrefix));
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (!preg_match('/^([A-Z]+)?0*([0-9]+)$/', $value, $matches)) {
+            return null;
+        }
+
+        $prefix = $matches[1] ?: $defaultPrefix;
+        if ($prefix === '') {
+            return null;
+        }
+
+        return [
+            'prefix' => $prefix,
+            'number' => (int) $matches[2],
+        ];
+    }
+
     public function explodeDate($date) {
         $times = explode('/',$date);
         $convertDate = $times[2].'-'.$times[1].'-'.$times[0];

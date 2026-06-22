@@ -160,11 +160,8 @@ class OrderController extends AppBaseController
                 $orders->where('orders.user_id', auth()->user()->id);
             }
         }
-        if (isset($formFilter['order_code_from']) && isset($formFilter['order_code_to'])) {
-            $prefix_code = config('order_manager.prefix_code');
-            $order_id_from = (int)str_replace($prefix_code, '', $formFilter['order_code_from']);
-            $order_id_to = (int)str_replace($prefix_code, '', $formFilter['order_code_to']);
-            $orders->where('orders.id', '>=', $order_id_from)->where('orders.id', '<=', $order_id_to)->where('order_code', 'LIKE', $prefix_code . '%');
+        if (!empty($formFilter['order_code_from']) && !empty($formFilter['order_code_to'])) {
+            app(OrderService::class)->applyOrderCodeRangeFilter($orders, $formFilter['order_code_from'], $formFilter['order_code_to']);
         }
         $orders = $orders->select('orders.*')->orderBy('orders.id', 'DESC')->groupBy('orders.id')->paginate($pageSize);
         if ($postmanHasSearchFilter) {
@@ -1667,8 +1664,7 @@ class OrderController extends AppBaseController
             'user'
         ]);
         if ($start && $end) {
-            $prefix_code = config('order_manager.prefix_code');
-            $orderData = $orderData->where('id', '>=', $start)->where('id', '<=', $end)->where('order_code', 'LIKE', $prefix_code . '%')->get();
+            $orderData = app(OrderService::class)->applyOrderCodeRangeFilter($orderData, $start, $end)->get();
         }
         else if (!empty($orders)) {
             $orderData = $orderData->whereIn('id', $orders)->get();

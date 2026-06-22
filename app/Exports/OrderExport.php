@@ -44,10 +44,7 @@ class OrderExport implements FromCollection, WithHeadings, WithEvents
         }
 
         if (!empty($this->form_filter['order_code_from']) && !empty($this->form_filter['order_code_to'])) {
-            $prefix_code = config('order_manager.prefix_code');
-            $order_id_from = (int)str_replace($prefix_code, '', $this->form_filter['order_code_from']);
-            $order_id_to = (int)str_replace($prefix_code, '', $this->form_filter['order_code_to']);
-            $orders->where('orders.id', '>=', $order_id_from)->where('orders.id', '<=',  $order_id_to)->where('order_code', 'LIKE', $prefix_code . '%');
+            app(OrderService::class)->applyOrderCodeRangeFilter($orders, $this->form_filter['order_code_from'], $this->form_filter['order_code_to']);
         }
 
         if (!empty($this->form_filter['search'])) {
